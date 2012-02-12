@@ -1,3 +1,20 @@
-= Title =
+= Using images =
 
-Body
+To put images into the documentation the following steps are necessary:
+
+# Add the image to the ''image manager''
+# Refer to the image in one or more documentation pages
+
+== Using the image manager ==
+
+[[Image:Screen%20Shot%202012-02-12%20at%203.19.59%20PM.png]]
+
+* Use the ''Add...'' button to add new images from any location.
+* Use the ''Remove'' button to remove the selected image from the documentation. 
+::  '''NOTE''': this won't remove the image links from the pages. They have to be updated manually.
+* Hovering the mouse over an item displays a ''tooltip'' showing the image
+* Drag'n'drop an item from the image manager to a page's source to automatically create an image reference.
+
+'''NOTE''': once an image is added to the ''image manager'', it is copied into the documentation's folder. Updating the original image will not automatically affect the image in the documentation.
+
+  
