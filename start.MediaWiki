@@ -1,0 +1,29 @@
+= Introduction to Distributed Documentor =
+
+== Goals ==
+''Distributed Documentor'' is a desktop application enabling its users to create software documentation using [http://en.wikipedia.org/wiki/Lightweight_markup_language lightweight markup languages] in multiple geographical locations simultaneously, with the ability to correctly synchronize the changes made at these distinct locations.
+
+The documentation can be [ExportingDocumentation exported] any time to set of help formats at any location.
+
+== Supported markup languages ==
+The current version supports only the [MediaWikiSyntax MediaWiki] markup language.
+
+== Supported media formats ==
+
+Every common image format is supported and can be [UsingImages inserted] to the documentation pages.
+
+It is recommended to use
+* PNG for screenshots
+* JPEG for other images
+
+== Supported version control systems ==
+
+This software uses [http://mercurial.selenic.com/ Mercurial] for storing and synchronizing the documentation repositories between its instances. The application hides this implementation detail and provides easy to use user interface for [UsingChangesets committing changes and synchronization].
+
+The following two tasks require external tools in the current version:
+
+=== Installing Mercurial ===
+The current version cannot install Mercurial so it is a prerequisite for running ''Distributed Documentor''. It is also requid to have '''hg.exe''' in the ''PATH'' so the application can execute it without configuration.
+
+=== Setting up remote access for the repositories ===
+This version has no support for hosting the repositories to make them remotely accessible. 
