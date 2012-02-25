@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+" codebase="file:/Volumes/Data/Home/vigoo/Projects/DistributedDocumentor-mvn/target/jnlp" href="$outputFile">
+ <information>
+    <title>DistributedDocumentor</title>
+    <vendor>Daniel Vigovszky</vendor>
+    <homepage href="https://bitbucket.org/vigoo/distributed-documentor/"/>
+    <description kind="one-line">DistributedDocumentor</description>
+    <description kind="short">DistributedDocumentor</description>
+    <offline-allowed/>
+ </information>
+ <update check="background"/>
+ <security>
+    <all-permissions/>
+ </security>
+ <resources>
+    <j2se version="1.6+" initial-heap-size="32m" max-heap-size="128m" java-vm-args="-Dapple.laf.useScreenMenuBar=true" />
+    <property name="jnlp.versionEnabled" value="true"/>
+    $dependencies
+ </resources>
+ <application-desc main-class="$mainClass">
+ </application-desc>
+</jnlp>
