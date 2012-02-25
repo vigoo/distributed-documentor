@@ -27,3 +27,6 @@ The current version cannot install Mercurial so it is a prerequisite for running
 
 === Setting up remote access for the repositories ===
 This version has no support for hosting the repositories to make them remotely accessible. 
+
+[TemporaryPage]
+
