@@ -1,13 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.exporters.CHMExporter;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -23,13 +20,10 @@ import org.noos.xing.mydoggy.*;
 import org.noos.xing.mydoggy.plaf.MyDoggyToolWindowManager;
 import org.noos.xing.mydoggy.plaf.ui.content.MyDoggyTabbedContentManagerUI;
 
-/**
- *
- * @author vigoo
- */
 public final class MainWindow extends javax.swing.JFrame implements PageEditorHost {
 
-    private Documentation doc;
+    private final DocumentorPreferences prefs;
+    private final Documentation doc;
     private final MyDoggyToolWindowManager toolWindowManager;
     private final Timer saveTimer;
     private final Timer statusCheckTimer;
@@ -42,7 +36,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         initComponents();
         setSize(1024, 768);
         
-        doc = new Documentation();        
+        prefs = new DocumentorPreferences();
+        doc = new Documentation(prefs);
         
         toolWindowManager = new MyDoggyToolWindowManager();
         ContentManager contentManager = toolWindowManager.getContentManager();
@@ -62,6 +57,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         twTOC.setAutoHide(false);
         twTOC.setVisible(true);
         twTOC.setAvailable(true);        
+        
+        showPreferencesIfNecessary();
             
         final StartupDialog startup = new StartupDialog(this, true);
         startup.setVisible(true);
@@ -138,6 +135,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         fileMenu = new javax.swing.JMenu();
         exportMenu = new javax.swing.JMenu();
         exportToCHMMenuItem = new javax.swing.JMenuItem();
+        preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -202,6 +200,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
         fileMenu.add(exportMenu);
 
+        preferencesMenuItem.setText("Preferences...");
+        preferencesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                preferencesMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(preferencesMenuItem);
+
         exitMenuItem.setMnemonic('x');
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -264,7 +270,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File targetDir = chooser.getSelectedFile();
-            Exporter exporter = new CHMExporter(doc, targetDir);
+            Exporter exporter = new CHMExporter(prefs, doc, targetDir);
             
             try {
                 exporter.export();
@@ -277,6 +283,22 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }  
     }//GEN-LAST:event_exportToCHMMenuItemActionPerformed
 
+    private void preferencesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMenuItemActionPerformed
+        showPreferences();        
+    }//GEN-LAST:event_preferencesMenuItemActionPerformed
+
+    private void showPreferencesIfNecessary() {
+        
+        if (!prefs.hasValidMercurialPath()) {
+            showPreferences();
+        }
+    }
+    
+    private void showPreferences() {
+        SettingsDialog dlg = new SettingsDialog(this, true, prefs);
+        dlg.setVisible(true);        
+    }
+    
     private void loadLayout() {
         
         File workspaceFile = new File(System.getProperty("user.home"), "documentor.workspace.xml");
@@ -351,6 +373,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JLabel labelRoot;
     private javax.swing.JLabel labelUncommitted;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem preferencesMenuItem;
     private javax.swing.JToolBar toolBar;
     // End of variables declaration//GEN-END:variables
 

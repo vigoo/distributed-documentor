@@ -5,20 +5,24 @@ import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JOptionPane;
 
 public class CHMExporter implements Exporter {
     
+    private final DocumentorPreferences prefs;    
     private final Documentation doc;
     private final File targetDir;
     private final Set<String> contentFiles = new HashSet<String>();
 
-    public CHMExporter(Documentation doc, File targetDir) {
+    public CHMExporter(DocumentorPreferences prefs, Documentation doc, File targetDir) {
+        this.prefs = prefs;
         this.doc = doc;
         this.targetDir = targetDir;        
     }
@@ -57,8 +61,12 @@ public class CHMExporter implements Exporter {
         createHHP();
         
         // Executing HTML help compiler
-        String[] args = {"hhc.exe", "project.hhp"};
-        Runtime.getRuntime().exec(args);
+        if (prefs.hasValidCHMCompilerPath()) {        
+            String[] args = {"hhc.exe", "project.hhp"};
+            Runtime.getRuntime().exec(args);
+        } else {        
+            JOptionPane.showMessageDialog(null, "The CHM compiler's path is not specified. Use the preferences dialog to set it!", "Export failed", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void exportReferencedPages(TOCNode node) throws FileNotFoundException {

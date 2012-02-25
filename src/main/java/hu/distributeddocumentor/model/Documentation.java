@@ -1,11 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.model;
 
 import com.aragost.javahg.Repository;
+import com.aragost.javahg.RepositoryConfiguration;
 import com.aragost.javahg.commands.*;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.RepositoryUriGenerator;
 import java.io.File;
 import java.io.FileFilter;
@@ -19,10 +17,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
 
-/**
- *
- * @author vigoo
- */
 public class Documentation implements Observer {
     
     private final TOC toc;
@@ -30,20 +24,22 @@ public class Documentation implements Observer {
     private Images images;
     
     private Repository repository;
+    private final DocumentorPreferences prefs;
 
     public TOC getTOC() {
         return toc;
     }        
 
-    public Documentation() {
+    public Documentation(DocumentorPreferences prefs) {
         
         toc = new TOC();
         pages = new HashMap<String, Page>();                   
+        this.prefs = prefs;
     }
     
     public void initAsNew(File repositoryRoot) throws IOException {
-        
-        repository = Repository.create(repositoryRoot);
+                
+        repository = Repository.create(createRepositoryConfiguration(), repositoryRoot);
         images = new Images(repository);
         
         Page first = new Page("start");
@@ -76,7 +72,7 @@ public class Documentation implements Observer {
     
     public void initFromExisting(File repositoryRoot) throws SAXException, IOException, ParserConfigurationException {
         
-        repository = Repository.open(repositoryRoot);
+        repository = Repository.open(createRepositoryConfiguration(), repositoryRoot);
         images = new Images(repository);
         
         loadRepository();
@@ -84,10 +80,18 @@ public class Documentation implements Observer {
     
     public void cloneFromRemote(File localRepositoryRoot, String remoteRepo, String userName, String password) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException {
                 
-        repository = Repository.clone(localRepositoryRoot, RepositoryUriGenerator.addCredentials(remoteRepo, userName, password));
+        repository = Repository.clone(createRepositoryConfiguration(), localRepositoryRoot, RepositoryUriGenerator.addCredentials(remoteRepo, userName, password));
         images = new Images(repository);
         
         loadRepository();
+    }
+    
+    private RepositoryConfiguration createRepositoryConfiguration() {
+        
+        RepositoryConfiguration conf = new RepositoryConfiguration();
+        conf.setHgBin(prefs.getMercurialPath());
+        
+        return conf;
     }
     
     private void loadRepository() throws FileNotFoundException, IOException, SAXException, ParserConfigurationException {
