@@ -18,7 +18,7 @@ It is recommended to use
 
 == Supported version control systems ==
 
-This software uses [http://mercurial.selenic.com/ Mercurial] for storing and synchronizing the documentation repositories between its instances. The application hides this implementation detail and provides easy to use user interface for [UsingChangesets committing changes and synchronization].
+This software uses [http://mercurial.selenic.com/ Mercurial] for storing and synchronizing the documentation repositories between its instances. The application hides this implementation detail and provides easy to use user interface for [UsingChangesets committing changes and synchronization] and [CloneRemoteRepo cloning remote repositories].
 
 The following two tasks require external tools in the current version:
 
