@@ -20,6 +20,10 @@ public class StartupDialog extends javax.swing.JDialog {
     
     private Action finalAction;
     private File repositoryRoot;
+    private String remoteRepo;
+    private String userName;
+    private String password;
+   
 
     /**
      * Creates new form StartupDialog
@@ -161,7 +165,20 @@ public class StartupDialog extends javax.swing.JDialog {
 
     private void btnOpenRemoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenRemoteActionPerformed
         
-        doClose();
+        CloneDialog dlg = new CloneDialog(null, true);
+        dlg.setVisible(true);
+        
+        if (dlg.getReturnStatus() == CloneDialog.RET_OK) {
+         
+            finalAction = Action.OpenRemote;
+            
+            remoteRepo = dlg.getRepo();
+            userName = dlg.getUserName();
+            password = dlg.getPassword();
+            repositoryRoot = new File(dlg.getTarget());
+            
+            doClose();
+        }                
     }//GEN-LAST:event_btnOpenRemoteActionPerformed
     
     private void doClose() {
@@ -189,6 +206,10 @@ public class StartupDialog extends javax.swing.JDialog {
                     doc.initFromExisting(repositoryRoot);    
                     
                     break;
+                case OpenRemote:
+                    doc.cloneFromRemote(repositoryRoot, remoteRepo, userName, password);
+                    
+                    break;                    
             }
         } catch (Exception ex) {
             java.util.logging.Logger.getLogger(StartupDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);

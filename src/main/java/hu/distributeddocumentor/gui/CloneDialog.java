@@ -29,18 +29,8 @@ public class CloneDialog extends javax.swing.JDialog {
     public CloneDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-
-        // Close the dialog when Esc is pressed
-        String cancelName = "cancel";
-        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), cancelName);
-        ActionMap actionMap = getRootPane().getActionMap();
-        actionMap.put(cancelName, new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                doClose(RET_CANCEL);
-            }
-        });
+        
+        setLocationRelativeTo(parent);
     }
 
     /**
@@ -48,6 +38,22 @@ public class CloneDialog extends javax.swing.JDialog {
      */
     public int getReturnStatus() {
         return returnStatus;
+    }
+    
+    public String getRepo() {
+        return tbRepo.getText();
+    }
+    
+    public String getUserName() {
+        return tbUserName.getText();
+    }
+    
+    public String getPassword() {
+        return tbPassword.getText();
+    }
+    
+    public String getTarget() {
+        return tbTarget.getText();
     }
 
     /**
@@ -75,6 +81,7 @@ public class CloneDialog extends javax.swing.JDialog {
         tbTarget = new javax.swing.JTextField();
         btBrowse = new javax.swing.JButton();
 
+        setTitle("Clone remote repository");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);

@@ -28,9 +28,11 @@ public class TOC {
     
     private final TOCNode root;
     private final TOCNode unorganized;
-    private final TOCNode recycleBin;
+    private final TOCNode recycleBin;    
     
     private final List<TreeModelListener> listeners = new LinkedList<TreeModelListener>();
+    
+    private boolean modified;
             
     public TOC() {
         root = new TOCNode("Root");
@@ -52,6 +54,12 @@ public class TOC {
     
     public TOCNode getRecycleBin() {
         return recycleBin;
+    }
+    
+    
+    void saveIfModified(File targetDirectory) throws FileNotFoundException, TransformerConfigurationException, TransformerException {
+        if (modified)
+            save(targetDirectory);
     }
     
     public void save(File targetDirectory) throws FileNotFoundException, TransformerConfigurationException, TransformerException {
@@ -76,8 +84,16 @@ public class TOC {
         Source source = new DOMSource(doc);
         Result result = new StreamResult(target);
         
-        Transformer xformer = TransformerFactory.newInstance().newTransformer();
+        TransformerFactory factory = TransformerFactory.newInstance();
+        factory.setAttribute("indent-number", new Integer(4));
+        
+        Transformer xformer = factory.newTransformer();
+        xformer.setOutputProperty(OutputKeys.INDENT, "yes");        
+        xformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");        
+        
         xformer.transform(source, result);
+        
+        modified = false;
     }
 
     public void load(File sourceDirectory, Documentation documentation) throws SAXException, IOException, ParserConfigurationException {
@@ -97,6 +113,8 @@ public class TOC {
         for (TreeModelListener listener : listeners) {
             listener.treeStructureChanged(new TreeModelEvent(this, new TreePath(root)));
         }
+        
+        modified = false;
     }
 
     public void addToEnd(TOCNode parent, TOCNode child) {
@@ -121,6 +139,8 @@ public class TOC {
         for (TreeModelListener listener : listeners) {
             listener.treeNodesInserted(evt);
         }
+        
+        modified = true;
     }
     
     public void addBefore(TOCNode existingNode, TOCNode newChild) {
@@ -167,6 +187,8 @@ public class TOC {
         for (TreeModelListener listener : listeners) {
             listener.treeNodesRemoved(evt);
         }
+        
+        modified = true;
     }
     
     public void remove(Page page) {
@@ -206,6 +228,8 @@ public class TOC {
             for (TreeModelListener listener : listeners) {
                 listener.treeNodesChanged(evt);
             }
+            
+            modified = true;
         }
         
     }
@@ -307,11 +331,13 @@ public class TOC {
 
     public void clear() {
         
-        root.getChildren().clear();
-        unorganized.getChildren().clear();
-        recycleBin.getChildren().clear();
+        root.clearChildren();
+        unorganized.clearChildren();
+        recycleBin.clearChildren();
                 
         root.addToEnd(unorganized);
         root.addToEnd(recycleBin);
+        
+        modified = false;
     }
 }

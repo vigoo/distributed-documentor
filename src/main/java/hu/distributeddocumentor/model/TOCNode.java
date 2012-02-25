@@ -217,4 +217,8 @@ public class TOCNode {
         
         return result;
     }
+
+    void clearChildren() {
+        children.clear();
+    }
 }

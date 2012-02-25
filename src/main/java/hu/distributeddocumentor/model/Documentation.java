@@ -4,6 +4,7 @@ import com.aragost.javahg.Repository;
 import com.aragost.javahg.RepositoryConfiguration;
 import com.aragost.javahg.commands.*;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
+import hu.distributeddocumentor.utils.CaseInsensitiveMap;
 import hu.distributeddocumentor.utils.RepositoryUriGenerator;
 import java.io.File;
 import java.io.FileFilter;
@@ -19,6 +20,8 @@ import org.xml.sax.SAXException;
 
 public class Documentation implements Observer {
     
+    private static final Logger logger = Logger.getLogger(Documentation.class.getName());
+    
     private final TOC toc;
     private final Map<String, Page> pages;    
     private Images images;
@@ -33,7 +36,7 @@ public class Documentation implements Observer {
     public Documentation(DocumentorPreferences prefs) {
         
         toc = new TOC();
-        pages = new HashMap<String, Page>();                   
+        pages = new CaseInsensitiveMap<Page>();
         this.prefs = prefs;
     }
     
@@ -56,15 +59,15 @@ public class Documentation implements Observer {
             AddCommand cmd = new AddCommand(repository);
             cmd.execute(new File(repositoryRoot, "toc.xml"));
         } catch (TransformerConfigurationException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             
             throw new IllegalStateException("Must be called on a fresh instance!");
         } catch (TransformerException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);                        
+            logger.log(Level.SEVERE, null, ex);                        
             
             throw new IllegalStateException("Must be called on a fresh instance!");
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             
             throw new IllegalStateException("Must be called on a fresh instance!");
         }
@@ -138,9 +141,12 @@ public class Documentation implements Observer {
         else
             throw new PageAlreadyExistsException();
         
-        toc.addToEnd(toc.getUnorganized(), new TOCNode(page));
+        toc.addToEnd(toc.getUnorganized(), new TOCNode(page));                
         
         File pageFile = page.save(repository.getDirectory());
+        
+        logger.info("Adding new file to repository: " + pageFile.getName());
+        
         AddCommand cmd = new AddCommand(repository);
         cmd.execute(pageFile);
     }      
@@ -168,18 +174,18 @@ public class Documentation implements Observer {
                 page.saveIfModified(root);
             }        
         
-            toc.save(root);
+            toc.saveIfModified(root);
         }
         catch (IOException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);        
         } catch (TransformerConfigurationException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);
         } catch (TransformerException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);
         }    
@@ -259,11 +265,11 @@ public class Documentation implements Observer {
                         addNewPage(newPage);
                     }
                     catch (IOException ex) {
-                        Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
                     catch (PageAlreadyExistsException ex) {
                         // This cannot happen
-                        Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 } else {
                 
@@ -283,8 +289,10 @@ public class Documentation implements Observer {
     
     public void processOrphanedPages() {
         
+        logger.info("Processing orphaned pages...");
+        
         // Collect all references
-        Set<String> referencedPages = new HashSet<String>();
+        Set<String> referencedPages = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         
         referencedPages.add("start");
         for (Page page : pages.values()) {
@@ -292,10 +300,13 @@ public class Documentation implements Observer {
         }
         
         // Collect the pages which are NOT referenced
-        Set<String> orphanedPages = new HashSet<String>(pages.keySet());
+        Set<String> orphanedPages = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+        orphanedPages.addAll(pages.keySet());        
         orphanedPages.removeAll(referencedPages);
         
         for (String pageId : orphanedPages) {
+            
+            logger.info("Found orphaned page: " + pageId);
             
             Page page = pages.get(pageId);
             
@@ -303,10 +314,16 @@ public class Documentation implements Observer {
             
             // If the page does not equals the default template
             if (!page.equalsTemplate()) {                      
+                
+                logger.info(" -> putting it to recycle bin");
+                
                 // ..then we don't delete it, but put into the recycle bin
                 // node instead of the unorganized pages node
                 toc.addToEnd(toc.getRecycleBin(), new TOCNode(page));
             } else {
+                
+                logger.info(" -> was not modified, removing it");
+                
                 // ..otherwise we don't keep reference to it in the TOC and
                 // delete it from the repository as well                                           
                 pages.remove(pageId);
@@ -317,6 +334,8 @@ public class Documentation implements Observer {
                 page.getFile(repository.getDirectory()).delete();
             }                   
         }
+        
+        logger.info("Finished processing orphaned pages.");
     }
 
 }
