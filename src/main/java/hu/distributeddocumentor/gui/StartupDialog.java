@@ -47,81 +47,56 @@ public class StartupDialog extends javax.swing.JDialog {
         btnCreateNew = new javax.swing.JButton();
         btnOpenLocal = new javax.swing.JButton();
         btnOpenRemote = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
 
+        setBackground(new java.awt.Color(210, 224, 238));
+        setUndecorated(true);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
             }
         });
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        btnCreateNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/new doc.png"))); // NOI18N
         btnCreateNew.setText("Create new");
+        btnCreateNew.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnCreateNew.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnCreateNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCreateNewActionPerformed(evt);
             }
         });
+        getContentPane().add(btnCreateNew, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 390, 169, 158));
 
+        btnOpenLocal.setIcon(new javax.swing.ImageIcon(getClass().getResource("/open doc.png"))); // NOI18N
         btnOpenLocal.setText("<html><p align=\"center\">Open from<br/>local directory</p></html>");
+        btnOpenLocal.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnOpenLocal.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnOpenLocal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnOpenLocalActionPerformed(evt);
             }
         });
+        getContentPane().add(btnOpenLocal, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 390, 169, 158));
 
+        btnOpenRemote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/distribut.png"))); // NOI18N
         btnOpenRemote.setText("<html><p align=\"center\">Clone from<br/>remote repository</p></html>");
+        btnOpenRemote.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnOpenRemote.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnOpenRemote.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnOpenRemoteActionPerformed(evt);
             }
         });
-
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Welcome to Distributed Documentor!");
+        getContentPane().add(btnOpenRemote, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 390, 169, 158));
 
         jLabel2.setText("Please choose a documentation to work with:");
+        getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 370, -1, -1));
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .add(0, 0, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(btnCreateNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 146, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnOpenLocal, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 162, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(btnOpenRemote, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-
-        layout.linkSize(new java.awt.Component[] {btnCreateNew, btnOpenLocal, btnOpenRemote}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 33, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(btnCreateNew, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(btnOpenRemote, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                        .add(btnOpenLocal)))
-                .addContainerGap())
-        );
-
-        layout.linkSize(new java.awt.Component[] {btnCreateNew, btnOpenLocal, btnOpenRemote}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/splashscreen.png"))); // NOI18N
+        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -216,4 +191,6 @@ public class StartupDialog extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to load documentation", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    
 }
