@@ -2,6 +2,7 @@ package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.exporters.CHMExporter;
 import hu.distributeddocumentor.exporters.Exporter;
+import hu.distributeddocumentor.exporters.HTMLExporter;
 import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
@@ -135,6 +136,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         fileMenu = new javax.swing.JMenu();
         exportMenu = new javax.swing.JMenu();
         exportToCHMMenuItem = new javax.swing.JMenuItem();
+        exportToHTMLMenuItem = new javax.swing.JMenuItem();
         preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
 
@@ -197,6 +199,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             }
         });
         exportMenu.add(exportToCHMMenuItem);
+
+        exportToHTMLMenuItem.setText("Export to HTML...");
+        exportToHTMLMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportToHTMLMenuItemActionPerformed(evt);
+            }
+        });
+        exportMenu.add(exportToHTMLMenuItem);
 
         fileMenu.add(exportMenu);
 
@@ -287,6 +297,27 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         showPreferences();        
     }//GEN-LAST:event_preferencesMenuItemActionPerformed
 
+    private void exportToHTMLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToHTMLMenuItemActionPerformed
+        
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setDialogTitle("Select the target directory");
+                
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File targetDir = chooser.getSelectedFile();
+            Exporter exporter = new HTMLExporter(prefs, doc, targetDir);
+            
+            try {
+                exporter.export();
+            }
+            catch (Exception ex) {
+                java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Export failed", JOptionPane.ERROR_MESSAGE);
+            }
+        }  
+    }//GEN-LAST:event_exportToHTMLMenuItemActionPerformed
+
     private void showPreferencesIfNecessary() {
         
         if (!prefs.hasValidMercurialPath()) {
@@ -367,6 +398,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu exportMenu;
     private javax.swing.JMenuItem exportToCHMMenuItem;
+    private javax.swing.JMenuItem exportToHTMLMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.Box.Filler filler1;
     private javax.swing.JLabel jLabel1;

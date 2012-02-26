@@ -14,17 +14,18 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JOptionPane;
 
-public class CHMExporter implements Exporter {
+public class CHMExporter extends HTMLBasedExporter implements Exporter {
     
     private final DocumentorPreferences prefs;    
-    private final Documentation doc;
-    private final File targetDir;
+    private final Documentation doc;    
     private final Set<String> contentFiles = new HashSet<String>();
 
     public CHMExporter(DocumentorPreferences prefs, Documentation doc, File targetDir) {
+        
+        super(targetDir);
+        
         this.prefs = prefs;
-        this.doc = doc;
-        this.targetDir = targetDir;        
+        this.doc = doc;        
     }
 
     @Override
@@ -68,28 +69,14 @@ public class CHMExporter implements Exporter {
             JOptionPane.showMessageDialog(null, "The CHM compiler's path is not specified. Use the preferences dialog to set it!", "Export failed", JOptionPane.WARNING_MESSAGE);
         }
     }
-
-    private void exportReferencedPages(TOCNode node) throws FileNotFoundException {
-        
-        Page page = node.getTarget();
-        if (page != null) {
-            exportPage(page);
-        }
-        
-        for (TOCNode childNode : node.getChildren())
-            exportReferencedPages(childNode);
-    }
-
-    private void exportPage(Page page) throws FileNotFoundException {        
-        
-        File target = new File(targetDir, page.getId()+".html");
-        String html = page.asHTML();
-        
-        PrintWriter out = new PrintWriter(target);
-        out.print(html);
-        out.close();
+    
+    @Override
+    protected File exportPage(Page page) throws FileNotFoundException {
+        File target = super.exportPage(page);
         
         contentFiles.add(target.getName());
+        
+        return target;
     }
 
     private void createHHP() throws FileNotFoundException {
