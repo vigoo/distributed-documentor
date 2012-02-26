@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
@@ -139,6 +140,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         exportToHTMLMenuItem = new javax.swing.JMenuItem();
         preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
+        synchronizeMenu = new javax.swing.JMenu();
+        pullMenuItem = new javax.swing.JMenuItem();
+        pushMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Distributed Documentor");
@@ -229,6 +233,26 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
         menuBar.add(fileMenu);
 
+        synchronizeMenu.setText("Synchronize");
+
+        pullMenuItem.setText("Download changes");
+        pullMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pullMenuItemActionPerformed(evt);
+            }
+        });
+        synchronizeMenu.add(pullMenuItem);
+
+        pushMenuItem.setText("Upload changes");
+        pushMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pushMenuItemActionPerformed(evt);
+            }
+        });
+        synchronizeMenu.add(pushMenuItem);
+
+        menuBar.add(synchronizeMenu);
+
         setJMenuBar(menuBar);
 
         pack();
@@ -318,6 +342,29 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }  
     }//GEN-LAST:event_exportToHTMLMenuItemActionPerformed
 
+    private void pullMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullMenuItemActionPerformed
+        
+        try {
+            doc.pull();        
+        }
+        catch (IOException ex) {
+             java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                
+             JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to download changes", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_pullMenuItemActionPerformed
+
+    private void pushMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pushMenuItemActionPerformed
+        try {
+            doc.push();        
+        }
+        catch (IOException ex) {
+             java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                
+             JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to upload changes", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_pushMenuItemActionPerformed
+
     private void showPreferencesIfNecessary() {
         
         if (!prefs.hasValidMercurialPath()) {
@@ -406,6 +453,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JLabel labelUncommitted;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem preferencesMenuItem;
+    private javax.swing.JMenuItem pullMenuItem;
+    private javax.swing.JMenuItem pushMenuItem;
+    private javax.swing.JMenu synchronizeMenu;
     private javax.swing.JToolBar toolBar;
     // End of variables declaration//GEN-END:variables
 

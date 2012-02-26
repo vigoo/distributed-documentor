@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.model;
 
+import com.aragost.javahg.Changeset;
 import com.aragost.javahg.Repository;
 import com.aragost.javahg.RepositoryConfiguration;
 import com.aragost.javahg.commands.*;
@@ -336,6 +337,16 @@ public class Documentation implements Observer {
         }
         
         logger.info("Finished processing orphaned pages.");
+    }
+
+    public List<Changeset> pull() throws IOException {
+        PullCommand cmd = new PullCommand(repository);
+        return cmd.execute();
+    }
+    
+    public List<Changeset> push() throws IOException {
+        PushCommand cmd = new PushCommand(repository);
+        return cmd.execute();
     }
 
 }
