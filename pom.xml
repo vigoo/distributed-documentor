@@ -25,6 +25,19 @@
         <artifactId>webstart-maven-plugin</artifactId>
         <version>1.0-beta-3</version>
       </plugin>
+	   <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>hu.distributeddocumentor.gui.MainWindow</mainClass>
+                    </manifest>
+                </archive>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+            </configuration>
+        </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
@@ -46,7 +59,7 @@
               </jnlp>         
               <verbose>true</verbose>
               <sign>
-                  <keystore>/tmp/ddkeystore</keystore>
+                  <keystore>ddkeystore</keystore>
                   <keypass>m2m2m2</keypass>
                   <storepass>m2m2m2</storepass>
                   <alias>DistributedDocumentor</alias>
