@@ -315,7 +315,7 @@ public class SettingsDialog extends javax.swing.JDialog {
                     public boolean accept(File file) {
                         
                         if (prefs.isWindows()) {
-                            return file.getName().equalsIgnoreCase("hg.exe");
+                            return file.getName().equalsIgnoreCase("hg.exe") || file.isDirectory();
                         }
                         else {
                             return file.getName().equals("hg");
@@ -345,7 +345,7 @@ public class SettingsDialog extends javax.swing.JDialog {
 
                     @Override
                     public boolean accept(File file) {                                               
-                        return file.getName().equalsIgnoreCase("hg.exe");                        
+                        return file.getName().equalsIgnoreCase("hhc.exe") || file.isDirectory();                        
                     }
 
                     @Override

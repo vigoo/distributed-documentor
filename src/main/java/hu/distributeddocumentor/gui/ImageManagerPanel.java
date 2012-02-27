@@ -129,7 +129,8 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                         String name = file.getName().toLowerCase();
                         return name.endsWith(".png") ||
                                name.endsWith(".jpg") ||
-                               name.endsWith(".jpeg");
+                               name.endsWith(".jpeg") ||
+                               file.isDirectory();
                         
                     }
 
