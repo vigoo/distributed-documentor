@@ -136,7 +136,9 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             out.println("<UL>");
             
             for (TOCNode node : toc.getRoot().getChildren()) {
-                if (node != toc.getRecycleBin()) {
+                if (node != toc.getRecycleBin() &&
+                    ((node != toc.getUnorganized()) ||
+                     (node == toc.getUnorganized() && node.getChildren().size() > 0))) {
                     exportTOCNode(node, out, 6);
                 }
             }
