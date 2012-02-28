@@ -161,8 +161,15 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             out.println(i + "    <param name=\"Local\" value=\"" + node.getTarget().getId() + ".html\">");
         out.println(i + "</OBJECT>");                
         
-        for (TOCNode child : node.getChildren()) {
-            exportTOCNode(child, out, indent+2);
+        if (node.getChildren().size() > 0) {
+            
+            out.println(i + "<UL>");
+            
+            for (TOCNode child : node.getChildren()) {
+                exportTOCNode(child, out, indent+2);
+            }
+            
+            out.println(i + "</UL>");
         }
     }
     
