@@ -5,7 +5,6 @@ import hu.distributeddocumentor.model.ImageAlreadyExistsException;
 import hu.distributeddocumentor.model.Images;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DropTargetContext;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -20,6 +19,7 @@ public class ImageManagerPanel extends javax.swing.JPanel {
 
     private final Images images;
     private final ImageListModel imagesModel;
+    private File lastImageFolder;
     
     /**
      * Creates new form ImageManagerPanel
@@ -119,7 +119,7 @@ public class ImageManagerPanel extends javax.swing.JPanel {
 
     private void btAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddActionPerformed
         
-        final JFileChooser chooser = new JFileChooser();
+        final JFileChooser chooser = new JFileChooser();                
         chooser.setFileFilter(
                 new FileFilter() {
 
@@ -141,6 +141,9 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                     
                 });
         
+        if (lastImageFolder != null)
+            chooser.setCurrentDirectory(lastImageFolder);
+        
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             
             try {
@@ -150,6 +153,8 @@ public class ImageManagerPanel extends javax.swing.JPanel {
             } catch (IOException ex) {
                 Logger.getLogger(ImageManagerPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
+            
+            lastImageFolder = chooser.getCurrentDirectory();
         }        
     }//GEN-LAST:event_btAddActionPerformed
 
