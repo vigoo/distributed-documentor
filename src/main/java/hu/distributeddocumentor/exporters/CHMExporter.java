@@ -63,7 +63,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         
         // Executing HTML help compiler
         if (prefs.hasValidCHMCompilerPath()) {        
-            String[] args = {"hhc.exe", "project.hhp"};
+            String[] args = {prefs.getCHMCompilerPath(), "project.hhp"};
             Runtime.getRuntime().exec(args);
         } else {        
             JOptionPane.showMessageDialog(null, "The CHM compiler's path is not specified. Use the preferences dialog to set it!", "Export failed", JOptionPane.WARNING_MESSAGE);
