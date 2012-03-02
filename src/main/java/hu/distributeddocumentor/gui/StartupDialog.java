@@ -12,18 +12,23 @@ import javax.swing.JOptionPane;
  */
 public class StartupDialog extends javax.swing.JDialog {
     
-    private enum Action {
+    public enum Action {
+        Cancel,
         CreateNew,
         OpenLocal,
-        OpenRemote
+        OpenRemote,        
     }
     
-    private Action finalAction;
+    private Action finalAction = Action.Cancel;
     private File repositoryRoot;
     private String remoteRepo;
     private String userName;
     private String password;
    
+    public Action getFinalAction() {
+        return finalAction;
+    }
+    
 
     /**
      * Creates new form StartupDialog
@@ -48,6 +53,7 @@ public class StartupDialog extends javax.swing.JDialog {
         btnOpenLocal = new javax.swing.JButton();
         btnOpenRemote = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(210, 224, 238));
@@ -95,6 +101,15 @@ public class StartupDialog extends javax.swing.JDialog {
         jLabel2.setText("Please choose a documentation to work with:");
         getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 370, -1, -1));
 
+        jButton1.setBackground(new java.awt.Color(255, 0, 51));
+        jButton1.setText("X");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 0, 20, 20));
+
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/splashscreen.png"))); // NOI18N
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
@@ -115,6 +130,7 @@ public class StartupDialog extends javax.swing.JDialog {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setDialogTitle("Select the root directory");
+        chooser.setAcceptAllFileFilterUsed(false);
                 
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             repositoryRoot = chooser.getSelectedFile();
@@ -130,6 +146,7 @@ public class StartupDialog extends javax.swing.JDialog {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setDialogTitle("Select the root directory");
+        chooser.setAcceptAllFileFilterUsed(false);
                 
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             repositoryRoot = chooser.getSelectedFile();
@@ -155,6 +172,10 @@ public class StartupDialog extends javax.swing.JDialog {
             doClose();
         }                
     }//GEN-LAST:event_btnOpenRemoteActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        doClose();
+    }//GEN-LAST:event_jButton1ActionPerformed
     
     private void doClose() {
         setVisible(false);
@@ -165,6 +186,7 @@ public class StartupDialog extends javax.swing.JDialog {
     private javax.swing.JButton btnCreateNew;
     private javax.swing.JButton btnOpenLocal;
     private javax.swing.JButton btnOpenRemote;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables

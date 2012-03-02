@@ -64,27 +64,32 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             
         final StartupDialog startup = new StartupDialog(this, true);
         startup.setVisible(true);
-        startup.initialize(doc);
-            
-        ToolWindow twImages = toolWindowManager.registerToolWindow(
-                "IMG", 
-                "Image manager", 
-                null, 
-                new ImageManagerPanel(doc.getImages()), 
-                ToolWindowAnchor.LEFT);
-        twImages.setType(ToolWindowType.DOCKED);
-        twImages.setAutoHide(false);
-        twImages.setVisible(true);
-        twImages.setAvailable(true);                                
-        
-        labelRoot.setText(doc.getRepositoryRoot());
-        
-        openOrFocusPage("start");
-        
-        setVisible(true);        
-        loadLayout();
+        if (startup.getFinalAction() != StartupDialog.Action.Cancel) {
+            startup.initialize(doc);
 
-        
+            ToolWindow twImages = toolWindowManager.registerToolWindow(
+                    "IMG", 
+                    "Image manager", 
+                    null, 
+                    new ImageManagerPanel(doc.getImages()), 
+                    ToolWindowAnchor.LEFT);
+            twImages.setType(ToolWindowType.DOCKED);
+            twImages.setAutoHide(false);
+            twImages.setVisible(true);
+            twImages.setAvailable(true);                                
+
+            labelRoot.setText(doc.getRepositoryRoot());
+
+            openOrFocusPage("start");
+
+            setVisible(true);        
+            loadLayout();
+                    } 
+        else {
+            System.exit(0);
+        }
+
+
         saveTimer = new Timer(1000, 
                 new ActionListener() {
 
@@ -95,7 +100,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 });  
         saveTimer.setInitialDelay(5000);
         saveTimer.start();
-        
+
         statusCheckTimer = new Timer(3000,
                 new ActionListener() {
                     @Override
@@ -105,7 +110,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 });
         statusCheckTimer.setInitialDelay(0);
         statusCheckTimer.start();       
-        
+
         removeOrphanedPagesTimer = new Timer(2000,
                 new ActionListener() {
                     @Override
