@@ -115,6 +115,89 @@ produces
 : definition 2-1
 : definition 2-2
 
+=== Links and page references ===
+To link another page in the documentation, use the page's ''ID'' and the desired text of the link. For example:
+
+<pre>
+[AnotherPage]
+</pre>
+
+will create a link to the page having the ''AnotherPage'' identifier, and the link's text will be the same. To provide an alternative text, write it after the page ID:
+
+<pre>
+[AnotherPage another page]
+</pre>
+
+'''The page ID must not have spaces in it.'''
+
+Linking external sites works the same way:
+
+<pre>
+[http://www.google.com]
+</pre>
+
+or
+
+<pre>
+[http://www.google.com Google]
+</pre>
+
 === Tables ===
+It is possible to describe ''tables'' with ''MediaWiki syntax''.
+
+The following example shows a simple table with three columns and column header:
+
+<pre>
+{|
+! align="left"|Item
+! Amount
+! Cost
+|-
+|Orange
+|10
+|7.00
+|-
+|Bread
+|4
+|3.00
+|-
+|Butter
+|1
+|5.00
+|-
+!Total
+|
+|15.00
+|}
+</pre>
+
+It looks like the following:
+
+{|
+! align="left"|Item
+! Amount
+! Cost
+|-
+|Orange
+|10
+|7.00
+|-
+|Bread
+|4
+|3.00
+|-
+|Butter
+|1
+|5.00
+|-
+!Total
+|
+|15.00
+|}
+
+For more examples, check the [http://www.mediawiki.org/wiki/Help:Tables MediaWiki help].
 
 === Images ===
+Images are put similarly to page references. It is usually not required to manually write image references. See [UsingImages Using images] section for more information.
+
+For additional image parameters check the [http://www.mediawiki.org/wiki/Help:Images MediaWiki help].

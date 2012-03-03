@@ -1,3 +1,19 @@
-= Title =
+= Cloning remote repositories =
 
-Body
+When a ''remote repository'' is already set up, it is possible to '''clone it''' to be able to add modifications on a different computer.
+
+See [BasicWorkflow basic workflow] for more information.
+
+[[Image:Screen%20Shot%202012-03-03%20at%201.08.57%20PM.png]]
+
+== Clone a repository ==
+Choose the third option on the ''startup screen''. This brings up the ''Clone remote repository'' dialog:
+
+[[Image:Screen%20Shot%202012-03-03%20at%201.10.09%20PM.png]]
+
+# Fill the remote repository's URL, and optionally a user name and password. 
+# Choose a new, empty target folder where the cloned files will be placed.
+# Click ''Clone'' to perform the action. The cloned repository will be opened immediately.
+
+== Open a previously cloned repository ==
+Next time use the second option: ''Open from local directory'' to work on the cloned repository. To synchronize changes with the remote repository, refer to [UsingChangesets using changesets] and [SynchronizingChanges synchronizing changes] sections.

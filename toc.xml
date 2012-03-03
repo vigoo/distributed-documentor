@@ -2,6 +2,7 @@
 <TOC>
     <Node title="Root">
         <Node target="start" title="Introduction"/>
+        <Node target="SettingsDialog" title="Initial settings"/>
         <Node title="Writing documentation">
             <Node target="MediaWikiSyntax" title="MediaWiki syntax"/>
             <Node target="UsingImages" title="Using images"/>
@@ -10,7 +11,7 @@
         <Node title="Distributed work">
             <Node target="CloneRemoteRepo" title="Cloning remote repositories"/>
             <Node target="UsingChangesets" title="Using change sets"/>
+            <Node target="SynchronizingChanges" title="Synchronizing changes [SynchronizingChanges]"/>
         </Node>
-        <Node target="TemporaryPage" title="Untitled"/>
     </Node>
 </TOC>

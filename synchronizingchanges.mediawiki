@@ -1,0 +1,15 @@
+= Synchronizing changes =
+
+If the opened documentation was [CloneRemoteRepo cloned] from a ''remote repository'', it is possible (and desired) to keep it synchronized with the remote location and thus with the other documentation authors working on the same project.
+
+'''Note:''' Before synchronizing you have to ''commit your changes''. See [UsingChangesets using change sets] section.
+
+== Downloading changes ==
+The ''Synchronize'' menu's ''Download changes'' menu item will automatically download every change done by other users to your local ''clone''. The same remote repository URL and user name/password pair will be used which was used when [CloneRemoteRepo cloning] the documentation.
+
+'''Note:''' It may be necessary to '''merge changes''' before other user's changes could be applied. This is NOT supported in the current beta version but will be soon.
+
+== Uploading changes ==
+The ''Synchronize'' menu's ''Upload changes'' menu item uploads automatically every change set committed into the local documentation folder.
+
+'''Note:''' It may be necessary to ''download changes'' and ''merge'' before being able to upload your own changes. This is NOT supported in the current beta version but will be soon.

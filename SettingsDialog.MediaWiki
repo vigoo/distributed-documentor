@@ -1,0 +1,11 @@
+= Initial settings =
+
+On first run, the ''preferences dialog'' appears. It is possible to run it later by choosing the ''Preferences...'' item in the ''File'' menu.
+
+The dialog looks like the following:
+
+[[Image:Screen%20Shot%202012-03-03%20at%201.05.52%20PM.png]]
+
+Setting path of ''hg'' (or ''hg.exe'' on Windows) is required for the application. 
+
+Setting path of ''hhc.exe'' is optional and only possible on Windows systems. If it is ''not set'', then the CHM export will skip the last step and the help file must be compiled manually using the generated '''project.hhp''' file.
