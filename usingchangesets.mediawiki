@@ -1,3 +1,89 @@
 = Using change sets =
 
-Body
+== What is a change set? ==
+When working on a documentation with ''Distributed Documentor'', the changes made are automatically saved in every few second, so there is no need for manually saving files.
+
+When a logical set of modifications have been completed, this set of changes can be committed as a '''change set'''. This is a ''named'' set of changes (modifications, adding or removing pages, images, etc.). 
+
+[SynchronizingChanges Synchronization] with remote repositories is change set based. If the latest changes have not been committed as a change set yet, then they won't be uploaded to the remote repository.
+
+It is possible to see the ''history'' of a documentation project (the list of change sets, who committed them and when, etc.)
+
+'''Note:''' seeing the history is currently not available in the application only with external tools.
+
+== Creating change sets ==
+As soon as there are changes made to the documentation, a warning message appears on the ''toolbar'' of the application:
+
+[[Image:Screen%20Shot%202012-03-03%20at%205.42.38%20PM.png]]
+
+Press the '''Commit''' button to create a new change set!
+
+This brings up the ''Commit changes'' dialog:
+
+[[Image:Screen%20Shot%202012-03-03%20at%205.43.52%20PM.png]]
+
+Describe the change in the text field, and optionally choose which modifications to be included in this change set. 
+
+If every change was checked, after committing the changeset the ''toolbar'' message disappears and will only appear when new changes have been made.
+
+'''Note:''' It is recommended to make synchronization when there are ''no uncommitted changes!''
+
+== Reverting changes ==
+
+When something goes wrong it is possible to revert partially or fully to the last committed state. To do this, click on the '''Revert''' button on the ''uncommitted changes toolbar'':
+
+[[Image:Screen%20Shot%202012-03-03%20at%205.47.14%20PM.png]]
+
+The checked modifications will be ''undone'' and reverted to the last committed state.
+
+== Example ==
+
+The following example shows some of the first change sets committed to this documentation:
+
+<pre>
+changeset:   8:f29993047645
+tag:         tip
+user:        vigoo
+date:        Sat Mar 03 13:24:11 2012 +0100
+summary:     Documented several parts of the application
+
+changeset:   7:3df5ca4ed6cd
+user:        vigoo
+date:        Sat Feb 25 15:08:53 2012 +0100
+summary:     Debug commit
+
+changeset:   6:11efe949dd9b
+user:        vigoo
+date:        Sat Feb 25 14:56:35 2012 +0100
+summary:     Added a temporary page for testing
+
+changeset:   5:b4784d08b1c6
+user:        Daniel Vigovszky <daniel.vigovszky@gmail.com>
+date:        Sat Feb 25 14:54:49 2012 +0100
+summary:     Added a new page
+
+changeset:   4:7ace40f2c970
+user:        vigoo
+date:        Sat Feb 25 14:39:14 2012 +0100
+summary:     Fixed TOC titles
+
+changeset:   3:0a0825783124
+user:        vigoo
+date:        Sun Feb 12 15:28:11 2012 +0100
+summary:     Added a description of the image manager
+
+changeset:   2:2fcbd93c3f31
+user:        vigoo
+date:        Sun Feb 12 15:10:19 2012 +0100
+summary:     TOC hierarchy created
+
+changeset:   1:bcb3d33bbf09
+user:        vigoo
+date:        Sun Feb 12 14:45:40 2012 +0100
+summary:     Edited MediaWiki syntax description page (not completed yet)
+
+changeset:   0:7b05bb41add9
+user:        vigoo
+date:        Sun Feb 12 13:23:38 2012 +0100
+summary:     Introduction page and some references
+</pre> 
