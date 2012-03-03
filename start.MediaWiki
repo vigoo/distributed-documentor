@@ -5,6 +5,8 @@
 
 The documentation can be [ExportingDocumentation exported] any time to set of help formats at any location.
 
+Click here to get a summary of the [BasicWorkflow default workflow].
+
 == Supported markup languages ==
 The current version supports only the [MediaWikiSyntax MediaWiki] markup language.
 

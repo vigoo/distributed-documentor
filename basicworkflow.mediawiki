@@ -1,3 +1,52 @@
-= Title =
+= Workflow =
 
-Body
+This page summarizes the basic workflow of the application.
+
+== Opening a documentation ==
+The first step is to ''create'' or ''open'' a documentation, using the ''startup screen:''
+
+[[Image:Screen%20Shot%202012-03-03%20at%201.08.57%20PM.png]]
+
+# '''Create new''' asks for a new empty directory to put a documentation in. The initial documentation project will have a single page with the ''start'' identifier.
+#  '''Open from local directory''' asks for a directory which was either created with the first button or was cloned with the third button. It opens shows the current state of the documentation, including uncommitted changes.
+# '''Clone from remote repository''' is described on a [CloneRemoteRepo separate page]
+
+== Downloading remote changes ==
+When the documentation was previously cloned from a remote repository, and now opened its local directory, it is usually good to [SynchronizingChanges get the latest remote changes] before starting to create changes.
+
+== Creating content ==
+
+=== Opening and editing pages ===
+Initially the ''start'' page is opened for editing. If there are already other pages in the documentation, it is possible to open them by double-clicking their node in the ''Table of contents'' panel.
+
+Use the [MediaWikiSyntax MediaWiki syntax] when editing the page. A ''live preview'' shows what the final documentation will look like.
+
+=== Creating new pages ===
+
+[[Image:Screen%20Shot%202012-03-03%20at%206.03.03%20PM.png|right]]
+The simplest way to create new pages is to reference them on another page (using the Wiki syntax). For example, typing 
+<pre>[AnotherPage another page]</pre>
+will automatically create a page with identifier ''AnotherPage''. Every time you refer to this identifier on other pages, it will mean the same page.
+
+Doing this immediately creates a node of the new page in the ''Table of contents'' panel also. By default it is put into the special node '''Unorganized pages'''.
+
+=== Removing page references ===
+If a page is not referenced anymore in any of the other pages, '''and''' it is in the ''Unorganized pages'' tree node, then one of the following two options happen:
+* If the page was not edited since it has been created, it will be completely removed
+* If it was edited, it is moved to the ''Recycle bin'' node. 
+
+=== Organizing the TOC ===
+The ''Table of contents'' panel has the following functionalities:
+* By ''triple-clicking'' a node, its title can be edited. The exported documentation will use these titles when displaying a table of contents.
+* The '''Add''' button adds a new node to the tree. This node is not connected to a documentation page, it has categorization purposes.
+* The '''Remove''' button removes the selected node. If the node is a ''page node'' and is referenced on any of the documentation pages, it will be put to the ''Unorganized pages'' node. If it is a ''page node'' but is not referenced anywhere else, and has edited content, it is put into the ''Recycle bin'' node. Otherwise it is simply removed from the tree.
+* With the ''Up'', ''Down'', ''Left'' and ''Right'' buttons the selected node can be organized into any hierarchy.
+
+=== Using with images ===
+See [UsingImages Using images] page for details on how to add and include images into the documentation.
+
+== Committing changes ==
+After a logical set of modifications has been completed, the changes can be ''committed''. See [UsingChangesets Using changesets] page for more information.
+
+== Uploading local changes ==
+Finally, when at least one ''changeset'' has been created, it is possible to upload the changes to the ''remote repository''. For more information, check the [SynchronizingChanges Synchronizing changes] page.
