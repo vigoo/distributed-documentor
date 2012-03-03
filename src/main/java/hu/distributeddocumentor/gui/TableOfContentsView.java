@@ -190,8 +190,11 @@ public class TableOfContentsView extends javax.swing.JPanel {
         Object selection = tree.getSelectionPath() == null ? null : tree.getSelectionPath().getLastPathComponent();
         TOCNode node = selection == null ? null : (TOCNode)selection;
         
-        if (node != null)
+        if (node != null) {
             toc.moveUp(node);
+            
+            tree.setSelectionPath(new TreePath(node.toPath()));
+        }
         
     }//GEN-LAST:event_btUpActionPerformed
 
@@ -200,8 +203,11 @@ public class TableOfContentsView extends javax.swing.JPanel {
         Object selection = tree.getSelectionPath() == null ? null : tree.getSelectionPath().getLastPathComponent();
         TOCNode node = selection == null ? null : (TOCNode)selection;
         
-        if (node != null)
+        if (node != null) {
             toc.moveDown(node);
+            
+            tree.setSelectionPath(new TreePath(node.toPath()));
+        }
         
     }//GEN-LAST:event_btDownActionPerformed
 
@@ -210,8 +216,11 @@ public class TableOfContentsView extends javax.swing.JPanel {
         Object selection = tree.getSelectionPath() == null ? null : tree.getSelectionPath().getLastPathComponent();
         TOCNode node = selection == null ? null : (TOCNode)selection;
         
-        if (node != null)
+        if (node != null) {
             toc.moveLeft(node);
+            
+            tree.setSelectionPath(new TreePath(node.toPath()));
+        }
     }//GEN-LAST:event_btLeftActionPerformed
 
     private void btRightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRightActionPerformed
@@ -219,8 +228,11 @@ public class TableOfContentsView extends javax.swing.JPanel {
         Object selection = tree.getSelectionPath() == null ? null : tree.getSelectionPath().getLastPathComponent();
         TOCNode node = selection == null ? null : (TOCNode)selection;
         
-        if (node != null)
+        if (node != null) {                    
             toc.moveRight(node);
+            
+            tree.setSelectionPath(new TreePath(node.toPath()));
+        }
     }//GEN-LAST:event_btRightActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
