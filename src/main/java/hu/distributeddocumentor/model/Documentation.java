@@ -142,11 +142,12 @@ public class Documentation implements Observer {
         else
             throw new PageAlreadyExistsException();
         
-        toc.addToEnd(toc.getUnorganized(), new TOCNode(page));                
+        if (!toc.getReferencedPages().contains(id))
+            toc.addToEnd(toc.getUnorganized(), new TOCNode(page));                
         
         File pageFile = page.save(repository.getDirectory());
         
-        logger.info("Adding new file to repository: " + pageFile.getName());
+        logger.log(Level.INFO, "Adding new file to repository: {0}", pageFile.getName());
         
         AddCommand cmd = new AddCommand(repository);
         cmd.execute(pageFile);
@@ -295,10 +296,17 @@ public class Documentation implements Observer {
         // Collect all references
         Set<String> referencedPages = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         
+        // 'start' is always referenced
         referencedPages.add("start");
+        
+        // collecting pages which are referenced from other pages
         for (Page page : pages.values()) {
             referencedPages.addAll(page.getReferencedPages());
         }
+        
+        // collecting pages which are referenced in the TOC (except in the
+        // unorganized pages or recycle bin nodes)
+        referencedPages.addAll(toc.getReferencedPages());
         
         // Collect the pages which are NOT referenced
         Set<String> orphanedPages = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);

@@ -1,12 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.controller.TOCTreeModel;
+import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -16,14 +17,16 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class TableOfContentsView extends javax.swing.JPanel {
 
+    private final Documentation doc;
     private final TOC toc;
     private final PageEditorHost pageEditorHost;
     
     /**
      * Creates new form TableOfContentsView
      */
-    public TableOfContentsView(TOC toc, PageEditorHost pageEditorHost) {
-        this.toc = toc;
+    public TableOfContentsView(Documentation doc, PageEditorHost pageEditorHost) {
+        this.doc = doc;
+        toc = doc.getTOC();
         this.pageEditorHost = pageEditorHost;
         
         initComponents();      
@@ -160,7 +163,34 @@ public class TableOfContentsView extends javax.swing.JPanel {
             if (node.hasTarget()) {
                 String pageId = node.getTarget().getId();
                 pageEditorHost.openOrFocusPage(pageId);
-            }                
+            } else {
+                               
+                if (node != toc.getUnorganized() &&
+                    node != toc.getRoot() &&
+                    node != toc.getRecycleBin()) {
+                    CreateNewPageDialog dlg = new CreateNewPageDialog(pageEditorHost.getMainFrame(), true, doc);
+                    dlg.setVisible(true);
+
+                    if (dlg.getReturnStatus() == CreateNewPageDialog.RET_OK) {
+                        String newID = dlg.getID();
+                        String newLang = dlg.getMarkupLanguage();
+
+                        Page page = new Page(newID);
+                        page.setMarkupLanguage(newLang);                    
+                        node.setTarget(page);
+
+                        try {                            
+                            doc.addNewPage(page);
+                        } catch (Exception ex) {                        
+                            Logger.getLogger(TableOfContentsView.class.getName()).log(Level.SEVERE, null, ex);
+
+                            JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to add new page", JOptionPane.ERROR_MESSAGE);
+                        }
+
+                        pageEditorHost.openOrFocusPage(newID);
+                    }
+                }
+            }
         }
         
     }//GEN-LAST:event_treeMousePressed

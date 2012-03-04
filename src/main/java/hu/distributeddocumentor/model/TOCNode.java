@@ -217,8 +217,22 @@ public class TOCNode {
         
         return result;
     }
+    
+    public Collection<String> getReferencedPages() {
+        Set<String> pages = new HashSet<String>();
+        
+        if (target != null)
+            pages.add(target.getId());
+        
+        for (TOCNode child : children) {
+            pages.addAll(child.getReferencedPages());
+        }
+        
+        return pages;
+    }
 
-    void clearChildren() {
+
+    public void clearChildren() {
         children.clear();
     }
 }

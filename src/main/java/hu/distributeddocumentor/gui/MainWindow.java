@@ -7,6 +7,7 @@ import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.BorderLayout;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,7 +53,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 
         ToolWindow twTOC = toolWindowManager.registerToolWindow(
                 "TOC", "Table of contents", null, 
-                new TableOfContentsView(doc.getTOC(), this), 
+                new TableOfContentsView(doc, this), 
                 ToolWindowAnchor.LEFT);
                 
         twTOC.setType(ToolWindowType.DOCKED);
@@ -520,5 +521,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         // 2. Image panel is updated automatically through the observable pattern
         // 3. TOC tree is updated automatically through the tree model listeners
         
+    }
+
+    @Override
+    public Frame getMainFrame() {
+        return this;
     }
 }

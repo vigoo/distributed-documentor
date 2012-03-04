@@ -3,8 +3,7 @@ package hu.distributeddocumentor.model;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
@@ -339,5 +338,19 @@ public class TOC {
         root.addToEnd(recycleBin);
         
         modified = false;
+    }
+
+    public Collection<String> getReferencedPages() {
+        Set<String> pages = new HashSet<String>();
+        
+        for (TOCNode child : root.getChildren()) {
+            if (child != unorganized &&
+                child != recycleBin) {
+                
+                pages.addAll(child.getReferencedPages());
+            }
+        }
+        
+        return pages;
     }
 }
