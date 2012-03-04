@@ -1,0 +1,203 @@
+= MediaWiki markup language =
+
+== Text formatting markup ==
+
+=== Paragraphs, sections ===
+
+Normal text directly appears in the output. To start a new paragraph,
+leave a blank line between the two text segments:
+
+<pre>
+First paragraph, 
+can have multiple lines.
+
+The second paragraph
+</pre>
+
+Sections can be created by surrounding titles with = characters,
+and putting them in separate lines. The section's level depends
+on the number of = characters. The following example shows
+how to create multiple, nested sections:
+
+<pre>
+= Section 1 =
+
+== Section 1.1 ==
+
+== Section 1.2 ==
+
+=== Section 1.2.1 ===
+
+==== Section 1.2.1.1 ====
+
+==== Section 1.2.1.2 ====
+
+=== Section 1.2.2 ===
+
+= Section 2 =
+
+...
+</pre>
+
+----
+
+It is possible to put a horizontal line with the following syntax:
+<pre>----</pre>
+
+=== Simple text formatting ===
+
+Use the following syntax for formatting the text:
+ 
+* ''Italic text'': &apos;&apos;italic text&apos;&apos;
+* '''Bold text''': &apos;&apos;&apos;bold text&apos;&apos;&apos;
+* '''''Bold italic text''''': &apos;&apos;&apos;&apos;&apos;bold italic text&apos;&apos;&apos;&apos;&apos;
+
+=== Links ===
+
+=== Lists ===
+
+''Bullet lists'' can be written by putting one ore more asterix (*) at
+the beginning of a line. Multiple asterisks means ''nesting'':
+
+<pre>
+* First item
+** A sub item
+** Other sub item
+*** One more deeper
+* Second item
+* ...
+</pre>
+
+produces the following output:
+
+* First item
+** A sub item
+** Other sub item
+*** One more deeper
+* Second item
+* ...
+
+Similarly, using the hash character (#) creates ''numbered lists'':
+
+<pre>
+# First item
+## A sub item
+## Other sub item
+### One more deeper
+# Second item
+# ...
+</pre>
+
+will give the following output:
+
+# First item
+## A sub item
+## Other sub item
+### One more deeper
+# Second item
+# ...
+
+It is possible to create ''definition lists'':
+
+<pre>
+;item 1
+: definition 1
+;item 2
+: definition 2-1
+: definition 2-2
+</pre>
+
+produces
+
+;item 1
+: definition 1
+;item 2
+: definition 2-1
+: definition 2-2
+
+=== Links and page references ===
+To link another page in the documentation, use the page's ''ID'' and the desired text of the link. For example:
+
+<pre>
+[AnotherPage]
+</pre>
+
+will create a link to the page having the ''AnotherPage'' identifier, and the link's text will be the same. To provide an alternative text, write it after the page ID:
+
+<pre>
+[AnotherPage another page]
+</pre>
+
+'''The page ID must not have spaces in it.'''
+
+Linking external sites works the same way:
+
+<pre>
+[http://www.google.com]
+</pre>
+
+or
+
+<pre>
+[http://www.google.com Google]
+</pre>
+
+=== Tables ===
+It is possible to describe ''tables'' with ''MediaWiki syntax''.
+
+The following example shows a simple table with three columns and column header:
+
+<pre>
+{|
+! align="left"|Item
+! Amount
+! Cost
+|-
+|Orange
+|10
+|7.00
+|-
+|Bread
+|4
+|3.00
+|-
+|Butter
+|1
+|5.00
+|-
+!Total
+|
+|15.00
+|}
+</pre>
+
+It looks like the following:
+
+{|
+! align="left"|Item
+! Amount
+! Cost
+|-
+|Orange
+|10
+|7.00
+|-
+|Bread
+|4
+|3.00
+|-
+|Butter
+|1
+|5.00
+|-
+!Total
+|
+|15.00
+|}
+
+For more examples, check the [http://www.mediawiki.org/wiki/Help:Tables MediaWiki help].
+
+=== Images ===
+Images are put similarly to page references. It is usually not required to manually write image references. See [UsingImages Using images] section for more information.
+
+For additional image parameters check the [http://www.mediawiki.org/wiki/Help:Images MediaWiki help].

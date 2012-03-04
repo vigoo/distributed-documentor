@@ -1,0 +1,17 @@
+= Exporting documentation =
+
+The documentation can be exported any time to either ''HTML'' or ''CHM'' format. 
+
+'''Note:''' Compiling CHM files requires the ''Microsoft HTML Help Workshop'' which only runs on ''Windows'' systems!
+
+== Export to CHM ==
+# Select the ''File'' menu, choose the ''Export...'' submenu and ''Export to CHM'' menu item. 
+# Choose a '''target folder''' for the export. It will create many files for the CHM compiler.
+# The output will be called '''project.chm''' in the target folder.
+
+'''Note:''' It is OK to export over a previous export's results. The files will be overwritten. For the first time it is recommended to use an empty directory.
+
+== Export to HTML ==
+The process is the same as with ''CHM'' files. The generated files in this case are all part of the static web site, with the entry point '''index.html'''. 
+
+The generated web site will have a ''table of contents'' frame on its left, with a CHM-like JavaScript tree.

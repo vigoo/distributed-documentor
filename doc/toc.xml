@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<TOC>
+    <Node title="Root">
+        <Node target="start" title="Introduction"/>
+        <Node target="SettingsDialog" title="Initial settings"/>
+        <Node target="BasicWorkflow" title="Basic workflow"/>
+        <Node title="Writing documentation">
+            <Node target="MediaWikiSyntax" title="MediaWiki syntax"/>
+            <Node target="UsingImages" title="Using images"/>
+            <Node target="ExportingDocumentation" title="Exporting documentation"/>
+        </Node>
+        <Node title="Distributed work">
+            <Node target="CloneRemoteRepo" title="Cloning remote repositories"/>
+            <Node target="UsingChangesets" title="Using change sets"/>
+            <Node target="SynchronizingChanges" title="Synchronizing changes [SynchronizingChanges]"/>
+        </Node>
+    </Node>
+</TOC>

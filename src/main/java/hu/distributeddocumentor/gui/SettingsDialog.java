@@ -3,9 +3,7 @@ package hu.distributeddocumentor.gui;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -36,8 +34,19 @@ public class SettingsDialog extends javax.swing.JDialog {
         
         this.prefs = prefs;
         
-        tbHGPath.setText(prefs.getMercurialPath());
-        tbHHCPath.setText(prefs.getCHMCompilerPath());
+        String initialHgPath = prefs.getMercurialPath();
+        String initialHhcPath = prefs.getCHMCompilerPath();
+        
+        if (initialHgPath == null ||
+            initialHgPath.length() == 0)
+            initialHgPath = guessInitialHgPath();
+        
+        if (initialHhcPath == null ||
+            initialHhcPath.length() == 0)
+            initialHhcPath = guessInitialHhcPath();
+        
+        tbHGPath.setText(initialHgPath);
+        tbHHCPath.setText(initialHhcPath);                
         
         updateButtonStates();        
         
@@ -415,5 +424,29 @@ public class SettingsDialog extends javax.swing.JDialog {
         }
         
         okButton.setEnabled(valid);
+    }
+    
+    private String guessInitialHgPath() {
+        
+        File hg;
+        if (prefs.isWindows()) {
+            hg = new File("C:/Program Files/Mercurial/hg.exe"); // TODO: what is the real path? + use environment variables
+            if (hg.exists() && hg.canExecute())
+                return hg.getAbsolutePath();
+        } else {
+            hg = new File("/usr/bin/hg");
+            if (hg.exists() && hg.canExecute())
+                return hg.getAbsolutePath();
+            
+            hg = new File("/usr/local/bin/hg");
+            if (hg.exists() && hg.canExecute())
+                return hg.getAbsolutePath();
+        }
+        
+        return "";
+    }
+    
+    private String guessInitialHhcPath() {
+        return "";
     }
 }
