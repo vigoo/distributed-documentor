@@ -84,13 +84,16 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         
         try {
             out.println("var TREE_ITEMS = [");
-            
+                        
             for (TOCNode node : toc.getRoot().getChildren()) {
-                if (node != toc.getRecycleBin()) {
-                    exportTOCNode(node, out, 6, node == toc.getUnorganized());
+                if (node != toc.getRecycleBin() &&
+                    ((node != toc.getUnorganized()) ||
+                     (node == toc.getUnorganized() && node.getChildren().size() > 0))) {
+                    exportTOCNode(node, out, 6, node == toc.getRoot().getChildren().get(0));
                 }
             }
             
+            out.println();
             out.println("];");
         }
         finally {
@@ -98,10 +101,15 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         }
     }
 
-    private void exportTOCNode(TOCNode node, PrintWriter out, int indent, boolean isLast) {
+    private void exportTOCNode(TOCNode node, PrintWriter out, int indent, boolean isFirst) {
         String i = "";
         for (int j = 0; j < indent; j++)
             i += " ";
+        
+        if (isFirst)
+            out.println();
+        else
+            out.println(",");
 
         out.print(i+"['"+node.getTitle()+"'");
         if (node.hasTarget()) {            
@@ -117,15 +125,13 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
             for (int j = 0; j < node.getChildren().size(); j++) {
                 
                 TOCNode child = node.getChildren().get(j);
-                exportTOCNode(child, out, indent + 4, j == (node.getChildren().size()-1));
+                exportTOCNode(child, out, indent + 4, j == 0);
             }
             
+            out.println();
             out.print(i);
         }
-         
-        if (isLast)
-            out.println("]");
-        else
-            out.println("],");
+                
+        out.print("]");     
     }
 }
