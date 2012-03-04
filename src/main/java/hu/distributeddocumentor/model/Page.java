@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
+import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder;
 import org.eclipse.mylyn.wikitext.core.parser.markup.MarkupLanguage;
 import org.eclipse.mylyn.wikitext.core.util.ServiceLocator;
 
@@ -132,11 +133,35 @@ public class Page extends Observable {
     }
     
     public String asHTML() {
+        
+        return asHTML(false);
+    }
+    
+    public String asHTMLembeddingCSS() {
+        
+        return asHTML(true);
+    }
+    
+    
+    private String asHTML(boolean embedCSS) {
        if (!isParserInitialized)
            initializeParser();
        
        StringWriter writer = new StringWriter();
-       parser = new MarkupParser(language, new LinkFixingBuilder(writer));             
+       
+       HtmlDocumentBuilder builder = new LinkFixingBuilder(writer);
+       
+       HtmlDocumentBuilder.Stylesheet stylesheet;
+       if (embedCSS) {
+           stylesheet = new HtmlDocumentBuilder.Stylesheet(
+                   new InputStreamReader(
+                    getClass().getResourceAsStream("/documentation.css")));
+       } else {
+           stylesheet = new HtmlDocumentBuilder.Stylesheet("documentation.css");
+       }
+       builder.addCssStylesheet(stylesheet);
+       
+       parser = new MarkupParser(language, builder);             
 
        parser.parse(markup);
        return writer.toString();

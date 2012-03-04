@@ -1,0 +1,20 @@
+body 
+{
+	font-family: Calibri, Verdana, Arial, Helvetica, sans-serif;	
+}
+
+p
+{
+	text-align: justify;	
+}
+
+a:link, a:visited, a:active
+{	
+	color: blue;
+	text-decoration: none;
+}
+
+a:hover
+{
+	color: red;
+}

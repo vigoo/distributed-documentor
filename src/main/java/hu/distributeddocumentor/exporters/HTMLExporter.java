@@ -52,6 +52,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         createTreeItemsJS(new File(targetDir, "tree_items.js"), toc);
         
         // Extracting static files (icons, scripts, etc)
+        extract(getClass().getResourceAsStream("/documentation.css"), "documentation.css", targetDir);
         extract(getClass().getResourceAsStream("/tree/tree.html"), "tree.html", targetDir);
         extract(getClass().getResourceAsStream("/tree/index.html"), "index.html", targetDir);
         
@@ -75,7 +76,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         extract(getClass().getResourceAsStream("/tree/icons/joinbottom.gif"), "joinbottom.gif", iconsDir);
         extract(getClass().getResourceAsStream("/tree/icons/line.gif"), "line.gif", iconsDir);
         extract(getClass().getResourceAsStream("/tree/icons/minusbottom.gif"), "minusbottom.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/plusbottom.gif"), "plusbottom.gif", iconsDir);
+        extract(getClass().getResourceAsStream("/tree/icons/plusbottom.gif"), "plusbottom.gif", iconsDir);        
     }
 
     private void createTreeItemsJS(File file, TOC toc) throws FileNotFoundException {

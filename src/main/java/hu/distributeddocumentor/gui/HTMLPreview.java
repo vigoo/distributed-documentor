@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -85,7 +86,7 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer {
     private void renderPage() {
         try {            
             // Getting the HTML representation of the page
-            String html = page.asHTML();
+            String html = page.asHTMLembeddingCSS();
 
             // Parsing the page     
             DOMSource domSoure = new DOMSource(new ByteArrayInputStream(html.getBytes("UTF-8")));
@@ -95,7 +96,7 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer {
             DOMAnalyzer da = new DOMAnalyzer(doc);
             da.attributesToStyles();
             da.addStyleSheet(null, CSSNorm.stdStyleSheet());
-            da.addStyleSheet(null, CSSNorm.userStyleSheet());
+            da.addStyleSheet(null, CSSNorm.userStyleSheet());                                    
             da.getStyleSheets();
            // da.printTagTree(System.out);
             

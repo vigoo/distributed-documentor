@@ -35,6 +35,10 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         if (!targetDir.exists())
             targetDir.mkdirs();
         
+        // Exporting the CSS file
+        extract(getClass().getResourceAsStream("/documentation.css"), "documentation.css", targetDir);
+        contentFiles.add("documentation.css");
+        
         // Exporting the pages
         TOC toc = doc.getTOC();
         for (TOCNode node : toc.getRoot().getChildren()) {
