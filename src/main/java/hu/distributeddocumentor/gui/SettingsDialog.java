@@ -430,9 +430,14 @@ public class SettingsDialog extends javax.swing.JDialog {
         
         File hg;
         if (prefs.isWindows()) {
-            hg = new File("C:/Program Files/Mercurial/hg.exe"); // TODO: what is the real path? + use environment variables
+            hg = new File("C:/Program Files/TortoiseHg/hg.exe"); // TODO: use environment variables
             if (hg.exists() && hg.canExecute())
                 return hg.getAbsolutePath();
+            else {
+                hg = new File("C:/Program Files (x86)/TortoiseHg/hg.exe"); 
+                if (hg.exists() && hg.canExecute())
+                    return hg.getAbsolutePath();   
+            }                    
         } else {
             hg = new File("/usr/bin/hg");
             if (hg.exists() && hg.canExecute())
