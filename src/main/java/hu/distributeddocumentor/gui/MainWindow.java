@@ -88,42 +88,44 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
             setVisible(true);        
             loadLayout();
-                    } 
-        else {
+
+            saveTimer = new Timer(1000, 
+                    new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            onSaveTimerTick();
+                        }                    
+                    });  
+            saveTimer.setInitialDelay(5000);
+            saveTimer.start();
+
+            statusCheckTimer = new Timer(3000,
+                    new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            onStatusCheckTimerTick();
+                        }
+                    });
+            statusCheckTimer.setInitialDelay(0);
+            statusCheckTimer.start();       
+
+            removeOrphanedPagesTimer = new Timer(2000,
+                    new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            onRemoveOrphanedPagesTimerTick();
+                        }
+                    });
+            removeOrphanedPagesTimer.setInitialDelay(0);
+            removeOrphanedPagesTimer.start();
+        } else {
+            saveTimer = null;
+            statusCheckTimer = null;
+            removeOrphanedPagesTimer = null;
+            
             System.exit(0);
         }
-
-
-        saveTimer = new Timer(1000, 
-                new ActionListener() {
-
-                    @Override
-                    public void actionPerformed(ActionEvent ae) {
-                        onSaveTimerTick();
-                    }                    
-                });  
-        saveTimer.setInitialDelay(5000);
-        saveTimer.start();
-
-        statusCheckTimer = new Timer(3000,
-                new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent ae) {
-                        onStatusCheckTimerTick();
-                    }
-                });
-        statusCheckTimer.setInitialDelay(0);
-        statusCheckTimer.start();       
-
-        removeOrphanedPagesTimer = new Timer(2000,
-                new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent ae) {
-                        onRemoveOrphanedPagesTimerTick();
-                    }
-                });
-        removeOrphanedPagesTimer.setInitialDelay(0);
-        removeOrphanedPagesTimer.start();
     }
 
     /**

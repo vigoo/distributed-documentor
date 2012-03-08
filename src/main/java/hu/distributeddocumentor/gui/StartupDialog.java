@@ -108,7 +108,7 @@ public class StartupDialog extends javax.swing.JDialog {
                 jButton1ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 0, 20, 20));
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 0, 40, 20));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/splashscreen.png"))); // NOI18N
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
