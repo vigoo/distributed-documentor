@@ -6,6 +6,7 @@ package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.model.Page;
 import java.io.File;
+import javax.swing.undo.UndoManager;
 
 /**
  *
@@ -13,14 +14,20 @@ import java.io.File;
  */
 public class SplittedPageView extends javax.swing.JPanel {
 
+    private final WikiMarkupEditor editor;
+    private final HTMLPreview preview;
+    
     /**
      * Creates new form SplittedPageView
      */
-    public SplittedPageView(Page page, File root) {
+    public SplittedPageView(Page page, File root, PageEditorHost host) {
         initComponents();
         
-        jSplitPane1.setLeftComponent(new WikiMarkupEditor(page));
-        jSplitPane1.setRightComponent(new HTMLPreview(page, root));
+        editor = new WikiMarkupEditor(page, host);
+        preview = new HTMLPreview(page, root);
+        
+        jSplitPane1.setLeftComponent(editor);
+        jSplitPane1.setRightComponent(preview);
         
         jSplitPane1.setDividerLocation(0.5);
     }
@@ -53,4 +60,8 @@ public class SplittedPageView extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSplitPane jSplitPane1;
     // End of variables declaration//GEN-END:variables
+
+    public UndoManager getEditorUndoManager() {
+        return editor.getUndoManager();
+    }
 }

@@ -6,24 +6,25 @@ import hu.distributeddocumentor.exporters.HTMLExporter;
 import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
-import java.awt.BorderLayout;
-import java.awt.Frame;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.Timer;
-import javax.swing.UIManager;
+import java.net.URI;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
+import javax.swing.undo.UndoManager;
 import org.noos.xing.mydoggy.*;
+import org.noos.xing.mydoggy.event.ContentManagerEvent;
 import org.noos.xing.mydoggy.plaf.MyDoggyToolWindowManager;
 import org.noos.xing.mydoggy.plaf.ui.content.MyDoggyTabbedContentManagerUI;
 
-public final class MainWindow extends javax.swing.JFrame implements PageEditorHost {
+public final class MainWindow extends javax.swing.JFrame implements PageEditorHost, ContentManagerListener {
 
     private final DocumentorPreferences prefs;
     private final Documentation doc;
@@ -31,6 +32,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private final Timer saveTimer;
     private final Timer statusCheckTimer;
     private final Timer removeOrphanedPagesTimer;
+    private UndoManager currentUndoManager;
     
     /**
      * Creates new form MainWindow
@@ -48,6 +50,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         contentManager.setContentManagerUI(contentManagerUI);
         
         contentManagerUI.setShowAlwaysTab(true);        
+        contentManager.addContentManagerListener(this);
        
         add(toolWindowManager, BorderLayout.CENTER);
                 
@@ -146,9 +149,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         exportToHTMLMenuItem = new javax.swing.JMenuItem();
         preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
+        editMenu = new javax.swing.JMenu();
+        undoMenuItem = new javax.swing.JMenuItem();
+        redoMenuItem = new javax.swing.JMenuItem();
         synchronizeMenu = new javax.swing.JMenu();
         pullMenuItem = new javax.swing.JMenuItem();
         pushMenuItem = new javax.swing.JMenuItem();
+        helpMenu = new javax.swing.JMenu();
+        userManualItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Distributed Documentor");
@@ -239,6 +247,28 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
         menuBar.add(fileMenu);
 
+        editMenu.setText("Edit");
+
+        undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        undoMenuItem.setText("Undo");
+        undoMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                undoMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(undoMenuItem);
+
+        redoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        redoMenuItem.setText("Redo");
+        redoMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                redoMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(redoMenuItem);
+
+        menuBar.add(editMenu);
+
         synchronizeMenu.setText("Synchronize");
 
         pullMenuItem.setText("Download changes");
@@ -258,6 +288,18 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         synchronizeMenu.add(pushMenuItem);
 
         menuBar.add(synchronizeMenu);
+
+        helpMenu.setText("Help");
+
+        userManualItem.setText("Online user manual...");
+        userManualItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                userManualItemActionPerformed(evt);
+            }
+        });
+        helpMenu.add(userManualItem);
+
+        menuBar.add(helpMenu);
 
         setJMenuBar(menuBar);
 
@@ -371,6 +413,31 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
     }//GEN-LAST:event_pushMenuItemActionPerformed
 
+    private void userManualItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userManualItemActionPerformed
+       
+        try {
+            Desktop.getDesktop().browse(new URI("http://freezingmoon.dyndns.org/"));
+        } catch (Exception ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }                    
+    }//GEN-LAST:event_userManualItemActionPerformed
+
+    private void undoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoMenuItemActionPerformed
+        
+        if (currentUndoManager != null) {
+            currentUndoManager.undo();
+            updateUndoRedoItems();
+        }
+    }//GEN-LAST:event_undoMenuItemActionPerformed
+
+    private void redoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redoMenuItemActionPerformed
+        
+        if (currentUndoManager != null) {
+            currentUndoManager.redo();
+            updateUndoRedoItems();
+        }
+    }//GEN-LAST:event_redoMenuItemActionPerformed
+
     private void showPreferencesIfNecessary() {
         
         if (!prefs.hasValidMercurialPath()) {
@@ -448,12 +515,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCommit;
     private javax.swing.JButton btRevert;
+    private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu exportMenu;
     private javax.swing.JMenuItem exportToCHMMenuItem;
     private javax.swing.JMenuItem exportToHTMLMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.Box.Filler filler1;
+    private javax.swing.JMenu helpMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel labelRoot;
     private javax.swing.JLabel labelUncommitted;
@@ -461,8 +530,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JMenuItem preferencesMenuItem;
     private javax.swing.JMenuItem pullMenuItem;
     private javax.swing.JMenuItem pushMenuItem;
+    private javax.swing.JMenuItem redoMenuItem;
     private javax.swing.JMenu synchronizeMenu;
     private javax.swing.JToolBar toolBar;
+    private javax.swing.JMenuItem undoMenuItem;
+    private javax.swing.JMenuItem userManualItem;
     // End of variables declaration//GEN-END:variables
 
 
@@ -477,7 +549,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 id,
                 "Page: " + id,
                 null,
-                new SplittedPageView(doc.getPage(id), new File(doc.getRepositoryRoot())));   
+                new SplittedPageView(doc.getPage(id), new File(doc.getRepositoryRoot()), this));   
         }
          
         content.setSelected(true);        
@@ -526,5 +598,38 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     @Override
     public Frame getMainFrame() {
         return this;
+    }
+
+    @Override
+    public void contentAdded(ContentManagerEvent cme) {
+    }
+
+    @Override
+    public void contentRemoved(ContentManagerEvent cme) {
+    }
+
+    @Override
+    public void contentSelected(ContentManagerEvent cme) {
+        
+        Component comp = cme.getContent().getComponent();;
+        if (comp instanceof SplittedPageView) {
+            SplittedPageView view = (SplittedPageView)comp;
+            
+            currentUndoManager = view.getEditorUndoManager();            
+        } else {
+            currentUndoManager = null;
+        }        
+        
+        updateUndoRedoItems();
+    }
+    
+    @Override
+    public void updateUndoRedoItems() {
+        
+        boolean canUndo = currentUndoManager != null && currentUndoManager.canUndo();
+        boolean canRedo = currentUndoManager != null && currentUndoManager.canRedo();
+        
+        undoMenuItem.setEnabled(canUndo);
+        redoMenuItem.setEnabled(canRedo);
     }
 }
