@@ -27,6 +27,7 @@ public class Documentation implements Observer {
     private final Map<String, Page> pages;    
     private Images images;
     
+    private String relativeRoot;
     private Repository repository;
     private final DocumentorPreferences prefs;
 
@@ -44,7 +45,9 @@ public class Documentation implements Observer {
     public void initAsNew(File repositoryRoot) throws IOException {
                 
         repository = Repository.create(createRepositoryConfiguration(), repositoryRoot);
-        images = new Images(repository);
+        relativeRoot = "";
+        
+        images = new Images(repository, relativeRoot);
         
         Page first = new Page("start");
         
@@ -76,16 +79,24 @@ public class Documentation implements Observer {
     
     public void initFromExisting(File repositoryRoot) throws SAXException, IOException, ParserConfigurationException {
         
-        repository = Repository.open(createRepositoryConfiguration(), repositoryRoot);
-        images = new Images(repository);
+        File realRepositoryRoot = findRealRepositoryRoot(repositoryRoot);
+        relativeRoot = realRepositoryRoot.toURI().relativize(repositoryRoot.toURI()).getPath();
+        
+        logger.log(Level.INFO, "Specified root: {0}", repositoryRoot.toString());
+        logger.log(Level.INFO, "Real root:      {0}", realRepositoryRoot.toString());
+        logger.log(Level.INFO, "Relative root:  {0}", relativeRoot);
+        
+        repository = Repository.open(createRepositoryConfiguration(), realRepositoryRoot);
+        images = new Images(repository, relativeRoot);
         
         loadRepository();
     }
     
     public void cloneFromRemote(File localRepositoryRoot, String remoteRepo, String userName, String password) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException {
                 
+        relativeRoot = "";
         repository = Repository.clone(createRepositoryConfiguration(), localRepositoryRoot, RepositoryUriGenerator.addCredentials(remoteRepo, userName, password));
-        images = new Images(repository);
+        images = new Images(repository, relativeRoot);
         
         loadRepository();
     }
@@ -98,9 +109,13 @@ public class Documentation implements Observer {
         return conf;
     }
     
+    private File getDocumentationDirectory() {
+        return new File(repository.getDirectory(), relativeRoot);
+    }
+    
     private void loadRepository() throws FileNotFoundException, IOException, SAXException, ParserConfigurationException {
 
-        for (File child : repository.getDirectory().listFiles(
+        for (File child : getDocumentationDirectory().listFiles(
                 new FileFilter() {
                     @Override
                     public boolean accept(File file) {
@@ -114,7 +129,7 @@ public class Documentation implements Observer {
             registerPage(page);
         }
         
-        toc.load(repository.getDirectory(), this);
+        toc.load(getDocumentationDirectory(), this);
         
         // Adding unreferenced pages to the unorganized node
         for (Page page : pages.values()) {
@@ -145,7 +160,7 @@ public class Documentation implements Observer {
         if (!toc.getReferencedPages().contains(id))
             toc.addToEnd(toc.getUnorganized(), new TOCNode(page));                
         
-        File pageFile = page.save(repository.getDirectory());
+        File pageFile = page.save(getDocumentationDirectory());
         
         logger.log(Level.INFO, "Adding new file to repository: {0}", pageFile.getName());
         
@@ -169,7 +184,7 @@ public class Documentation implements Observer {
     
     public void saveAll() throws CouldNotSaveDocumentationException {
         
-        File root = repository.getDirectory();
+        File root = getDocumentationDirectory();
         
         try {
             for (Page page : pages.values()) {
@@ -247,7 +262,7 @@ public class Documentation implements Observer {
     }    
 
     public String getRepositoryRoot() {
-        return repository.getDirectory().getAbsolutePath();
+        return getDocumentationDirectory().getAbsolutePath();
     }
 
     @Override
@@ -315,7 +330,7 @@ public class Documentation implements Observer {
         
         for (String pageId : orphanedPages) {
             
-            logger.info("Found orphaned page: " + pageId);
+            logger.log(Level.INFO, "Found orphaned page: {0}", pageId);
             
             Page page = pages.get(pageId);
             
@@ -355,6 +370,31 @@ public class Documentation implements Observer {
     public List<Changeset> push() throws IOException {
         PushCommand cmd = new PushCommand(repository);
         return cmd.execute();
+    }
+
+    private File findRealRepositoryRoot(File repositoryRoot) {
+        boolean found = false;
+        
+        if (repositoryRoot.isDirectory()) {
+            
+            File hgdir = new File(repositoryRoot, ".hg");
+            if (hgdir.exists() &&
+                hgdir.isDirectory())
+                found = true;
+        }            
+        
+        if (found) {
+            return repositoryRoot;
+        }
+        else {
+            File parent = repositoryRoot.getParentFile();
+            if (parent != null) {
+                return findRealRepositoryRoot(parent);
+            }
+            else {
+                return null;
+            }
+        }
     }
 
 }

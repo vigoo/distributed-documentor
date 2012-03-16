@@ -16,10 +16,10 @@ public class Images extends Observable {
     private final File mediaDir;
     private final Set<String> images;
 
-    public Images(Repository repository) {
+    public Images(Repository repository, String relativeRoot) {
         this.repository = repository;
         
-        File root = repository.getDirectory();
+        File root = new File(repository.getDirectory(), relativeRoot);
         mediaDir = new File(root, "media");
         
         images = new HashSet<String>();

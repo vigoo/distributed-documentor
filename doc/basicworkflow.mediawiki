@@ -30,6 +30,8 @@ will automatically create a page with identifier ''AnotherPage''. Every time you
 
 Doing this immediately creates a node of the new page in the ''Table of contents'' panel also. By default it is put into the special node '''Unorganized pages'''.
 
+Another possibility is to add a new node to the TOC, and then connect it to a documentation file. This is described in the '''Organizing the TOC''' section below.
+
 === Removing page references ===
 If a page is not referenced anymore in any of the other pages, '''and''' it is in the ''Unorganized pages'' tree node, then one of the following two options happen:
 * If the page was not edited since it has been created, it will be completely removed
@@ -41,6 +43,9 @@ The ''Table of contents'' panel has the following functionalities:
 * The '''Add''' button adds a new node to the tree. This node is not connected to a documentation page, it has categorization purposes.
 * The '''Remove''' button removes the selected node. If the node is a ''page node'' and is referenced on any of the documentation pages, it will be put to the ''Unorganized pages'' node. If it is a ''page node'' but is not referenced anywhere else, and has edited content, it is put into the ''Recycle bin'' node. Otherwise it is simply removed from the tree.
 * With the ''Up'', ''Down'', ''Left'' and ''Right'' buttons the selected node can be organized into any hierarchy.
+* Double clicking a node which does not have a documentation page connected to it yet brings up the ''Create new page'' dialog:
+[[Image:Screen%20Shot%202012-03-16%20at%2012.27.41%20PM.png]]
+
 
 === Using with images ===
 See [UsingImages Using images] page for details on how to add and include images into the documentation.
