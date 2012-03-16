@@ -1,9 +1,11 @@
 
 package hu.distributeddocumentor.gui;
 
+import com.jidesoft.swing.FolderChooser;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
-import javax.swing.JFileChooser;
+import java.util.List;
 import javax.swing.JOptionPane;
 
 /**
@@ -12,13 +14,14 @@ import javax.swing.JOptionPane;
  */
 public class StartupDialog extends javax.swing.JDialog {
     
-    public enum Action {
+        public enum Action {
         Cancel,
         CreateNew,
         OpenLocal,
         OpenRemote,        
     }
     
+    private final DocumentorPreferences prefs;
     private Action finalAction = Action.Cancel;
     private File repositoryRoot;
     private String remoteRepo;
@@ -33,10 +36,11 @@ public class StartupDialog extends javax.swing.JDialog {
     /**
      * Creates new form StartupDialog
      */
-    public StartupDialog(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+    public StartupDialog(java.awt.Frame parent, DocumentorPreferences prefs) {        
+        super(parent, true);
         initComponents();
         
+        this.prefs = prefs;
         setLocationRelativeTo(parent);
     }
 
@@ -124,40 +128,42 @@ public class StartupDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_closeDialog
 
     private void btnOpenLocalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenLocalActionPerformed
-
-        finalAction = Action.OpenLocal;
         
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle("Select the root directory");
-        chooser.setAcceptAllFileFilterUsed(false);
-                
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            repositoryRoot = chooser.getSelectedFile();
-            
-            doClose();
-        }                  
+        browseForFolderAndClose("Select the root directory", Action.OpenLocal);
+              
     }//GEN-LAST:event_btnOpenLocalActionPerformed
 
-    private void btnCreateNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateNewActionPerformed
+    private void browseForFolderAndClose(String title, Action action) {
+        FolderChooser chooser = new FolderChooser();
+        chooser.setDialogTitle(title);
         
-        finalAction = Action.CreateNew;
-        
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle("Select the root directory");
-        chooser.setAcceptAllFileFilterUsed(false);
+        List<String> recent = prefs.getRecentRepositories();
+        chooser.setRecentList(recent);
+        chooser.setRecentListVisible(true);
                 
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            repositoryRoot = chooser.getSelectedFile();
+        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
+            finalAction = Action.OpenLocal;
+            repositoryRoot = chooser.getSelectedFolder();
+            
+            if (!recent.contains(repositoryRoot.getAbsolutePath())) {               
+                recent.add(repositoryRoot.getAbsolutePath());
+                prefs.setRecentRepositories(recent);
+            }
             
             doClose();
-        }                        
+        } else {
+            finalAction = Action.Cancel;
+        }
+    }
+    
+    private void btnCreateNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateNewActionPerformed
+        
+        browseForFolderAndClose("Select the root directory", Action.CreateNew);                       
     }//GEN-LAST:event_btnCreateNewActionPerformed
 
     private void btnOpenRemoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenRemoteActionPerformed
         
-        CloneDialog dlg = new CloneDialog(null, true);
+        CloneDialog dlg = new CloneDialog(null, prefs);
         dlg.setVisible(true);
         
         if (dlg.getReturnStatus() == CloneDialog.RET_OK) {
@@ -170,7 +176,9 @@ public class StartupDialog extends javax.swing.JDialog {
             repositoryRoot = new File(dlg.getTarget());
             
             doClose();
-        }                
+        } else {
+            finalAction = Action.Cancel;
+        }
     }//GEN-LAST:event_btnOpenRemoteActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed

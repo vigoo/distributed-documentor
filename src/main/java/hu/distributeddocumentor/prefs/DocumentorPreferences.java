@@ -1,10 +1,16 @@
 package hu.distributeddocumentor.prefs;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 public class DocumentorPreferences {
 
+    private static final Logger logger = Logger.getLogger(DocumentorPreferences.class.getName());
     private final Preferences prefs;
     
     public DocumentorPreferences() {
@@ -26,6 +32,45 @@ public class DocumentorPreferences {
     
     public void setCHMCompilerPath(String path) {
         prefs.put("hhcpath", path);
+    }
+    
+    public List<String> getRecentRepositories() {        
+        
+        try {
+            List<String> result = new LinkedList<String>();
+            Preferences reposNode = prefs.node("recentRepositories");
+
+            for (String key : reposNode.keys()) {
+                String item = reposNode.get(key, null);
+                if (item != null)
+                    result.add(item);
+            }
+
+            return result;
+        }
+        catch (BackingStoreException ex) {
+            logger.log(Level.SEVERE, ex.getMessage());
+            return new LinkedList<String>();
+        }
+    }
+    
+    public void setRecentRepositories(List<String> list) {
+        
+        try {
+            Preferences reposNode = prefs.node("recentRepositories");
+
+            for (String key : reposNode.keys())
+                reposNode.remove(key);
+            
+            for (int i = 0; i < list.size(); i++) {
+                reposNode.put(Integer.toString(i), list.get(i));
+            }
+            
+            prefs.flush();
+        }
+        catch (BackingStoreException ex) {
+            logger.log(Level.SEVERE, ex.getMessage());
+        }
     }
  
     public boolean isWindows() {

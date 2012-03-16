@@ -4,9 +4,9 @@
  */
 package hu.distributeddocumentor.gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import javax.swing.*;
+import com.jidesoft.swing.FolderChooser;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
+import java.util.List;
 
 /**
  *
@@ -14,6 +14,8 @@ import javax.swing.*;
  */
 public class CloneDialog extends javax.swing.JDialog {
 
+    private final DocumentorPreferences prefs;
+    
     /**
      * A return status code - returned if Cancel button has been pressed
      */
@@ -26,8 +28,10 @@ public class CloneDialog extends javax.swing.JDialog {
     /**
      * Creates new form CloneDialog
      */
-    public CloneDialog(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+    public CloneDialog(java.awt.Frame parent, DocumentorPreferences prefs) {
+        super(parent, true);
+        
+        this.prefs = prefs;
         initComponents();
         
         setLocationRelativeTo(parent);
@@ -244,12 +248,22 @@ public class CloneDialog extends javax.swing.JDialog {
 
     private void btBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBrowseActionPerformed
         
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle("Select the root directory");
+        FolderChooser chooser = new FolderChooser();
+        chooser.setDialogTitle("Select the root folder");
+        
+        List<String> recent = prefs.getRecentRepositories();
+        chooser.setRecentList(recent);
+        chooser.setRecentListVisible(true);
                 
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            tbTarget.setText(chooser.getSelectedFile().getAbsolutePath());
+        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
+            
+            String path = chooser.getSelectedFile().getAbsolutePath();
+            tbTarget.setText(path);
+            
+            if (!recent.contains(path)) {               
+                recent.add(path);
+                prefs.setRecentRepositories(recent);
+            }            
         }
     }//GEN-LAST:event_btBrowseActionPerformed
     

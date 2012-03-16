@@ -66,7 +66,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         
         showPreferencesIfNecessary();
             
-        final StartupDialog startup = new StartupDialog(this, true);
+        final StartupDialog startup = new StartupDialog(this, prefs);
         startup.setVisible(true);
         if (startup.getFinalAction() != StartupDialog.Action.Cancel) {
             startup.initialize(doc);
