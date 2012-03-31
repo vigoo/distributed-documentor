@@ -4,9 +4,9 @@ package hu.distributeddocumentor.gui;
 import com.jidesoft.swing.FolderChooser;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
+import java.awt.Frame;
 import java.io.File;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -199,7 +199,7 @@ public class StartupDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
 
-    void initialize(Documentation doc) {
+    boolean initialize(Documentation doc) {
         
         try {
             switch (finalAction) {
@@ -216,9 +216,13 @@ public class StartupDialog extends javax.swing.JDialog {
                     
                     break;                    
             }
+            
+            return true;
         } catch (Exception ex) {
             java.util.logging.Logger.getLogger(StartupDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to load documentation", JOptionPane.ERROR_MESSAGE);
+            
+            ErrorDialog.show((Frame)getParent(), "Failed to load documentation", ex);                    
+            return false;
         }
     }
     

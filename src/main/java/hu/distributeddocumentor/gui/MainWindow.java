@@ -68,62 +68,70 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             
         final StartupDialog startup = new StartupDialog(this, prefs);
         startup.setVisible(true);
+        
+        boolean loaded = false;
         if (startup.getFinalAction() != StartupDialog.Action.Cancel) {
-            startup.initialize(doc);
+            if (startup.initialize(doc)) {
 
-            ToolWindow twImages = toolWindowManager.registerToolWindow(
-                    "IMG", 
-                    "Image manager", 
-                    null, 
-                    new ImageManagerPanel(doc.getImages()), 
-                    ToolWindowAnchor.LEFT);
-            twImages.setType(ToolWindowType.DOCKED);
-            twImages.setAutoHide(false);
-            twImages.setVisible(true);
-            twImages.setAvailable(true);                                
+                ToolWindow twImages = toolWindowManager.registerToolWindow(
+                        "IMG", 
+                        "Image manager", 
+                        null, 
+                        new ImageManagerPanel(doc.getImages()), 
+                        ToolWindowAnchor.LEFT);
+                twImages.setType(ToolWindowType.DOCKED);
+                twImages.setAutoHide(false);
+                twImages.setVisible(true);
+                twImages.setAvailable(true);                                
 
-            labelRoot.setText(doc.getRepositoryRoot());
+                labelRoot.setText(doc.getRepositoryRoot());
 
-            openOrFocusPage("start");
+                openOrFocusPage("start");
 
-            setVisible(true);        
-            loadLayout();
+                setVisible(true);        
+                loadLayout();
 
-            saveTimer = new Timer(1000, 
-                    new ActionListener() {
+                saveTimer = new Timer(1000, 
+                        new ActionListener() {
 
-                        @Override
-                        public void actionPerformed(ActionEvent ae) {
-                            onSaveTimerTick();
-                        }                    
-                    });  
-            saveTimer.setInitialDelay(5000);
-            saveTimer.start();
+                            @Override
+                            public void actionPerformed(ActionEvent ae) {
+                                onSaveTimerTick();
+                            }                    
+                        });  
+                saveTimer.setInitialDelay(5000);
+                saveTimer.start();
 
-            statusCheckTimer = new Timer(3000,
-                    new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent ae) {
-                            onStatusCheckTimerTick();
-                        }
-                    });
-            statusCheckTimer.setInitialDelay(0);
-            statusCheckTimer.start();       
+                statusCheckTimer = new Timer(3000,
+                        new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent ae) {
+                                onStatusCheckTimerTick();
+                            }
+                        });
+                statusCheckTimer.setInitialDelay(0);
+                statusCheckTimer.start();       
 
-            removeOrphanedPagesTimer = new Timer(2000,
-                    new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent ae) {
-                            onRemoveOrphanedPagesTimerTick();
-                        }
-                    });
-            removeOrphanedPagesTimer.setInitialDelay(0);
-            removeOrphanedPagesTimer.start();
-        } else {
-            saveTimer = null;
-            statusCheckTimer = null;
-            removeOrphanedPagesTimer = null;
-            
+                removeOrphanedPagesTimer = new Timer(2000,
+                        new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent ae) {
+                                onRemoveOrphanedPagesTimerTick();
+                            }
+                        });
+                removeOrphanedPagesTimer.setInitialDelay(0);
+                removeOrphanedPagesTimer.start();
+                
+                loaded = true;
+            } else{            
+                saveTimer = statusCheckTimer = removeOrphanedPagesTimer = null;
+            }
+        } else {            
+                saveTimer = statusCheckTimer = removeOrphanedPagesTimer = null;
+        }
+        
+        if (!loaded)
+        {            
             System.exit(0);
         }
     }

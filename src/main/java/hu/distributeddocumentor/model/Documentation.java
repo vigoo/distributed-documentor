@@ -11,13 +11,12 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.CodingErrorAction;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import org.xml.sax.SAXException;
 
 public class Documentation implements Observer {
     
@@ -77,7 +76,7 @@ public class Documentation implements Observer {
         }
     }   
     
-    public void initFromExisting(File repositoryRoot) throws SAXException, IOException, ParserConfigurationException {
+    public void initFromExisting(File repositoryRoot) throws FailedToLoadPageException, FailedToLoadTOCException {
         
         File realRepositoryRoot = findRealRepositoryRoot(repositoryRoot);
         relativeRoot = realRepositoryRoot.toURI().relativize(repositoryRoot.toURI()).getPath();
@@ -92,7 +91,7 @@ public class Documentation implements Observer {
         loadRepository();
     }
     
-    public void cloneFromRemote(File localRepositoryRoot, String remoteRepo, String userName, String password) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException {
+    public void cloneFromRemote(File localRepositoryRoot, String remoteRepo, String userName, String password) throws FailedToLoadPageException, FailedToLoadTOCException {
                 
         relativeRoot = "";
         repository = Repository.clone(createRepositoryConfiguration(), localRepositoryRoot, RepositoryUriGenerator.addCredentials(remoteRepo, userName, password));
@@ -105,6 +104,7 @@ public class Documentation implements Observer {
         
         RepositoryConfiguration conf = new RepositoryConfiguration();
         conf.setHgBin(prefs.getMercurialPath());
+        conf.setCodingErrorAction(CodingErrorAction.REPLACE);
         
         return conf;
     }
@@ -113,7 +113,7 @@ public class Documentation implements Observer {
         return new File(repository.getDirectory(), relativeRoot);
     }
     
-    private void loadRepository() throws FileNotFoundException, IOException, SAXException, ParserConfigurationException {
+    private void loadRepository() throws FailedToLoadPageException, FailedToLoadTOCException {
 
         for (File child : getDocumentationDirectory().listFiles(
                 new FileFilter() {
@@ -125,11 +125,21 @@ public class Documentation implements Observer {
                                !file.getName().endsWith(".orig");
                     }})) {
             
-            Page page = new Page(child);
-            registerPage(page);
+            try {
+                Page page = new Page(child);
+                registerPage(page);
+            }
+            catch (Exception ex) {                
+                throw new FailedToLoadPageException(child, ex);
+            }
         }
         
-        toc.load(getDocumentationDirectory(), this);
+        try {
+            toc.load(getDocumentationDirectory(), this);
+        }
+        catch (Exception ex) {
+            throw new FailedToLoadTOCException(ex);
+        }
         
         // Adding unreferenced pages to the unorganized node
         for (Page page : pages.values()) {
@@ -140,7 +150,7 @@ public class Documentation implements Observer {
         }                
     }
     
-    public void reload() throws FileNotFoundException, IOException, SAXException, ParserConfigurationException {    
+    public void reload() throws FailedToLoadPageException, FailedToLoadTOCException {    
         
         toc.clear();
         pages.clear();
@@ -251,7 +261,7 @@ public class Documentation implements Observer {
         commit.execute(items);
     }
     
-    public void revertChanges(List<String> files) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException {        
+    public void revertChanges(List<String> files) throws FailedToLoadPageException, FailedToLoadTOCException {        
         
         RevertCommand revert = new RevertCommand(repository);
 
