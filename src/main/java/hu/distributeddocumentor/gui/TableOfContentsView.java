@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import hu.distributeddocumentor.controller.TOCNodeCellEditor;
 import hu.distributeddocumentor.controller.TOCTreeModel;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
@@ -8,6 +9,7 @@ import hu.distributeddocumentor.model.TOCNode;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -32,6 +34,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
         initComponents();      
         
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        tree.setCellEditor(new TOCNodeCellEditor(tree, (DefaultTreeCellRenderer)tree.getCellRenderer()));
     }
 
     /**
