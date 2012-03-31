@@ -121,9 +121,9 @@ public class Documentation implements Observer {
                     public boolean accept(File file) {
                         return file.isFile() &&
                                !"toc.xml".equals(file.getName()) &&                               
-                               !".DS_Store".equals(file.getName()) && 
-                               !file.getName().endsWith(".orig");
-                    }})) {
+                               isSupportedMarkup(file);
+                    }
+        })) {
             
             try {
                 Page page = new Page(child);
@@ -157,6 +157,10 @@ public class Documentation implements Observer {
         images.reload();
         
         loadRepository();
+    }
+    
+    private boolean isSupportedMarkup(File file) {
+        return file.getName().toLowerCase().endsWith(".mediawiki");
     }
     
     public void addNewPage(Page page) throws PageAlreadyExistsException, IOException {
