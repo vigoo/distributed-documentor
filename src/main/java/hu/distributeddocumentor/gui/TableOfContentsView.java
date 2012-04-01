@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import hu.distributeddocumentor.controller.PageIdGenerator;
 import hu.distributeddocumentor.controller.TOCNodeCellEditor;
 import hu.distributeddocumentor.controller.TOCTreeModel;
 import hu.distributeddocumentor.model.Documentation;
@@ -171,7 +172,11 @@ public class TableOfContentsView extends javax.swing.JPanel {
                 if (node != toc.getUnorganized() &&
                     node != toc.getRoot() &&
                     node != toc.getRecycleBin()) {
-                    CreateNewPageDialog dlg = new CreateNewPageDialog(pageEditorHost.getMainFrame(), true, doc);
+                    
+                    PageIdGenerator idGenerator = new PageIdGenerator(doc);
+                    String id = idGenerator.generate(node.getTitle());
+                    
+                    CreateNewPageDialog dlg = new CreateNewPageDialog(pageEditorHost.getMainFrame(), true, doc, id);
                     dlg.setVisible(true);
 
                     if (dlg.getReturnStatus() == CreateNewPageDialog.RET_OK) {

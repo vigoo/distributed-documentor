@@ -27,7 +27,7 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
     /**
      * Creates new form CreateNewPageDialog
      */
-    public CreateNewPageDialog(java.awt.Frame parent, boolean modal, Documentation doc) {
+    public CreateNewPageDialog(java.awt.Frame parent, boolean modal, Documentation doc, String initialId) {
         super(parent, modal);
         initComponents();
         
@@ -65,6 +65,8 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
                 checkIDValidity();
             }        
         });
+        
+        tbID.setText(initialId);
     }
 
     public String getID() {
