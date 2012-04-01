@@ -1,5 +1,8 @@
 package hu.distributeddocumentor.gui;
 
+import hu.distributeddocumentor.controller.sync.DialogBasedSyncInteraction;
+import hu.distributeddocumentor.controller.sync.MercurialSync;
+import hu.distributeddocumentor.controller.sync.SyncController;
 import hu.distributeddocumentor.exporters.CHMExporter;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.HTMLExporter;
@@ -13,7 +16,6 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -395,7 +397,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             catch (Exception ex) {
                 java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Export failed", JOptionPane.ERROR_MESSAGE);
+                ErrorDialog.show(this, "Export failed", ex);
             }
         }  
     }//GEN-LAST:event_exportToHTMLMenuItemActionPerformed
@@ -403,23 +405,22 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private void pullMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullMenuItemActionPerformed
         
         try {
-            doc.pull();        
+            SyncController controller = createSyncConrtoller();
+            controller.pull();
         }
-        catch (IOException ex) {
-             java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                
-             JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to download changes", JOptionPane.ERROR_MESSAGE);
+        catch (Exception ex) {
+            ErrorDialog.show(this, "Failed to download changes", ex);
         }
     }//GEN-LAST:event_pullMenuItemActionPerformed
 
     private void pushMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pushMenuItemActionPerformed
+        
         try {
-            doc.push();        
+            SyncController controller = createSyncConrtoller();
+            controller.push();        
         }
-        catch (IOException ex) {
-             java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                
-             JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to upload changes", JOptionPane.ERROR_MESSAGE);
+        catch (Exception ex) {
+            ErrorDialog.show(this, "Failed to upload changes", ex);
         }
     }//GEN-LAST:event_pushMenuItemActionPerformed
 
@@ -641,5 +642,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         
         undoMenuItem.setEnabled(canUndo);
         redoMenuItem.setEnabled(canRedo);
+    }
+
+    private SyncController createSyncConrtoller() {
+        MercurialSync hg = new MercurialSync(doc, prefs);
+        DialogBasedSyncInteraction dlgui = new DialogBasedSyncInteraction(this, doc);
+        SyncController controller = new SyncController(hg, hg, hg, dlgui, doc, this);
+        return controller;
     }
 }

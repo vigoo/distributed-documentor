@@ -2,7 +2,7 @@ package hu.distributeddocumentor.model;
 
 import java.io.File;
 
-class FailedToLoadPageException extends Exception {
+public class FailedToLoadPageException extends Exception {
     
     private final File pageFile;
 

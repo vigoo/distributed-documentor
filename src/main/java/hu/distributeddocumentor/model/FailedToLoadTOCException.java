@@ -1,7 +1,7 @@
 package hu.distributeddocumentor.model;
 
 
-class FailedToLoadTOCException extends Exception {
+public class FailedToLoadTOCException extends Exception {
 
     public FailedToLoadTOCException(Exception ex) {
         

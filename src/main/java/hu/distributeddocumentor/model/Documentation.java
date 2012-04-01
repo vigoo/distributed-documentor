@@ -32,6 +32,10 @@ public class Documentation implements Observer {
 
     public TOC getTOC() {
         return toc;
+    }
+
+    public Repository getRepository() {
+        return repository;
     }        
 
     public Documentation(DocumentorPreferences prefs) {
