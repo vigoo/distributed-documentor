@@ -1,22 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.model;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.Observable;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
 import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder;
 import org.eclipse.mylyn.wikitext.core.parser.markup.MarkupLanguage;
 import org.eclipse.mylyn.wikitext.core.util.ServiceLocator;
 
-/**
- *
- * @author vigoo
- */
 public class Page extends Observable {
     
     private final static String template = "= Title =\r\n\r\nBody\r\n";
@@ -26,16 +19,23 @@ public class Page extends Observable {
     private String markup;
     
     private List<String> refs;
+    private Set<String> snippetRefs = new HashSet<String>();
     
     private boolean isParserInitialized;
     private MarkupParser parser;
     private PageRefExtractor refExtractor;    
     private MarkupLanguage language;
     
+    private final SnippetCollection snippets;
+    
+    private static final Pattern snippetPattern = Pattern.compile("\\[Snippet\\:(\\w+)\\]");
+    
     private boolean hasChanged;
     
-    public Page(String id) {
+    public Page(String id, SnippetCollection snippets) {
         this.id = id;
+        this.snippets = snippets;
+        
         markupLanguage = "MediaWiki";
         markup = template;
         isParserInitialized = false;        
@@ -45,7 +45,9 @@ public class Page extends Observable {
         refs = refExtractor.getReferencedPages(markup);
     }
     
-    public Page(File source) throws FileNotFoundException, IOException {
+    public Page(File source, SnippetCollection snippets) throws FileNotFoundException, IOException {
+        
+        this.snippets = snippets;
         
         String fileName = source.getName();
         int lastDot = fileName.lastIndexOf(".");
@@ -163,12 +165,25 @@ public class Page extends Observable {
        
        parser = new MarkupParser(language, builder);             
 
-       parser.parse(markup);
+       parser.parse(preprocessMarkup(markup));
        return writer.toString();
     }
     
     public List<String> getReferencedPages() {
         return Collections.unmodifiableList(refs);
+    }    
+    
+    
+    public boolean referencesSnippet(Snippet snippet) {
+        
+        return snippetRefs.contains(snippet.getId());
+    }
+
+    public void refresh() {
+        hasChanged = true;
+        
+        setChanged();
+        notifyObservers();
     }
     
     public void saveIfModified(File root) throws IOException {
@@ -197,6 +212,35 @@ public class Page extends Observable {
         else
             return substring;
         
+    }
+    
+    private String preprocessMarkup(String markup) {
+        
+        snippetRefs.clear();
+        
+        List<String> lines = Arrays.asList(markup.split("\n"));
+        List<String> resultLines = new LinkedList<String>();
+        
+        for (String line : lines) {
+            
+            Matcher matcher = snippetPattern.matcher(line);
+            
+            if (matcher.matches()) {
+                
+                String snippetId = matcher.group(1);
+                snippetRefs.add(snippetId);
+            
+                Snippet snippet = snippets.getSnippet(snippetId);
+                if (snippet != null) {                    
+                    resultLines.add(snippet.getMarkup());
+                }
+            } else {
+                
+                resultLines.add(line);
+            }
+        }                 
+        
+        return StringUtils.join(resultLines, '\n');
     }
 
 }

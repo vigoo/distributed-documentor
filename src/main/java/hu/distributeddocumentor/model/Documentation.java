@@ -18,12 +18,13 @@ import java.util.logging.Logger;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-public class Documentation implements Observer {
+public class Documentation implements Observer, SnippetCollection {
     
     private static final Logger logger = Logger.getLogger(Documentation.class.getName());
     
     private final TOC toc;
     private final Map<String, Page> pages;    
+    private final Map<String, Snippet> snippets;
     private Images images;
     
     private String relativeRoot;
@@ -42,6 +43,8 @@ public class Documentation implements Observer {
         
         toc = new TOC();
         pages = new CaseInsensitiveMap<Page>();
+        snippets = new CaseInsensitiveMap<Snippet>();
+        
         this.prefs = prefs;
     }
     
@@ -52,7 +55,7 @@ public class Documentation implements Observer {
         
         images = new Images(repository, relativeRoot);
         
-        Page first = new Page("start");
+        Page first = new Page("start", this);
         
         try {
             addNewPage(first);
@@ -78,6 +81,10 @@ public class Documentation implements Observer {
             
             throw new IllegalStateException("Must be called on a fresh instance!");
         }
+        
+        File snippetsDir = getSnippetsDirectory();
+        if (!snippetsDir.exists())
+            snippetsDir.mkdirs();
     }   
     
     public void initFromExisting(File repositoryRoot) throws FailedToLoadPageException, FailedToLoadTOCException {
@@ -117,8 +124,34 @@ public class Documentation implements Observer {
         return new File(repository.getDirectory(), relativeRoot);
     }
     
+    private File getSnippetsDirectory() {
+        return new File(getDocumentationDirectory(), "snippets");
+    }
+    
     private void loadRepository() throws FailedToLoadPageException, FailedToLoadTOCException {
 
+        File snippetsDir = getSnippetsDirectory();
+        if (!snippetsDir.exists())
+            snippetsDir.mkdirs();
+        else {
+            for (File child : snippetsDir.listFiles(
+                    new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        return file.isFile() &&
+                               !"toc.xml".equals(file.getName()) &&                               
+                               isSupportedMarkup(file);
+                    }})) {
+                try {
+                    Snippet snippet = new Snippet(child, this);
+                    registerSnippet(snippet);
+                }
+                catch (Exception ex) {
+                    throw new FailedToLoadPageException(child, ex);
+                }
+            }
+        }
+        
         for (File child : getDocumentationDirectory().listFiles(
                 new FileFilter() {
                     @Override
@@ -130,13 +163,13 @@ public class Documentation implements Observer {
         })) {
             
             try {
-                Page page = new Page(child);
+                Page page = new Page(child, this);
                 registerPage(page);
             }
             catch (Exception ex) {                
                 throw new FailedToLoadPageException(child, ex);
             }
-        }
+        }                
         
         try {
             toc.load(getDocumentationDirectory(), this);
@@ -192,6 +225,12 @@ public class Documentation implements Observer {
         page.addObserver(this);
     }
     
+    private void registerSnippet(Snippet snippet) {
+        snippets.put(snippet.getId(), snippet);
+        
+        snippet.addObserver(this);
+    }
+    
     public Page getPage(String id) {
         return pages.get(id);
     }
@@ -208,6 +247,11 @@ public class Documentation implements Observer {
             for (Page page : pages.values()) {
                 page.saveIfModified(root);
             }        
+            
+            File snippetsDir = getSnippetsDirectory();
+            for (Snippet snippet : snippets.values()) {
+                snippet.saveIfModified(snippetsDir);
+            }
         
             toc.saveIfModified(root);
         }
@@ -286,7 +330,18 @@ public class Documentation implements Observer {
     @Override
     public void update(Observable o, Object o1) {
         
-        if (o instanceof Page) {
+        if (o instanceof Snippet) {
+            
+            Snippet snippet = (Snippet)o;
+            
+            for (Page page : pages.values()) {
+                
+                if (page.referencesSnippet(snippet)) {
+                    page.refresh();
+                }
+            }
+        }
+        else if (o instanceof Page) {
             
             Page page = (Page)o;
             
@@ -294,7 +349,7 @@ public class Documentation implements Observer {
                 
                 if (!pages.containsKey(pageId)) {
                     
-                    Page newPage = new Page(pageId);
+                    Page newPage = new Page(pageId, this);
                     
                     try {
                         addNewPage(newPage);
@@ -413,6 +468,11 @@ public class Documentation implements Observer {
                 return null;
             }
         }
+    }
+
+    @Override
+    public Snippet getSnippet(String id) {
+        return snippets.get(id);
     }
 
 }

@@ -183,7 +183,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
                         String newID = dlg.getID();
                         String newLang = dlg.getMarkupLanguage();
 
-                        Page page = new Page(newID);
+                        Page page = new Page(newID, doc);
                         page.setMarkupLanguage(newLang);                    
                         node.setTarget(page);
 
