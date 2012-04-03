@@ -86,6 +86,17 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 twImages.setVisible(true);
                 twImages.setAvailable(true);                                
 
+                ToolWindow twSnippets = toolWindowManager.registerToolWindow(
+                        "SNIP",
+                        "Snippets manager",
+                        null,
+                        new SnippetManagerPanel(this, doc),
+                        ToolWindowAnchor.RIGHT);
+                twSnippets.setType(ToolWindowType.DOCKED);
+                twSnippets.setAutoHide(false);
+                twSnippets.setVisible(true);
+                twSnippets.setAvailable(true);
+                
                 labelRoot.setText(doc.getRepositoryRoot());
 
                 openOrFocusPage("start");
@@ -564,7 +575,25 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
          
         content.setSelected(true);        
-    }
+    }    
+
+    @Override
+    public void openOrFocusSnippet(String id) {
+        
+        ContentManager contentManager = toolWindowManager.getContentManager();
+        String contentId = "Snippet:"+id;
+        
+        Content content = contentManager.getContent(id);
+        if (content == null) {            
+            content = contentManager.addContent(
+                contentId,
+                "Snippet: " + id,
+                null,
+                new SplittedPageView(doc.getSnippet(id), new File(doc.getRepositoryRoot()), this));   
+        }
+         
+        content.setSelected(true); 
+    }    
     
     private void onSaveTimerTick() {
         try {
@@ -650,4 +679,5 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         SyncController controller = new SyncController(hg, hg, hg, dlgui, doc, this);
         return controller;
     }
+
 }

@@ -61,7 +61,7 @@ public class Page extends Observable {
             StringBuilder builder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
                 builder.append(line);
-                builder.append("\r\n");
+                builder.append("\n");
             }
 
             markup = builder.toString();

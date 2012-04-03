@@ -3,6 +3,7 @@ package hu.distributeddocumentor.gui;
 import hu.distributeddocumentor.controller.ImageListModel;
 import hu.distributeddocumentor.model.ImageAlreadyExistsException;
 import hu.distributeddocumentor.model.Images;
+import hu.distributeddocumentor.utils.StringUtils;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
@@ -41,7 +42,7 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                         JList list = (JList)jc;
                         String item = (String)list.getSelectedValue();
                         
-                        return new StringSelection("[[Image:" + convertSpaces(item) + "]]");
+                        return new StringSelection("[[Image:" + StringUtils.convertSpaces(item) + "]]");
                     }
 
                     @Override
@@ -50,11 +51,7 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                     }
                     
                 });
-    }
-    
-    private String convertSpaces(String str) {
-        return str.replaceAll(" ", "%20");
-    }
+    }   
 
     /**
      * This method is called from within the constructor to initialize the form.

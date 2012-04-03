@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-public class Documentation implements Observer, SnippetCollection {
+public class Documentation extends Observable implements Observer, SnippetCollection {
     
     private static final Logger logger = Logger.getLogger(Documentation.class.getName());
     
@@ -39,6 +39,11 @@ public class Documentation implements Observer, SnippetCollection {
         return repository;
     }        
 
+    @Override
+    public Collection<Snippet> getSnippets() {
+        return snippets.values();
+    }
+    
     public Documentation(DocumentorPreferences prefs) {
         
         toc = new TOC();
@@ -426,9 +431,9 @@ public class Documentation implements Observer, SnippetCollection {
                 pages.remove(pageId);
                 
                 RemoveCommand remove = new RemoveCommand(repository);
-                remove.execute(page.getFile(repository.getDirectory()));
+                remove.execute(page.getFile(getDocumentationDirectory()));
                 
-                page.getFile(repository.getDirectory()).delete();
+                page.getFile(getDocumentationDirectory()).delete();
             }                   
         }
         
@@ -473,6 +478,43 @@ public class Documentation implements Observer, SnippetCollection {
     @Override
     public Snippet getSnippet(String id) {
         return snippets.get(id);
+    }
+
+    @Override
+    public void addSnippet(Snippet snippet) throws IOException, PageAlreadyExistsException {
+        
+        String id = snippet.getId();
+        if (!snippets.containsKey(id))
+            registerSnippet(snippet);
+        else
+            throw new PageAlreadyExistsException();        
+        
+        File snippetFile = snippet.save(getSnippetsDirectory());
+        
+        logger.log(Level.INFO, "Adding new snippet to repository: {0}", snippetFile.getName());
+        
+        AddCommand cmd = new AddCommand(repository);
+        cmd.execute(snippetFile);
+        
+        setChanged();
+        notifyObservers();
+    }
+
+    @Override
+    public void removeSnippet(String id) {
+               
+       logger.log(Level.INFO, "Removing snippet {0} from repository", id);
+                            
+       Snippet snippet = snippets.get(id);
+       snippets.remove(id);
+                
+       RemoveCommand remove = new RemoveCommand(repository);
+       remove.execute(snippet.getFile(getSnippetsDirectory()));
+                
+       snippet.getFile(getSnippetsDirectory()).delete();
+       
+       setChanged();
+       notifyObservers();
     }
 
 }
