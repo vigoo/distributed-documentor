@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import com.jidesoft.plaf.LookAndFeelFactory;
 import hu.distributeddocumentor.controller.sync.DialogBasedSyncInteraction;
 import hu.distributeddocumentor.controller.sync.MercurialSync;
 import hu.distributeddocumentor.controller.sync.SyncController;
@@ -520,6 +521,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
         //</editor-fold>
 
+        LookAndFeelFactory.installJideExtension( LookAndFeelFactory.VSNET_STYLE_WITHOUT_MENU);  
+        
         /*
          * Create and display the form
          */
