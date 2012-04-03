@@ -41,7 +41,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     public boolean hasIncomingChangesets() {
         
         Repository repo = doc.getRepository();
-        IncomingCommand incoming = new IncomingCommand(repo);
+        IncomingCommand incoming = new IncomingCommand(repo).insecure();
         
         logger.log(Level.FINE, "Getting incoming change sets...");
         incomingBundle = incoming.execute("default");
@@ -111,7 +111,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     public boolean hasOutgoingChangesets() {
         
         Repository repo = doc.getRepository();
-        OutgoingCommand outgoing = new OutgoingCommand(repo);
+        OutgoingCommand outgoing = new OutgoingCommand(repo).insecure();
         
         outgoingChangesets = outgoing.execute("default");
         return outgoingChangesets.size() > 0;

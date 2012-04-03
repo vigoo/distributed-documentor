@@ -441,12 +441,12 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     }
 
     public List<Changeset> pull() throws IOException {
-        PullCommand cmd = new PullCommand(repository);
+        PullCommand cmd = new PullCommand(repository).insecure();
         return cmd.execute();
     }
     
     public List<Changeset> push() throws IOException {
-        PushCommand cmd = new PushCommand(repository);
+        PushCommand cmd = new PushCommand(repository).insecure();
         return cmd.execute();
     }
 
