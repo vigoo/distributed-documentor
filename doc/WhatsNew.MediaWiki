@@ -1,0 +1,17 @@
+= What's new =
+
+== Version 03/04/2012 ==
+
+* Ability to work on documentations belonging to a bigger repository (lying in a subfolder of the repository)
+* The repository selection is now performed through ''folder browser'' dialogs instead of the standard file dialogs.
+* These folder browser dialogs shows the '''recently used repository folders''' too[[Image:Screen%20Shot%202012-04-03%20at%2010.08.55%20AM.png]]
+* A new '''toolbar''' has been added to the wiki markup editor, helping to deal with the ''wiki syntax''[[Image:Screen%20Shot%202012-04-03%20at%2010.10.06%20AM.png]]
+* Better error reporting
+** More useful error messages
+** Ability to copy-paste error message from the error dialog
+* The application now generates a default page ID when creating a new page from the TOC
+** it generates it from the TOC node's title
+* Initial support for the correct pull/merge/push process
+* [Snippets Snippet support]
+* '''Fixed issue''': could not open a repository because of an illegal file in it
+* '''Fixed issue''': page ID was not correctly handled when renaming a TOC node

@@ -1,5 +1,7 @@
 = Introduction to Distributed Documentor =
 
+[WhatsNew What's new in version 03/04/2012?]
+
 == Goals ==
 ''Distributed Documentor'' is a desktop application enabling its users to create software documentation using [http://en.wikipedia.org/wiki/Lightweight_markup_language lightweight markup languages] in multiple geographical locations simultaneously, with the ability to correctly synchronize the changes made at these distinct locations.
 

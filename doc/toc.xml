@@ -2,17 +2,19 @@
 <TOC>
     <Node title="Root">
         <Node target="start" title="Introduction"/>
+        <Node target="WhatsNew" title="What's new"/>
         <Node target="SettingsDialog" title="Initial settings"/>
-        <Node target="BasicWorkflow" title="Basic workflow"/>
+        <Node target="basicworkflow" title="Basic workflow"/>
         <Node title="Writing documentation">
-            <Node target="MediaWikiSyntax" title="MediaWiki syntax"/>
-            <Node target="UsingImages" title="Using images"/>
-            <Node target="ExportingDocumentation" title="Exporting documentation"/>
+            <Node target="mediawikisyntax" title="MediaWiki syntax"/>
+            <Node target="usingimages" title="Using images"/>
+            <Node target="Snippets" title="Using snippets"/>
+            <Node target="exportingdocumentation" title="Exporting documentation"/>
         </Node>
         <Node title="Distributed work">
             <Node target="CloneRemoteRepo" title="Cloning remote repositories"/>
-            <Node target="UsingChangesets" title="Using change sets"/>
-            <Node target="SynchronizingChanges" title="Synchronizing changes [SynchronizingChanges]"/>
+            <Node target="usingchangesets" title="Using change sets"/>
+            <Node target="synchronizingchanges" title="Synchronizing changes [SynchronizingChanges]"/>
         </Node>
     </Node>
 </TOC>
