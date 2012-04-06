@@ -140,9 +140,12 @@ public class StartupDialog extends javax.swing.JDialog {
         List<String> recent = prefs.getRecentRepositories();
         chooser.setRecentList(recent);
         chooser.setRecentListVisible(true);
+        
+        if (recent.size() > 0)
+            chooser.setSelectedFolder(new File(recent.get(0)));
                 
         if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
-            finalAction = Action.OpenLocal;
+            finalAction = action;
             repositoryRoot = chooser.getSelectedFolder();
             
             if (!recent.contains(repositoryRoot.getAbsolutePath())) {               
