@@ -5,6 +5,7 @@ import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
 import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import java.io.IOException;
+import java.net.URI;
 
 public class SyncController {
 
@@ -52,12 +53,16 @@ public class SyncController {
             }
         }
         
-        cancelled = cancelled || (pushing && !query.hasOutgoingChangesets());
+        URI remoteURI = interaction.askURI(query.getDefaultURI());
+                        
+        cancelled = cancelled || 
+                    remoteURI == null ||
+                    (pushing && !query.hasOutgoingChangesets(remoteURI));
         
         if (!cancelled) {
             
-            if (query.hasIncomingChangesets()) {                
-                cancelled = !interaction.showPullDialog(query, syncer);
+            if (query.hasIncomingChangesets(remoteURI)) {                
+                cancelled = !interaction.showPullDialog(query, syncer, remoteURI);
             }                        
         }
         
@@ -74,7 +79,7 @@ public class SyncController {
         }
         
         if (pushing) {            
-            cancelled = !interaction.showPushDialog(query, syncer);
+            cancelled = !interaction.showPushDialog(query, syncer, remoteURI);
         }
         
         if (!cancelled) {

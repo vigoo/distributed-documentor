@@ -9,10 +9,12 @@ import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ini4j.Ini;
 
 
 public class MercurialSync implements RepositoryQuery, RepositoryMerger, RepositorySynchronizer {
@@ -38,13 +40,13 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     }
 
     @Override
-    public boolean hasIncomingChangesets() {
+    public boolean hasIncomingChangesets(URI uri) {
         
         Repository repo = doc.getRepository();
         IncomingCommand incoming = new IncomingCommand(repo).insecure();
         
         logger.log(Level.FINE, "Getting incoming change sets...");
-        incomingBundle = incoming.execute("default");
+        incomingBundle = incoming.execute(uri.toASCIIString());
         
         if (incomingBundle != null) {
             List<Changeset> changesets = incomingBundle.getChangesets();
@@ -98,45 +100,60 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     }	
 
     @Override
-    public List<Changeset> incomingChangesets() {
+    public List<Changeset> incomingChangesets(URI uri) {
         
         if (incomingBundle == null)
-            if (!hasIncomingChangesets())
+            if (!hasIncomingChangesets(uri))
                 return new LinkedList<Changeset>();
         
         return incomingBundle.getChangesets();
     }
 
     @Override
-    public boolean hasOutgoingChangesets() {
+    public boolean hasOutgoingChangesets(URI uri) {
         
         Repository repo = doc.getRepository();
         OutgoingCommand outgoing = new OutgoingCommand(repo).insecure();
         
-        outgoingChangesets = outgoing.execute("default");
+        outgoingChangesets = outgoing.execute(uri.toASCIIString());
         return outgoingChangesets.size() > 0;
         
     }
 
     @Override
-    public List<Changeset> outgoingChangesets() {
+    public List<Changeset> outgoingChangesets(URI uri) {
         if (outgoingChangesets == null)
-            if (!hasOutgoingChangesets())
+            if (!hasOutgoingChangesets(uri))
                 return new LinkedList<Changeset>();
         
         return outgoingChangesets;
     }
 
     @Override
-    public void pull() throws IOException {
+    public void pull(URI uri) throws IOException {
         
-        doc.pull();
+        doc.pull(uri.toASCIIString());
     }
 
     @Override
-    public void push() throws IOException {
+    public void push(URI uri) throws IOException {
         
-        doc.push();
+        doc.push(uri.toASCIIString());
+    }
+
+    @Override
+    public URI getDefaultURI() {
+        File hgrc = new File(doc.getRepository().getDirectory(), ".hg/hgrc");        
+        try {
+            Ini ini = new Ini(hgrc);
+            String defaultUri = ini.get("paths", "default");
+            
+            return URI.create(defaultUri);
+        }
+        catch (Exception ex) {
+            logger.severe(ex.toString());
+            return null;
+        }
     }
 
 }

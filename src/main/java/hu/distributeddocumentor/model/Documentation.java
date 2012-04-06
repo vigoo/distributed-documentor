@@ -440,14 +440,14 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         logger.info("Finished processing orphaned pages.");
     }
 
-    public List<Changeset> pull() throws IOException {
+    public List<Changeset> pull(String source) throws IOException {
         PullCommand cmd = new PullCommand(repository).insecure();
-        return cmd.execute();
+        return cmd.execute(source);
     }
     
-    public List<Changeset> push() throws IOException {
+    public List<Changeset> push(String destination) throws IOException {
         PushCommand cmd = new PushCommand(repository).insecure();
-        return cmd.execute();
+        return cmd.execute(destination);
     }
 
     private File findRealRepositoryRoot(File repositoryRoot) {
