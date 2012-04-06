@@ -111,7 +111,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         else
             out.println(",");
 
-        out.print(i+"['"+node.getTitle()+"'");
+        out.print(i+"['"+fixTitle(node.getTitle())+"'");
         if (node.hasTarget()) {            
             out.print(", '"+node.getTarget().getId()+".html'");
         } else {
@@ -133,5 +133,9 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         }
                 
         out.print("]");     
+    }
+
+    private String fixTitle(String title) {
+        return title.replaceAll("'", "\\'");
     }
 }
