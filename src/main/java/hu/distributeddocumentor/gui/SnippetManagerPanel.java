@@ -40,7 +40,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
                 JList list = (JList)jc;
                 String item = (String)list.getSelectedValue();
 
-                return new StringSelection("[Snippet:" + StringUtils.convertSpaces(item) + "]");
+                return new StringSelection("\n[Snippet:" + StringUtils.convertSpaces(item) + "]\n");
             }
 
             @Override
@@ -84,6 +84,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        snippetList.setDragEnabled(true);
         snippetList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 snippetListMouseClicked(evt);
