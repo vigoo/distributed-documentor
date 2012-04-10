@@ -185,7 +185,8 @@ public class TableOfContentsView extends javax.swing.JPanel {
 
                         Page page = new Page(newID, doc);
                         page.setMarkupLanguage(newLang);                    
-                        node.setTarget(page);
+                        
+                        toc.changeNodeTarget(node, page);
 
                         try {                            
                             doc.addNewPage(page);

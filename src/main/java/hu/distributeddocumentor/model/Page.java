@@ -12,7 +12,7 @@ import org.eclipse.mylyn.wikitext.core.util.ServiceLocator;
 
 public class Page extends Observable {
     
-    private final static String template = "= Title =\r\n\r\nBody\r\n";
+    private final static String template = "= Title =\n\nBody\n";
     
     private final String id;
     private String markupLanguage;

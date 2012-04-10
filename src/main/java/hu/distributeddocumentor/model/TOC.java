@@ -232,6 +232,32 @@ public class TOC {
         }
         
     }
+    
+    public void changeNodeTarget(TOCNode node, Page target) {
+        
+        if (node != root &&
+            node != unorganized &&
+            node != recycleBin) {
+            
+            node.setTarget(target);
+            
+            TOCNode parent = node.getParent();
+            int[] indices = new int[1];
+            indices[0] = parent.getChildren().indexOf(node);
+            Object[] objs = new Object[1];
+            objs[0] = node;
+            
+            TreeModelEvent evt = new TreeModelEvent(this, 
+                                                    parent.toPath(),
+                                                    indices,
+                                                    objs);
+            for (TreeModelListener listener : listeners) {
+                listener.treeNodesChanged(evt);
+            }
+            
+            modified = true;
+        }
+    }
 
     public void moveUp(TOCNode node) {
         
