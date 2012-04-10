@@ -202,6 +202,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel {
         editorPane.setFont(new java.awt.Font("Monaco", 0, 13)); // NOI18N
         scrollPane.setViewportView(editorPane);
 
+        toolBar.setFloatable(false);
         toolBar.setRollover(true);
 
         btH1.setText("H1");
