@@ -7,8 +7,8 @@
     <description kind="one-line">DistributedDocumentor</description>
     <description kind="short">DistributedDocumentor</description>
     <offline-allowed/>
- </information>
- <update check="background"/>
+ </information> 
+ <update check="always" policy="prompt-run"/>
  <security>
     <all-permissions/>
  </security>
