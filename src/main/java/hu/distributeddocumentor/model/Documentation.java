@@ -430,7 +430,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 // delete it from the repository as well                                           
                 pages.remove(pageId);
                 
-                RemoveCommand remove = new RemoveCommand(repository);
+                RemoveCommand remove = new RemoveCommand(repository).force();
                 remove.execute(page.getFile(getDocumentationDirectory()));
                 
                 page.getFile(getDocumentationDirectory()).delete();
@@ -508,7 +508,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
        Snippet snippet = snippets.get(id);
        snippets.remove(id);
                 
-       RemoveCommand remove = new RemoveCommand(repository);
+       RemoveCommand remove = new RemoveCommand(repository).force();
        remove.execute(snippet.getFile(getSnippetsDirectory()));
                 
        snippet.getFile(getSnippetsDirectory()).delete();
