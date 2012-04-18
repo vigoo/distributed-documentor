@@ -353,7 +353,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             Page page = (Page)o;
             
             for (String pageId : page.getReferencedPages()) {
-                
+                                
                 if (!pages.containsKey(pageId)) {
                     
                     Page newPage = new Page(pageId, this);

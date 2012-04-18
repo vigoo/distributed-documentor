@@ -111,7 +111,7 @@ public class Page extends Observable {
         if (!isParserInitialized)
             initializeParser();
         
-        refs = refExtractor.getReferencedPages(markup);
+        refs = refExtractor.getReferencedPages(preprocessMarkup(markup));
         
         setChanged();
         notifyObservers();       
