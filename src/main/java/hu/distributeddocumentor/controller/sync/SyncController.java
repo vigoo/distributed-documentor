@@ -1,7 +1,5 @@
 package hu.distributeddocumentor.controller.sync;
 
-import com.aragost.javahg.HttpAuthorizationRequiredException;
-import hu.distributeddocumentor.gui.ErrorDialog;
 import hu.distributeddocumentor.gui.PageEditorHost;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
@@ -26,22 +24,22 @@ public class SyncController {
         this.doc = doc;
         this.host = host;
     }
-    
+
     public boolean push() throws IOException, FailedToLoadPageException, FailedToLoadTOCException {
         return run(true);
-    }   
-    
+    }
+
     public boolean pull() throws IOException, FailedToLoadPageException, FailedToLoadTOCException {
         return run(false);
     }
-    
+
     private boolean run(boolean pushing) throws IOException, FailedToLoadPageException, FailedToLoadTOCException {
-        
+
         boolean cancelled = false;
         while (query.hasUncommittedChanges() && !cancelled) {
-            
+
             CommitOrRevert response = interaction.askCommitOrRevert();
-                        
+
             switch (response) {
                 case Commit:
                     cancelled = !interaction.showCommitDialog();
@@ -54,46 +52,41 @@ public class SyncController {
                     break;
             }
         }
-        
+
         URI remoteURI = interaction.askURI(query.getDefaultURI());
-                        
-        cancelled = cancelled || 
-                    remoteURI == null ||
-                    (pushing && !query.hasOutgoingChangesets(remoteURI));
-        
+
+        cancelled = cancelled
+                || remoteURI == null
+                || (pushing && !query.hasOutgoingChangesets(remoteURI));
+
         if (!cancelled) {
-            
-            try {
-                if (query.hasIncomingChangesets(remoteURI)) {                
-                    cancelled = !interaction.showPullDialog(query, syncer, remoteURI);
-                }                        
-            } catch (HttpAuthorizationRequiredException ex) {
-                ErrorDialog.show(host.getMainFrame(), "Failed to get incoming changes", ex);
-                cancelled = true;
+
+            if (query.hasIncomingChangesets(remoteURI)) {
+                cancelled = !interaction.showPullDialog(query, syncer, remoteURI);
             }
         }
-        
+
         if (!cancelled) {
-            
+
             if (query.requiresMerge()) {
                 if (interaction.askMerge()) {
-                    
-                    merger.mergeAndCommit();                    
+
+                    merger.mergeAndCommit();
                 } else {
                     cancelled = true;
                 }
             }
         }
-        
-        if (pushing) {            
+
+        if (pushing) {
             cancelled = !interaction.showPushDialog(query, syncer, remoteURI);
         }
-        
+
         if (!cancelled) {
             doc.reload();
             host.documentationReloaded();
         }
-        
+
         return !cancelled;
     }
 }

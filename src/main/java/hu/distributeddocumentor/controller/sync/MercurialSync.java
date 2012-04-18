@@ -2,7 +2,6 @@ package hu.distributeddocumentor.controller.sync;
 
 import com.aragost.javahg.Bundle;
 import com.aragost.javahg.Changeset;
-import com.aragost.javahg.HttpAuthorizationRequiredException;
 import com.aragost.javahg.Repository;
 import com.aragost.javahg.commands.*;
 import com.aragost.javahg.merge.MergeContext;
@@ -41,7 +40,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     }
 
     @Override
-    public boolean hasIncomingChangesets(URI uri) throws HttpAuthorizationRequiredException {
+    public boolean hasIncomingChangesets(URI uri) {
         
         Repository repo = doc.getRepository();
         IncomingCommand incoming = new IncomingCommand(repo).insecure();
@@ -102,7 +101,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     }	
 
     @Override
-    public List<Changeset> incomingChangesets(URI uri) throws HttpAuthorizationRequiredException {
+    public List<Changeset> incomingChangesets(URI uri) {
         
         if (incomingBundle == null)
             if (!hasIncomingChangesets(uri))

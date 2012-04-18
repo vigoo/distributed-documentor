@@ -1,6 +1,5 @@
 package hu.distributeddocumentor.controller.sync;
 
-import com.aragost.javahg.HttpAuthorizationRequiredException;
 import hu.distributeddocumentor.gui.*;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.utils.ConnectionVerifier;
@@ -13,7 +12,7 @@ public class DialogBasedSyncInteraction implements SyncInteraction {
 
     private static final Logger log = Logger.getLogger(DialogBasedSyncInteraction.class.getName());
     private final PageEditorHost host;
-    private final Documentation doc;    
+    private final Documentation doc;
 
     public DialogBasedSyncInteraction(PageEditorHost host, Documentation doc) {
         this.host = host;
@@ -68,25 +67,19 @@ public class DialogBasedSyncInteraction implements SyncInteraction {
     @Override
     public boolean showPullDialog(RepositoryQuery query, RepositorySynchronizer syncer, URI uri) {
 
-        try {
-            SyncDialog dlg = new SyncDialog(host.getMainFrame(), query.incomingChangesets(uri), false);
-            dlg.setVisible(true);
+        SyncDialog dlg = new SyncDialog(host.getMainFrame(), query.incomingChangesets(uri), false);
+        dlg.setVisible(true);
 
-            if (dlg.getReturnStatus() == SyncDialog.RET_OK) {
-                try {
-                    syncer.pull(uri);
-                    return true;
-                } catch (IOException ex) {
+        if (dlg.getReturnStatus() == SyncDialog.RET_OK) {
+            try {
+                syncer.pull(uri);
+                return true;
+            } catch (IOException ex) {
 
-                    ErrorDialog.show(host.getMainFrame(), "Failed to pull changes", ex);
-                    return false;
-                }
-            } else {
+                ErrorDialog.show(host.getMainFrame(), "Failed to pull changes", ex);
                 return false;
             }
-        } catch (HttpAuthorizationRequiredException ex) {
-            
-            ErrorDialog.show(host.getMainFrame(), "Failed to get incoming changes", ex);
+        } else {
             return false;
         }
     }
@@ -124,22 +117,23 @@ public class DialogBasedSyncInteraction implements SyncInteraction {
     }
 
     @Override
-    public URI askURI(URI defaultURI) {       
-        
-        if ("http".equals(defaultURI.getScheme()) ||
-            "https".equals(defaultURI.getScheme())) {
+    public URI askURI(URI defaultURI) {
+
+        if ("http".equals(defaultURI.getScheme())
+                || "https".equals(defaultURI.getScheme())) {
 
             ConnectionVerifier verifier = new ConnectionVerifier(defaultURI);
             if (!verifier.verify()) {
-             
+
                 ConnectionVerifierDialog dlg = new ConnectionVerifierDialog(host.getMainFrame(), verifier);
                 dlg.setVisible(true);
-                
-                if (dlg.getReturnStatus() == ConnectionVerifierDialog.RET_OK)
+
+                if (dlg.getReturnStatus() == ConnectionVerifierDialog.RET_OK) {
                     return verifier.getUri();
-                else
+                } else {
                     return null;
-            }                       
+                }
+            }
         }
 
         return defaultURI;
