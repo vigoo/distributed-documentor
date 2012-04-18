@@ -1,5 +1,7 @@
 package hu.distributeddocumentor.controller.sync;
 
+import com.aragost.javahg.HttpAuthorizationRequiredException;
+import hu.distributeddocumentor.gui.ErrorDialog;
 import hu.distributeddocumentor.gui.PageEditorHost;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
@@ -61,9 +63,14 @@ public class SyncController {
         
         if (!cancelled) {
             
-            if (query.hasIncomingChangesets(remoteURI)) {                
-                cancelled = !interaction.showPullDialog(query, syncer, remoteURI);
-            }                        
+            try {
+                if (query.hasIncomingChangesets(remoteURI)) {                
+                    cancelled = !interaction.showPullDialog(query, syncer, remoteURI);
+                }                        
+            } catch (HttpAuthorizationRequiredException ex) {
+                ErrorDialog.show(host.getMainFrame(), "Failed to get incoming changes", ex);
+                cancelled = true;
+            }
         }
         
         if (!cancelled) {

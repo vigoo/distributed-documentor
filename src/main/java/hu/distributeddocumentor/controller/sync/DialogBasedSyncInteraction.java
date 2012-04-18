@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.controller.sync;
 
+import com.aragost.javahg.HttpAuthorizationRequiredException;
 import hu.distributeddocumentor.gui.*;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.utils.ConnectionVerifier;
@@ -67,19 +68,25 @@ public class DialogBasedSyncInteraction implements SyncInteraction {
     @Override
     public boolean showPullDialog(RepositoryQuery query, RepositorySynchronizer syncer, URI uri) {
 
-        SyncDialog dlg = new SyncDialog(host.getMainFrame(), query.incomingChangesets(uri), false);
-        dlg.setVisible(true);
+        try {
+            SyncDialog dlg = new SyncDialog(host.getMainFrame(), query.incomingChangesets(uri), false);
+            dlg.setVisible(true);
 
-        if (dlg.getReturnStatus() == SyncDialog.RET_OK) {
-            try {
-                syncer.pull(uri);
-                return true;
-            } catch (IOException ex) {
+            if (dlg.getReturnStatus() == SyncDialog.RET_OK) {
+                try {
+                    syncer.pull(uri);
+                    return true;
+                } catch (IOException ex) {
 
-                ErrorDialog.show(host.getMainFrame(), "Failed to pull changes", ex);
+                    ErrorDialog.show(host.getMainFrame(), "Failed to pull changes", ex);
+                    return false;
+                }
+            } else {
                 return false;
             }
-        } else {
+        } catch (HttpAuthorizationRequiredException ex) {
+            
+            ErrorDialog.show(host.getMainFrame(), "Failed to get incoming changes", ex);
             return false;
         }
     }
