@@ -104,7 +104,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         repository = Repository.open(createRepositoryConfiguration(), realRepositoryRoot);
         images = new Images(repository, relativeRoot);
         
-        loadRepository();
+        fixMissingFiles();
+        loadRepository();        
     }
     
     public void cloneFromRemote(File localRepositoryRoot, String remoteRepo, String userName, String password) throws FailedToLoadPageException, FailedToLoadTOCException {
@@ -113,6 +114,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         repository = Repository.clone(createRepositoryConfiguration(), localRepositoryRoot, RepositoryUriGenerator.addCredentials(remoteRepo, userName, password));
         images = new Images(repository, relativeRoot);
         
+        fixMissingFiles();
         loadRepository();
     }
     
@@ -189,7 +191,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             if (!toc.getRoot().isReferenced(page)) 
                 toc.getUnorganized().addToEnd(
                         new TOCNode(page));
-        }                
+        }                                
     }
     
     public void reload() throws FailedToLoadPageException, FailedToLoadTOCException {    
@@ -517,4 +519,28 @@ public class Documentation extends Observable implements Observer, SnippetCollec
        notifyObservers();
     }
 
+    private void fixMissingFiles() {
+        
+        StatusCommand status = new StatusCommand(repository);
+        StatusResult result = status.execute();
+
+        List<String> toRemove = new LinkedList<String>();
+        for (String missing : result.getMissing()) {
+            
+            File root = new File(getRepositoryRoot());
+            File missingFile = new File(root, missing);
+            
+            if (missingFile.getAbsolutePath().startsWith(getDocumentationDirectory().getAbsolutePath())) {
+                logger.log(Level.INFO, "Forgetting missing file {0}", missing);                                
+                toRemove.add(missing);
+            }
+            else {
+                logger.log(Level.INFO, "Leaving missing file {0}", missing);
+            }
+        }
+        
+        RemoveCommand remove = new RemoveCommand(repository).after().force();
+                                
+        remove.execute(toRemove.toArray(new String[0]));
+    }
 }
