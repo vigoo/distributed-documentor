@@ -539,8 +539,10 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             }
         }
         
-        RemoveCommand remove = new RemoveCommand(repository).after().force();
-                                
-        remove.execute(toRemove.toArray(new String[0]));
+        if (toRemove.size() > 0) {
+            RemoveCommand remove = new RemoveCommand(repository).after().force();
+
+            remove.execute(toRemove.toArray(new String[0]));
+        }
     }
 }
