@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.model.Page;
@@ -9,7 +5,6 @@ import java.awt.Dimension;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -20,10 +15,6 @@ import org.fit.cssbox.layout.BrowserCanvas;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-/**
- *
- * @author vigoo
- */
 public class HTMLPreview extends javax.swing.JPanel implements Observer {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HTMLPreview.class.getName());

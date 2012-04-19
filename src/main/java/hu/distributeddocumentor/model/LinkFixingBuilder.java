@@ -1,22 +1,27 @@
 package hu.distributeddocumentor.model;
 
+import java.io.File;
 import java.io.Writer;
 import org.eclipse.mylyn.wikitext.core.parser.Attributes;
 import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder;
 import org.eclipse.mylyn.wikitext.core.util.XmlStreamWriter;
 
 public class LinkFixingBuilder extends HtmlDocumentBuilder {
+    private final File root;
 
-    public LinkFixingBuilder(XmlStreamWriter writer) {
+    public LinkFixingBuilder(XmlStreamWriter writer, File root) {
         super(writer);
+        this.root = root;
     }
 
-    public LinkFixingBuilder(Writer out, boolean formatting) {
+    public LinkFixingBuilder(Writer out, boolean formatting, File root) {
         super(out, formatting);
+        this.root = root;
     }
 
-    public LinkFixingBuilder(Writer out) {
+    public LinkFixingBuilder(Writer out, File root) {
         super(out);
+        this.root = root;
     }
         
     @Override
@@ -28,6 +33,9 @@ public class LinkFixingBuilder extends HtmlDocumentBuilder {
             !url.startsWith("media/"))
             url = "media/"+url;
         
+        if (root != null)
+            url = root.toURI().toString() + url;
+        
         super.image(attributes, url);
     }
 
@@ -38,7 +46,8 @@ public class LinkFixingBuilder extends HtmlDocumentBuilder {
             hrefOrHashName.startsWith("https://") ||
             hrefOrHashName.startsWith("file://") ||
             hrefOrHashName.startsWith(".html")) {             
-                super.link(attributes, hrefOrHashName, text);
+                
+            super.link(attributes, hrefOrHashName, text);
         } else {
             super.link(attributes, hrefOrHashName+".html", text);
         }        

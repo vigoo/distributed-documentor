@@ -136,22 +136,26 @@ public class Page extends Observable {
     
     public String asHTML() {
         
-        return asHTML(false);
+        return asHTML(false, null);
     }
     
     public String asHTMLembeddingCSS() {
         
-        return asHTML(true);
+        return asHTML(true, null);
     }
     
+    public String asHTMLembeddingCSS(File root) {
+        
+        return asHTML(true, root);
+    }
     
-    private String asHTML(boolean embedCSS) {
+    private String asHTML(boolean embedCSS, File root) {
        if (!isParserInitialized)
            initializeParser();
        
        StringWriter writer = new StringWriter();
        
-       HtmlDocumentBuilder builder = new LinkFixingBuilder(writer);
+       HtmlDocumentBuilder builder = new LinkFixingBuilder(writer, root);
        
        HtmlDocumentBuilder.Stylesheet stylesheet;
        if (embedCSS) {

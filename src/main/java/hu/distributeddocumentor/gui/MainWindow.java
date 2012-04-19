@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import hu.distributeddocumentor.controller.sync.DialogBasedSyncInteraction;
 import hu.distributeddocumentor.controller.sync.MercurialSync;
@@ -50,7 +51,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         toolWindowManager = new MyDoggyToolWindowManager();
         ContentManager contentManager = toolWindowManager.getContentManager();
         MyDoggyTabbedContentManagerUI contentManagerUI = new MyDoggyTabbedContentManagerUI();                        
-        contentManager.setContentManagerUI(contentManagerUI);
+        contentManager.setContentManagerUI(contentManagerUI);       
         
         contentManagerUI.setShowAlwaysTab(true);        
         contentManager.addContentManagerListener(this);
@@ -498,6 +499,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         System.setProperty("apple.laf.useScreenMenuBar", "true");        
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Distributed Documentor");
                 
+        NativeInterface.open();
         
         /*
          * Set the Nimbus look and feel
@@ -536,6 +538,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 new MainWindow().setVisible(true);
             }
         });
+        
+        NativeInterface.runEventPump();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCommit;
@@ -649,6 +653,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
     @Override
     public void contentRemoved(ContentManagerEvent cme) {
+        
+        SplittedPageView view = (SplittedPageView)cme.getContent().getComponent();
+        view.dispose();
     }
 
     @Override

@@ -1,21 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.model.Page;
 import java.io.File;
 import javax.swing.undo.UndoManager;
 
-/**
- *
- * @author vigoo
- */
 public class SplittedPageView extends javax.swing.JPanel {
 
     private final WikiMarkupEditor editor;
-    private final HTMLPreview preview;
+    private final NativeBrowserPreview preview;
     
     /**
      * Creates new form SplittedPageView
@@ -24,7 +16,7 @@ public class SplittedPageView extends javax.swing.JPanel {
         initComponents();
         
         editor = new WikiMarkupEditor(page, host);
-        preview = new HTMLPreview(page, root);
+        preview = new NativeBrowserPreview(page, host, root);
         
         jSplitPane1.setLeftComponent(editor);
         jSplitPane1.setRightComponent(preview);
@@ -63,5 +55,9 @@ public class SplittedPageView extends javax.swing.JPanel {
 
     public UndoManager getEditorUndoManager() {
         return editor.getUndoManager();
+    }
+
+    void dispose() {
+        preview.dispose();
     }
 }
