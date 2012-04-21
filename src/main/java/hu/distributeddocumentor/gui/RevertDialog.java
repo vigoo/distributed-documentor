@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.controller.CommittableItem;
@@ -11,10 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @author vigoo
- */
 public class RevertDialog extends javax.swing.JDialog {
     private final Documentation doc;
     private final CommittableItemsModel revertableItems;

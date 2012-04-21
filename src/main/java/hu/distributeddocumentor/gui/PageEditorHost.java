@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import com.swabunga.spell.event.SpellChecker;
 import java.awt.Frame;
 
 public interface PageEditorHost {
@@ -9,5 +10,7 @@ public interface PageEditorHost {
     void documentationReloaded();
     void updateUndoRedoItems();
 
-    public Frame getMainFrame();   
+    public Frame getMainFrame();
+
+    public SpellChecker getSpellChecker();
 }

@@ -1,25 +1,31 @@
 package hu.distributeddocumentor.gui;
 
 import com.jidesoft.popup.JidePopup;
+import com.swabunga.spell.event.DocumentWordTokenizer;
+import com.swabunga.spell.event.SpellCheckEvent;
+import com.swabunga.spell.event.SpellCheckListener;
+import com.swabunga.spell.event.SpellChecker;
 import hu.distributeddocumentor.controller.MediaWikiEditor;
 import hu.distributeddocumentor.controller.WikiEditor;
 import hu.distributeddocumentor.model.Page;
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.JColorChooser;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
@@ -27,13 +33,22 @@ import javax.swing.undo.UndoManager;
  *
  * @author vigoo
  */
-public class WikiMarkupEditor extends javax.swing.JPanel {
+public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckListener {
 
+    private static final Logger log = Logger.getLogger(WikiMarkupEditor.class.getName());
+    
     private final Page page;
     private final DropTarget dropTarget;
     private final UndoManager undoManager = new UndoManager();
     private final PageEditorHost host;
     private WikiEditor editor;
+    
+    private final Timer spellCheckTimer;
+    private final SpellChecker spellChecker;
+    private boolean isSpellChecking;
+    
+    private final Style defaultStyle;
+    private final Style spellingErrorStyle;
     
     
     /**
@@ -44,6 +59,26 @@ public class WikiMarkupEditor extends javax.swing.JPanel {
         
         this.page = page;
         
+        defaultStyle = editorPane.addStyle("default", null);
+        
+        spellingErrorStyle = editorPane.addStyle("spellingError", defaultStyle);
+        StyleConstants.setForeground(spellingErrorStyle, Color.red);
+        StyleConstants.setUnderline(spellingErrorStyle, true);
+        
+        spellChecker = host.getSpellChecker();
+       
+        
+        spellCheckTimer = new Timer(5000, 
+                new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        performSpellCheck();
+                    }                    
+                });
+        spellCheckTimer.setRepeats(true);        
+        spellCheckTimer.stop();               
+        
         syncToPage();
         
         Document document = editorPane.getDocument();
@@ -51,28 +86,37 @@ public class WikiMarkupEditor extends javax.swing.JPanel {
                 new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent de) {
-                try {
-                    page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                
+                if (!isSpellChecking) {
+                    try {
+                        page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
 
             @Override
             public void removeUpdate(DocumentEvent de) {
-                try {
-                    page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                
+                if (!isSpellChecking) {
+                    try {
+                        page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
 
             @Override
             public void changedUpdate(DocumentEvent de) {
-                try {
-                    page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                
+                if (!isSpellChecking) {
+                    try {
+                        page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         });
@@ -178,7 +222,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel {
     private void initComponents() {
 
         scrollPane = new javax.swing.JScrollPane();
-        editorPane = new javax.swing.JEditorPane();
+        editorPane = new javax.swing.JTextPane();
         toolBar = new javax.swing.JToolBar();
         btH1 = new javax.swing.JButton();
         btH2 = new javax.swing.JButton();
@@ -200,6 +244,14 @@ public class WikiMarkupEditor extends javax.swing.JPanel {
         btAddRemoteLink = new javax.swing.JButton();
 
         editorPane.setFont(new java.awt.Font("Monaco", 0, 13)); // NOI18N
+        editorPane.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                editorPaneFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                editorPaneFocusLost(evt);
+            }
+        });
         scrollPane.setViewportView(editorPane);
 
         toolBar.setFloatable(false);
@@ -528,6 +580,14 @@ public class WikiMarkupEditor extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btAddRemoteLinkActionPerformed
 
+    private void editorPaneFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_editorPaneFocusGained
+        spellCheckTimer.start();
+    }//GEN-LAST:event_editorPaneFocusGained
+
+    private void editorPaneFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_editorPaneFocusLost
+        spellCheckTimer.stop();
+    }//GEN-LAST:event_editorPaneFocusLost
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddRemoteLink;
     private javax.swing.JButton btBold;
@@ -543,7 +603,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel {
     private javax.swing.JButton btIndent;
     private javax.swing.JButton btItalic;
     private javax.swing.JButton btUnindent;
-    private javax.swing.JEditorPane editorPane;
+    private javax.swing.JTextPane editorPane;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
@@ -561,6 +621,46 @@ public class WikiMarkupEditor extends javax.swing.JPanel {
 
     public UndoManager getUndoManager() {
         return undoManager;
+    }
+    
+    private void performSpellCheck() {
+        if (spellChecker != null) {
+                               
+            
+            log.log(Level.FINE, "Starting spell check for {0}", page.getId());
+
+            synchronized (spellChecker) {
+
+                isSpellChecking = true;
+                spellChecker.addSpellCheckListener(this);            
+
+                try {
+                    editorPane.getStyledDocument().setCharacterAttributes(
+                        0, 
+                        editorPane.getStyledDocument().getLength(), 
+                        defaultStyle, true);
+
+                    spellChecker.checkSpelling(
+                            new DocumentWordTokenizer(editorPane.getDocument()));
+                }
+                finally {
+                    spellChecker.removeSpellCheckListener(this);
+                    isSpellChecking = false;
+                }
+
+                log.log(Level.FINE, "Finished spell check for {0}", page.getId());
+            }
+        }
+    }
+
+    @Override
+    public void spellingError(SpellCheckEvent event) {
+        log.log(Level.INFO, "Spelling error: ''{0}''", new Object[]{event.getInvalidWord()});
+        
+        editorPane.getStyledDocument().setCharacterAttributes(
+                event.getWordContextPosition(), 
+                event.getInvalidWord().length(), 
+                spellingErrorStyle, true);
     }
     
 }
