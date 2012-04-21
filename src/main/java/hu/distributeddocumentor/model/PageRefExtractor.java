@@ -90,7 +90,8 @@ public class PageRefExtractor extends DocumentBuilder {
         
         if (!hrefOrHashName.startsWith("http://")) {         
             if (!refs.contains(hrefOrHashName))
-                refs.add(hrefOrHashName);            
+                if (!hrefOrHashName.startsWith("Snippet:"))
+                    refs.add(hrefOrHashName);            
         }        
     }
 
