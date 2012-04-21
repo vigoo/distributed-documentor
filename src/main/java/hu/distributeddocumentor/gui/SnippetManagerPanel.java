@@ -140,7 +140,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
 
     private void btAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddActionPerformed
 
-       CreateNewPageDialog dlg = new CreateNewPageDialog(null, true, doc, "");
+       CreateNewPageDialog dlg = new CreateNewPageDialog(host.getMainFrame(), true, doc, "");
        dlg.setVisible(true);
        
        if (dlg.getReturnStatus() == CreateNewPageDialog.RET_OK) {
