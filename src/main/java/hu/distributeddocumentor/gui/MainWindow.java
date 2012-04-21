@@ -1,6 +1,5 @@
 package hu.distributeddocumentor.gui;
 
-import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.swabunga.spell.engine.SpellDictionary;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
@@ -517,8 +516,6 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         System.setProperty("apple.laf.useScreenMenuBar", "true");        
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Distributed Documentor");
                 
-        NativeInterface.open();
-        
         /*
          * Set the Nimbus look and feel
          */
@@ -546,7 +543,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         /*
          * Create and display the form
          */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
@@ -555,9 +552,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 
                 new MainWindow().setVisible(true);
             }
-        });
-        
-        NativeInterface.runEventPump();
+        });        
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCommit;

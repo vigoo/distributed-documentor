@@ -7,7 +7,7 @@ import javax.swing.undo.UndoManager;
 public class SplittedPageView extends javax.swing.JPanel {
 
     private final WikiMarkupEditor editor;
-    private final NativeBrowserPreview preview;
+    private final HTMLPreview preview;
     
     /**
      * Creates new form SplittedPageView
@@ -16,7 +16,7 @@ public class SplittedPageView extends javax.swing.JPanel {
         initComponents();
         
         editor = new WikiMarkupEditor(page, host);
-        preview = new NativeBrowserPreview(page, host, root);
+        preview = new HTMLPreview(page, host, root);
         
         jSplitPane1.setLeftComponent(editor);
         jSplitPane1.setRightComponent(preview);
@@ -56,8 +56,7 @@ public class SplittedPageView extends javax.swing.JPanel {
     public UndoManager getEditorUndoManager() {
         return editor.getUndoManager();
     }
-
-    void dispose() {
-        preview.dispose();
+    
+    public void dispose() {        
     }
 }
