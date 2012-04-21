@@ -2,6 +2,9 @@ package hu.distributeddocumentor.gui;
 
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import com.jidesoft.plaf.LookAndFeelFactory;
+import com.swabunga.spell.engine.SpellDictionary;
+import com.swabunga.spell.engine.SpellDictionaryHashMap;
+import com.swabunga.spell.event.SpellChecker;
 import hu.distributeddocumentor.controller.sync.DialogBasedSyncInteraction;
 import hu.distributeddocumentor.controller.sync.MercurialSync;
 import hu.distributeddocumentor.controller.sync.SyncController;
@@ -15,9 +18,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +38,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private final Timer statusCheckTimer;
     private final Timer removeOrphanedPagesTimer;
     private UndoManager currentUndoManager;
+    private SpellChecker spellChecker;
+
+    @Override
+    public SpellChecker getSpellChecker() {
+        return spellChecker;
+    }        
     
     /**
      * Creates new form MainWindow
@@ -44,6 +51,17 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     public MainWindow() {
         initComponents();
         setSize(1024, 768);
+        
+        try {
+            SpellDictionary dictionary = new SpellDictionaryHashMap(
+                    new BufferedReader(
+                       new InputStreamReader(WikiMarkupEditor.class.getResourceAsStream("/dict/en.txt"))));
+            spellChecker = new SpellChecker(dictionary);        
+        }
+        catch (Exception ex) {
+            spellChecker = null;
+            ErrorDialog.show(this, "Failed to initialize spell checker", ex);            
+        }
         
         prefs = new DocumentorPreferences();
         doc = new Documentation(prefs);

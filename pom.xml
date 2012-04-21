@@ -232,6 +232,11 @@
             <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
             <version>3.7.2</version>
         </dependency>
+        <dependency>
+            <groupId>net.sf.jazzy</groupId>
+            <artifactId>jazzy</artifactId>
+            <version>0.5.2-rtext-1.4.1-2</version>
+        </dependency>
     </dependencies> 
   
     <reporting>
