@@ -236,17 +236,20 @@ public class TableOfContentsView extends javax.swing.JPanel {
             // On double click...
             
             TreePath path = tree.getPathForLocation(evt.getX(), evt.getY());
-            TOCNode node = (TOCNode)path.getLastPathComponent();
             
-            if (node.hasTarget()) {
-                String pageId = node.getTarget().getId();
-                pageEditorHost.openOrFocusPage(pageId);
-            } else {
-                               
-                if (node != toc.getUnorganized() &&
-                    node != toc.getRoot() &&
-                    node != toc.getRecycleBin()) {
-                    createNewPage(node);
+            if (path != null) {
+                TOCNode node = (TOCNode)path.getLastPathComponent();
+
+                if (node.hasTarget()) {
+                    String pageId = node.getTarget().getId();
+                    pageEditorHost.openOrFocusPage(pageId);
+                } else {
+
+                    if (node != toc.getUnorganized() &&
+                        node != toc.getRoot() &&
+                        node != toc.getRecycleBin()) {
+                        createNewPage(node);
+                    }
                 }
             }
         }
