@@ -10,14 +10,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JList;
-import javax.swing.TransferHandler;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 
 public class ImageManagerPanel extends javax.swing.JPanel {
-
+	
+    private JTableWithImagePreview imagesList;
     private final Images images;
     private final ImageListModel imagesModel;
     private File lastImageFolder;
@@ -31,6 +29,8 @@ public class ImageManagerPanel extends javax.swing.JPanel {
         imagesModel = new ImageListModel(images);
         
         initComponents();
+
+        imagesList = new JTableWithImagePreview();
         
         imagesList.setRoot(images.getMediaRoot());
         imagesList.setTransferHandler(
@@ -39,8 +39,10 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                     @Override
                     protected Transferable createTransferable(JComponent jc) {
                         
-                        JList list = (JList)jc;
-                        String item = (String)list.getSelectedValue();
+                        JTable table = (JTable)jc;
+                        
+                        int row = table.getSelectedRow();
+                        String item = (String)table.getModel().getValueAt(row, 0);
                         
                         return new StringSelection("[[Image:" + StringUtils.convertSpaces(item) + "]]");
                     }
@@ -51,6 +53,14 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                     }
                     
                 });
+
+        imagesList.setModel(imagesModel);
+        imagesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        imagesList.setDragEnabled(true);
+        imagesList.setAutoCreateRowSorter(true);         
+        imagesList.getRowSorter().toggleSortOrder(0);
+		
+        jScrollPane1.setViewportView(imagesList);
     }   
 
     /**
@@ -63,16 +73,10 @@ public class ImageManagerPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        imagesList = new JListWithImagePreview();
         btAdd = new javax.swing.JButton();
         btRemove = new javax.swing.JButton();
 
-        imagesList.setModel(imagesModel
-        );
-        imagesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        imagesList.setDragEnabled(true);
-        jScrollPane1.setViewportView(imagesList);
-
+        
         btAdd.setText("Add...");
         btAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -157,7 +161,8 @@ public class ImageManagerPanel extends javax.swing.JPanel {
 
     private void btRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRemoveActionPerformed
         
-        String name = (String)imagesList.getSelectedValue();
+        int row = imagesList.getSelectedRow();
+        String name = (String)imagesList.getModel().getValueAt(row, 0);
         images.removeImage(name);
         
     }//GEN-LAST:event_btRemoveActionPerformed
@@ -165,7 +170,6 @@ public class ImageManagerPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAdd;
     private javax.swing.JButton btRemove;
-    private JListWithImagePreview imagesList;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }
