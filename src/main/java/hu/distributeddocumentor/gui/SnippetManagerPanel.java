@@ -8,7 +8,7 @@ import hu.distributeddocumentor.utils.StringUtils;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import javax.swing.JComponent;
-import javax.swing.JList;
+import javax.swing.JTable;
 import javax.swing.TransferHandler;
 
 
@@ -30,15 +30,17 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
         
         snippetModel = new SnippetListModel(doc);
         
-        snippetList.setModel(snippetModel);
-        snippetList.setTransferHandler(
+        snippetTable.setModel(snippetModel);
+        snippetTable.setTransferHandler(
         new TransferHandler() {
 
             @Override
             protected Transferable createTransferable(JComponent jc) {
 
-                JList list = (JList)jc;
-                String item = (String)list.getSelectedValue();
+                JTable table = (JTable)jc;
+                
+                int row = table.getSelectedRow();
+                String item = (String)table.getModel().getValueAt(row, 0);
 
                 return new StringSelection("\n[Snippet:" + StringUtils.convertSpaces(item) + "]\n");
             }
@@ -49,6 +51,8 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
             }
 
         });
+        
+        snippetTable.getRowSorter().toggleSortOrder(0);
     }
 
     /**
@@ -62,8 +66,8 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
 
         btRemove = new javax.swing.JButton();
         btAdd = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        snippetList = new javax.swing.JList();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        snippetTable = new javax.swing.JTable();
 
         btRemove.setText("Remove");
         btRemove.addActionListener(new java.awt.event.ActionListener() {
@@ -79,18 +83,26 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
             }
         });
 
-        snippetList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        snippetList.setDragEnabled(true);
-        snippetList.addMouseListener(new java.awt.event.MouseAdapter() {
+        snippetTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        snippetTable.setAutoCreateRowSorter(true);
+        snippetTable.setDragEnabled(true);
+        snippetTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        snippetTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                snippetListMouseClicked(evt);
+                snippetTableMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(snippetList);
+        jScrollPane2.setViewportView(snippetTable);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -102,14 +114,14 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
                 .add(btRemove))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(btAdd)
@@ -119,8 +131,10 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
 
     private void btRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRemoveActionPerformed
 
-        String name = (String) snippetList.getSelectedValue();
-        doc.removeSnippet(name);
+        int row = snippetTable.getSelectedRow();
+        String item = (String)snippetModel.getValueAt(row, 0);
+        
+        doc.removeSnippet(item);
 
     }//GEN-LAST:event_btRemoveActionPerformed
 
@@ -141,21 +155,21 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
        }
     }//GEN-LAST:event_btAddActionPerformed
 
-    private void snippetListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_snippetListMouseClicked
-        
+    private void snippetTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_snippetTableMouseClicked
+         
         if (evt.getClickCount() == 2) {
             
-            int index = snippetList.locationToIndex(evt.getPoint());
-            String id = (String) snippetModel.getElementAt(index);
+            int index = snippetTable.rowAtPoint(evt.getPoint());
+            String id = (String) snippetModel.getValueAt(index, 0);
             
             host.openOrFocusSnippet(id);
-        }        
-    }//GEN-LAST:event_snippetListMouseClicked
+        }     
+    }//GEN-LAST:event_snippetTableMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAdd;
     private javax.swing.JButton btRemove;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JList snippetList;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable snippetTable;
     // End of variables declaration//GEN-END:variables
 }
