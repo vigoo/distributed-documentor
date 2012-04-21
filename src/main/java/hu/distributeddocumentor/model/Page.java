@@ -220,31 +220,39 @@ public class Page extends Observable {
     
     private String preprocessMarkup(String markup) {
         
+        boolean mayHaveSnippetRefs = true;
         snippetRefs.clear();
         
-        List<String> lines = Arrays.asList(markup.split("\n"));
-        List<String> resultLines = new LinkedList<String>();
-        
-        for (String line : lines) {
+        while (mayHaveSnippetRefs) {
             
-            Matcher matcher = snippetPattern.matcher(line);
-            
-            if (matcher.matches()) {
-                
-                String snippetId = matcher.group(1);
-                snippetRefs.add(snippetId);
-            
-                Snippet snippet = snippets.getSnippet(snippetId);
-                if (snippet != null) {                    
-                    resultLines.add(snippet.getMarkup());
+            mayHaveSnippetRefs = false;
+                        
+            List<String> lines = Arrays.asList(markup.split("\n"));
+            List<String> resultLines = new LinkedList<String>();
+
+            for (String line : lines) {
+
+                Matcher matcher = snippetPattern.matcher(line);
+
+                if (matcher.matches()) {
+
+                    String snippetId = matcher.group(1);
+                    snippetRefs.add(snippetId);
+
+                    Snippet snippet = snippets.getSnippet(snippetId);
+                    if (snippet != null) {                    
+                        resultLines.add(snippet.getMarkup());
+                        mayHaveSnippetRefs =true;
+                    }
+                } else {
+                    resultLines.add(line);
                 }
-            } else {
-                
-                resultLines.add(line);
-            }
-        }                 
+            }                 
+
+            markup = StringUtils.join(resultLines, '\n');
+        }
         
-        return StringUtils.join(resultLines, '\n');
+        return markup;
     }
 
 }
