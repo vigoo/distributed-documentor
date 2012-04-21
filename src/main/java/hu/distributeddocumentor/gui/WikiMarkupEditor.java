@@ -1,14 +1,17 @@
 package hu.distributeddocumentor.gui;
 
 import com.jidesoft.popup.JidePopup;
+import com.swabunga.spell.engine.Word;
 import com.swabunga.spell.event.DocumentWordTokenizer;
 import com.swabunga.spell.event.SpellCheckEvent;
 import com.swabunga.spell.event.SpellCheckListener;
 import com.swabunga.spell.event.SpellChecker;
 import hu.distributeddocumentor.controller.MediaWikiEditor;
 import hu.distributeddocumentor.controller.WikiEditor;
+import hu.distributeddocumentor.model.IntRange;
 import hu.distributeddocumentor.model.Page;
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -18,6 +21,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -28,6 +35,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+
 
 /**
  *
@@ -46,6 +54,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     private final Timer spellCheckTimer;
     private final SpellChecker spellChecker;
     private boolean isSpellChecking;
+    private Map<IntRange, List<String>> suggestions;
     
     private final Style defaultStyle;
     private final Style spellingErrorStyle;
@@ -58,6 +67,8 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         initComponents();
         
         this.page = page;
+        
+        suggestions = new HashMap<IntRange, List<String>>();
         
         defaultStyle = editorPane.addStyle("default", null);
         
@@ -206,7 +217,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                                 }                            
                     }                    
                 });
-        this.host = host;
+        this.host = host;                
         
         if ("MediaWiki".equals(page.getMarkupLanguage()))
             editor = new MediaWikiEditor(page);
@@ -244,6 +255,11 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         btAddRemoteLink = new javax.swing.JButton();
 
         editorPane.setFont(new java.awt.Font("Monaco", 0, 13)); // NOI18N
+        editorPane.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                editorPaneMousePressed(evt);
+            }
+        });
         editorPane.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 editorPaneFocusGained(evt);
@@ -588,6 +604,41 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         spellCheckTimer.stop();
     }//GEN-LAST:event_editorPaneFocusLost
 
+    private void editorPaneMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_editorPaneMousePressed
+        
+        if (evt.isPopupTrigger()) {
+         
+            int pos = editorPane.viewToModel(new Point(evt.getX(), evt.getY()));
+            
+            for (final IntRange range : suggestions.keySet()) {
+                
+                if (range.contains(pos)) {
+                    
+                    JPopupMenu popup = new JPopupMenu();
+                    
+                    List<String> sgs = suggestions.get(range);
+                    for (final String suggestion : sgs) {
+                        JMenuItem item = new JMenuItem(suggestion);                        
+                        item.addActionListener(
+                                new ActionListener() {
+
+                                    @Override
+                                    public void actionPerformed(ActionEvent ae) {
+                                        editorPane.setSelectionStart(range.getStart());
+                                        editorPane.setSelectionEnd(range.getEnd());
+                                        editorPane.replaceSelection(suggestion);
+                                    }
+                        });
+                        
+                        popup.add(item);
+                    }
+                    
+                    popup.show(editorPane, evt.getX(), evt.getY());
+                }
+            }
+        }        
+    }//GEN-LAST:event_editorPaneMousePressed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddRemoteLink;
     private javax.swing.JButton btBold;
@@ -632,7 +683,11 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
             synchronized (spellChecker) {
 
                 isSpellChecking = true;
-                spellChecker.addSpellCheckListener(this);            
+                
+                spellChecker.reset();
+                spellChecker.addSpellCheckListener(this);                 
+                
+                suggestions.clear();
 
                 try {
                     editorPane.getStyledDocument().setCharacterAttributes(
@@ -657,10 +712,26 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     public void spellingError(SpellCheckEvent event) {
         log.log(Level.INFO, "Spelling error: ''{0}''", new Object[]{event.getInvalidWord()});
         
+        int start = event.getWordContextPosition();
+        int length = event.getInvalidWord().length();
+        int end = start + length;
+        
         editorPane.getStyledDocument().setCharacterAttributes(
-                event.getWordContextPosition(), 
-                event.getInvalidWord().length(), 
+                start, 
+                length, 
                 spellingErrorStyle, true);
+        
+        List wordSuggestions = spellChecker.getSuggestions(event.getInvalidWord(), 0);
+        List<String> sgs = new LinkedList<String>();                
+                
+        if (wordSuggestions != null && wordSuggestions.size() > 0) {
+            for (Object suggestion : wordSuggestions) {
+                Word word = (Word)suggestion;
+                sgs.add(word.getWord());
+            }
+
+            suggestions.put(new IntRange(start, end), sgs);
+        }
     }
     
 }

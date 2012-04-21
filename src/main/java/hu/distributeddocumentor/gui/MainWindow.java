@@ -55,7 +55,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             SpellDictionary dictionary = new SpellDictionaryHashMap(
                     new BufferedReader(
                        new InputStreamReader(WikiMarkupEditor.class.getResourceAsStream("/dict/en.txt"))));
-            spellChecker = new SpellChecker(dictionary);        
+            spellChecker = new SpellChecker(dictionary);           
         }
         catch (Exception ex) {
             spellChecker = null;
