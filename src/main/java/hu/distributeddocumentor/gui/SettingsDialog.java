@@ -4,12 +4,11 @@ import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.Desktop;
 import java.io.File;
 import java.net.URI;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.slf4j.LoggerFactory;
 
 public class SettingsDialog extends javax.swing.JDialog {
 
@@ -373,7 +372,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         try {
             Desktop.getDesktop().browse(new URI("http://www.microsoft.com/downloads/info.aspx?na=41&srcfamilyid=00535334-c8a6-452f-9aa0-d597d16580cc&srcdisplaylang=en&u=http%3a%2f%2fdownload.microsoft.com%2fdownload%2f0%2fa%2f9%2f0a939ef6-e31c-430f-a3df-dfae7960d564%2fhtmlhelp.exe"));
         } catch (Exception ex) {
-            Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(SettingsDialog.class.getName()).error(null, ex);
         }
     }//GEN-LAST:event_lbHHCURLMouseClicked
 
@@ -382,7 +381,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         try {
             Desktop.getDesktop().browse(new URI("http://mercurial.selenic.com/downloads/"));
         } catch (Exception ex) {
-            Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(SettingsDialog.class.getName()).error(null, ex);
         }                    
     }//GEN-LAST:event_lbMercurialURLMouseClicked
     

@@ -5,12 +5,13 @@ import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.utils.ConnectionVerifier;
 import java.io.IOException;
 import java.net.URI;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DialogBasedSyncInteraction implements SyncInteraction {
 
-    private static final Logger log = Logger.getLogger(DialogBasedSyncInteraction.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(DialogBasedSyncInteraction.class.getName());
     private final PageEditorHost host;
     private final Documentation doc;
 

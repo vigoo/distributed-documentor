@@ -19,14 +19,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.net.URI;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Properties;
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
+import org.apache.log4j.PropertyConfigurator;
 import org.noos.xing.mydoggy.*;
 import org.noos.xing.mydoggy.event.ContentManagerEvent;
 import org.noos.xing.mydoggy.plaf.MyDoggyToolWindowManager;
 import org.noos.xing.mydoggy.plaf.ui.content.MyDoggyTabbedContentManagerUI;
+import org.slf4j.LoggerFactory;
 
 public final class MainWindow extends javax.swing.JFrame implements PageEditorHost, ContentManagerListener {
 
@@ -400,7 +401,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 exporter.export();
             }
             catch (Exception ex) {
-                java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
                 
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Export failed", JOptionPane.ERROR_MESSAGE);
             }
@@ -425,7 +426,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 exporter.export();
             }
             catch (Exception ex) {
-                java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
                 
                 ErrorDialog.show(this, "Export failed", ex);
             }
@@ -459,7 +460,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         try {
             Desktop.getDesktop().browse(new URI("http://freezingmoon.dyndns.org/"));
         } catch (Exception ex) {
-            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
         }                    
     }//GEN-LAST:event_userManualItemActionPerformed
 
@@ -513,6 +514,15 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
      */
     public static void main(String args[]) {
         
+        try {
+            Properties props = new Properties();
+            props.load(new FileInputStream("log4j.properties"));
+            PropertyConfigurator.configure(props);
+        } 
+        catch (IOException ex) {
+            System.err.println(ex.toString());
+        }
+        
         System.setProperty("apple.laf.useScreenMenuBar", "true");        
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Distributed Documentor");
                 
@@ -528,13 +538,13 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
         }
         //</editor-fold>
 

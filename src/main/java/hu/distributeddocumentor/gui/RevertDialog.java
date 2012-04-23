@@ -122,7 +122,7 @@ public class RevertDialog extends javax.swing.JDialog {
             host.documentationReloaded();
         }
         catch (Exception ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
                 
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Revert failed", JOptionPane.ERROR_MESSAGE);
         }

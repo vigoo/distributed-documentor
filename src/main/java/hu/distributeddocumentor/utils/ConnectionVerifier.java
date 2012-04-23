@@ -1,19 +1,7 @@
 package hu.distributeddocumentor.utils;
 
-import hu.distributeddocumentor.controller.sync.DialogBasedSyncInteraction;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.*;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.net.ssl.*;
+import java.net.URI;
+import javax.net.ssl.SSLContext;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -24,10 +12,12 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConnectionVerifier {
 
-    private static final Logger log = Logger.getLogger(ConnectionVerifier.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(ConnectionVerifier.class.getName());
     private SSLContext sc;
     private URI uri;
     private String lastError;
@@ -107,7 +97,7 @@ public class ConnectionVerifier {
 
         } catch (Exception ex) {
 
-            log.log(Level.SEVERE, null, ex);
+            log.error(null, ex);
             lastError = ex.getMessage();
             return false;
         }

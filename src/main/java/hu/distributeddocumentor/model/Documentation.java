@@ -13,14 +13,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.CodingErrorAction;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Documentation extends Observable implements Observer, SnippetCollection {
     
-    private static final Logger logger = Logger.getLogger(Documentation.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Documentation.class.getName());
     
     private final TOC toc;
     private final Map<String, Page> pages;    
@@ -74,15 +74,15 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             AddCommand cmd = new AddCommand(repository);
             cmd.execute(new File(repositoryRoot, "toc.xml"));
         } catch (TransformerConfigurationException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.error(null, ex);
             
             throw new IllegalStateException("Must be called on a fresh instance!");
         } catch (TransformerException ex) {
-            logger.log(Level.SEVERE, null, ex);                        
+            logger.error(null, ex);                        
             
             throw new IllegalStateException("Must be called on a fresh instance!");
         } catch (FileNotFoundException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.error(null, ex);
             
             throw new IllegalStateException("Must be called on a fresh instance!");
         }
@@ -97,9 +97,9 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         File realRepositoryRoot = findRealRepositoryRoot(repositoryRoot);
         relativeRoot = realRepositoryRoot.toURI().relativize(repositoryRoot.toURI()).getPath();
         
-        logger.log(Level.INFO, "Specified root: {0}", repositoryRoot.toString());
-        logger.log(Level.INFO, "Real root:      {0}", realRepositoryRoot.toString());
-        logger.log(Level.INFO, "Relative root:  {0}", relativeRoot);
+        logger.info("Specified root: {0}", repositoryRoot.toString());
+        logger.info("Real root:      {0}", realRepositoryRoot.toString());
+        logger.info("Relative root:  {0}", relativeRoot);
         
         repository = Repository.open(createRepositoryConfiguration(), realRepositoryRoot);
         images = new Images(repository, relativeRoot);
@@ -220,7 +220,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         
         File pageFile = page.save(getDocumentationDirectory());
         
-        logger.log(Level.INFO, "Adding new file to repository: {0}", pageFile.getName());
+        logger.info("Adding new file to repository: {0}", pageFile.getName());
         
         AddCommand cmd = new AddCommand(repository);
         cmd.execute(pageFile);
@@ -263,15 +263,15 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             toc.saveIfModified(root);
         }
         catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.error(null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);        
         } catch (TransformerConfigurationException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.error(null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);
         } catch (TransformerException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.error(null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);
         }    
@@ -362,11 +362,11 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                         addNewPage(newPage);
                     }
                     catch (IOException ex) {
-                        logger.log(Level.SEVERE, null, ex);
+                        logger.error(null, ex);
                     }
                     catch (PageAlreadyExistsException ex) {
                         // This cannot happen
-                        logger.log(Level.SEVERE, null, ex);
+                        logger.error(null, ex);
                     }
                 } else {
                 
@@ -410,7 +410,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         
         for (String pageId : orphanedPages) {
             
-            logger.log(Level.INFO, "Found orphaned page: {0}", pageId);
+            logger.info("Found orphaned page: {0}", pageId);
             
             Page page = pages.get(pageId);
             
@@ -493,7 +493,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         
         File snippetFile = snippet.save(getSnippetsDirectory());
         
-        logger.log(Level.INFO, "Adding new snippet to repository: {0}", snippetFile.getName());
+        logger.info("Adding new snippet to repository: {0}", snippetFile.getName());
         
         AddCommand cmd = new AddCommand(repository);
         cmd.execute(snippetFile);
@@ -505,7 +505,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     @Override
     public void removeSnippet(String id) {
                
-       logger.log(Level.INFO, "Removing snippet {0} from repository", id);
+       logger.info("Removing snippet {0} from repository", id);
                             
        Snippet snippet = snippets.get(id);
        snippets.remove(id);
@@ -531,11 +531,11 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             File missingFile = new File(root, missing);
             
             if (missingFile.getAbsolutePath().startsWith(getDocumentationDirectory().getAbsolutePath())) {
-                logger.log(Level.INFO, "Forgetting missing file {0}", missing);                                
+                logger.info("Forgetting missing file {0}", missing);                                
                 toRemove.add(missing);
             }
             else {
-                logger.log(Level.INFO, "Leaving missing file {0}", missing);
+                logger.info("Leaving missing file {0}", missing);
             }
         }
         

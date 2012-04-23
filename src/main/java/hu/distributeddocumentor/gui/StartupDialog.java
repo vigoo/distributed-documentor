@@ -222,7 +222,7 @@ public class StartupDialog extends javax.swing.JDialog {
             
             return true;
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(StartupDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            org.slf4j.LoggerFactory.getLogger(StartupDialog.class.getName()).error(null, ex);
             
             ErrorDialog.show((Frame)getParent(), "Failed to load documentation", ex);                    
             return false;

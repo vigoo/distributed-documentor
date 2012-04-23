@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
@@ -35,6 +33,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -43,7 +43,7 @@ import javax.swing.undo.UndoManager;
  */
 public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckListener {
 
-    private static final Logger log = Logger.getLogger(WikiMarkupEditor.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(WikiMarkupEditor.class.getName());
     
     private final Page page;
     private final DropTarget dropTarget;
@@ -102,7 +102,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                     try {
                         page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
                     } catch (BadLocationException ex) {
-                        Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                        log.error(null, ex);
                     }
                 }
             }
@@ -114,7 +114,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                     try {
                         page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
                     } catch (BadLocationException ex) {
-                        Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                        log.error(null, ex);
                     }
                 }
             }
@@ -126,7 +126,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                     try {
                         page.setMarkup(de.getDocument().getText(0, de.getDocument().getLength()));
                     } catch (BadLocationException ex) {
-                        Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                        log.error(null, ex);
                     }
                 }
             }
@@ -152,7 +152,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                                 host.updateUndoRedoItems();
                             }
                         } catch (CannotUndoException ex) {                        
-                            Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.WARNING, null, ex);
+                            log.warn(null, ex);
                         }
                     }
                 });
@@ -167,7 +167,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                                 host.updateUndoRedoItems();
                             }
                         } catch (CannotUndoException ex) {                        
-                            Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.WARNING, null, ex);
+                            log.warn(null, ex);
                         }
                     }
                 });
@@ -209,11 +209,11 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                                     editorPane.getDocument().insertString(pos, str, null);
                                     
                                 } catch (UnsupportedFlavorException ex) {
-                                    Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                                    log.error(null, ex);
                                 } catch (IOException ex) {
-                                    Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                                    log.error(null, ex);
                                 } catch (BadLocationException ex) {
-                                    Logger.getLogger(WikiMarkupEditor.class.getName()).log(Level.SEVERE, null, ex);
+                                    log.error(null, ex);
                                 }                            
                     }                    
                 });
@@ -678,7 +678,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         if (spellChecker != null) {
                                
             
-            log.log(Level.FINE, "Starting spell check for {0}", page.getId());
+            log.debug("Starting spell check for {0}", page.getId());
 
             synchronized (spellChecker) {
 
@@ -703,14 +703,14 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                     isSpellChecking = false;
                 }
 
-                log.log(Level.FINE, "Finished spell check for {0}", page.getId());
+                log.debug("Finished spell check for {0}", page.getId());
             }
         }
     }
 
     @Override
     public void spellingError(SpellCheckEvent event) {
-        log.log(Level.INFO, "Spelling error: ''{0}''", new Object[]{event.getInvalidWord()});
+        log.info("Spelling error: ''{0}''", new Object[]{event.getInvalidWord()});
         
         int start = event.getWordContextPosition();
         int length = event.getInvalidWord().length();

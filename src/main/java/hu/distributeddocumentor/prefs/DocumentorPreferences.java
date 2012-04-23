@@ -3,14 +3,14 @@ package hu.distributeddocumentor.prefs;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DocumentorPreferences {
 
-    private static final Logger logger = Logger.getLogger(DocumentorPreferences.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DocumentorPreferences.class.getName());
     private final Preferences prefs;
     
     public DocumentorPreferences() {
@@ -49,7 +49,7 @@ public class DocumentorPreferences {
             return result;
         }
         catch (BackingStoreException ex) {
-            logger.log(Level.SEVERE, ex.getMessage());
+            logger.error(null, ex);
             return new LinkedList<String>();
         }
     }
@@ -69,7 +69,7 @@ public class DocumentorPreferences {
             prefs.flush();
         }
         catch (BackingStoreException ex) {
-            logger.log(Level.SEVERE, ex.getMessage());
+            logger.error(null, ex);
         }
     }
  

@@ -13,7 +13,7 @@ import org.lobobrowser.html.test.SimpleUserAgentContext;
 
 public class HTMLPreview extends javax.swing.JPanel implements Observer {
 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HTMLPreview.class.getName());
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HTMLPreview.class.getName());
     private final Page page;
     private final File root;
     private final HtmlPanel htmlPanel;

@@ -12,14 +12,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ini4j.Ini;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class MercurialSync implements RepositoryQuery, RepositoryMerger, RepositorySynchronizer {
 
-    private static final Logger logger = Logger.getLogger(MercurialSync.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(MercurialSync.class.getName());
     private final Documentation doc;
     private final DocumentorPreferences prefs;
     
@@ -45,22 +45,22 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
         Repository repo = doc.getRepository();
         IncomingCommand incoming = new IncomingCommand(repo).insecure();
         
-        logger.log(Level.FINE, "Getting incoming change sets...");
+        logger.debug("Getting incoming change sets...");
         
         incomingBundle = incoming.execute(uri.toASCIIString());
         
         if (incomingBundle != null) {
             List<Changeset> changesets = incomingBundle.getChangesets();
 
-            logger.log(Level.FINE, "Got {0} change sets:", changesets.size());
+            logger.debug("Got {0} change sets:", changesets.size());
             for (Changeset cs : changesets) {
-                logger.log(Level.FINE, " - {0}", cs.toString());
+                logger.debug(" - {0}", cs.toString());
             }
 
             return changesets.size() > 0;
         }
         else {
-            logger.log(Level.FINE, "No change sets found");
+            logger.debug("No change sets found");
             return false;
         }
     }
@@ -89,7 +89,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
                         new File(doc.getRepositoryRoot()));
                 proc.waitFor();
             } catch (InterruptedException ex) {                
-                logger.log(Level.SEVERE, null, ex);
+                logger.error(null, ex);
             }
         }        
         
@@ -152,7 +152,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
             return URI.create(defaultUri);
         }
         catch (Exception ex) {
-            logger.severe(ex.toString());
+            logger.error(null, ex);
             return null;
         }
     }

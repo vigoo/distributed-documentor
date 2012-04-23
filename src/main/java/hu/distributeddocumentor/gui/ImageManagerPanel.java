@@ -8,10 +8,12 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JTable;
+import javax.swing.TransferHandler;
 import javax.swing.filechooser.FileFilter;
+import org.slf4j.LoggerFactory;
 
 public class ImageManagerPanel extends javax.swing.JPanel {
 	
@@ -150,9 +152,9 @@ public class ImageManagerPanel extends javax.swing.JPanel {
             try {
                 images.addImage(chooser.getSelectedFile());
             } catch (ImageAlreadyExistsException ex) {
-                Logger.getLogger(ImageManagerPanel.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerFactory.getLogger(ImageManagerPanel.class.getName()).error(null, ex);
             } catch (IOException ex) {
-                Logger.getLogger(ImageManagerPanel.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerFactory.getLogger(ImageManagerPanel.class.getName()).error(null, ex);
             }
             
             lastImageFolder = chooser.getCurrentDirectory();

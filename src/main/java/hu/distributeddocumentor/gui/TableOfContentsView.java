@@ -8,12 +8,11 @@ import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
 import java.awt.HeadlessException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -60,7 +59,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
             try {                            
                 doc.addNewPage(page);
             } catch (Exception ex) {                        
-                Logger.getLogger(TableOfContentsView.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerFactory.getLogger(TableOfContentsView.class.getName()).error(null, ex);
 
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to add new page", JOptionPane.ERROR_MESSAGE);
             }
