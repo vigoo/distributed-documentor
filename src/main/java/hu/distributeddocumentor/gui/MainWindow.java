@@ -603,7 +603,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         ContentManager contentManager = toolWindowManager.getContentManager();
         String contentId = "Snippet:"+id;
         
-        Content content = contentManager.getContent(id);
+        Content content = contentManager.getContent(contentId);
         if (content == null) {            
             content = contentManager.addContent(
                 contentId,

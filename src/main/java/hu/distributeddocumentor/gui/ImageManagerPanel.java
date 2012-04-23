@@ -42,7 +42,7 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                         JTable table = (JTable)jc;
                         
                         int row = table.getSelectedRow();
-                        String item = (String)table.getModel().getValueAt(row, 0);
+                        String item = (String)table.getValueAt(row, 0);
                         
                         return new StringSelection("[[Image:" + StringUtils.convertSpaces(item) + "]]");
                     }
@@ -162,7 +162,7 @@ public class ImageManagerPanel extends javax.swing.JPanel {
     private void btRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRemoveActionPerformed
         
         int row = imagesList.getSelectedRow();
-        String name = (String)imagesList.getModel().getValueAt(row, 0);
+        String name = (String)imagesList.getValueAt(row, 0);
         images.removeImage(name);
         
     }//GEN-LAST:event_btRemoveActionPerformed

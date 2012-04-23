@@ -159,8 +159,8 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
          
         if (evt.getClickCount() == 2) {
             
-            int index = snippetTable.rowAtPoint(evt.getPoint());
-            String id = (String) snippetModel.getValueAt(index, 0);
+            int index = snippetTable.rowAtPoint(evt.getPoint());            
+            String id = (String) snippetTable.getValueAt(index, 0);
             
             host.openOrFocusSnippet(id);
         }     

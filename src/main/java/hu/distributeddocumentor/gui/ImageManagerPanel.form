@@ -53,8 +53,6 @@
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>       
-      </SubComponents>
     </Container>
     <Component class="javax.swing.JButton" name="btAdd">
       <Properties>

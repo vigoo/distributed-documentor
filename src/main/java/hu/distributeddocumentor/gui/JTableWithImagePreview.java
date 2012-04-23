@@ -34,7 +34,7 @@ public class JTableWithImagePreview extends JTable {
         int index = rowAtPoint(me.getPoint());
         if (index > -1) {
             
-            String name = (String)getModel().getValueAt(index, 0);
+            String name = (String)getValueAt(index, 0);
             File img = new File(root, name);
             
             return "<html><body><h3>" + name + "</h3><img src='" + img.toURI() + "' width='"+ Integer.toString(maxToolTipSize.width) + "' height='" + Integer.toString(maxToolTipSize.height) + "'></body></html>";
