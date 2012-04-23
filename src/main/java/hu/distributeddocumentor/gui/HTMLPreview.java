@@ -1,42 +1,88 @@
 package hu.distributeddocumentor.gui;
 
-import hu.distributeddocumentor.controller.HtmlPreviewRendererContext;
 import hu.distributeddocumentor.model.Page;
 import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.Observable;
 import java.util.Observer;
-import org.lobobrowser.html.HtmlRendererContext;
-import org.lobobrowser.html.UserAgentContext;
-import org.lobobrowser.html.gui.HtmlPanel;
-import org.lobobrowser.html.test.SimpleUserAgentContext;
+import org.xhtmlrenderer.simple.FSScrollPane;
+import org.xhtmlrenderer.simple.XHTMLPanel;
+import org.xhtmlrenderer.swing.BasicPanel;
+import org.xhtmlrenderer.swing.FSMouseListener;
+import org.xhtmlrenderer.swing.LinkListener;
+import org.xhtmlrenderer.swing.NaiveUserAgent;
 
 public class HTMLPreview extends javax.swing.JPanel implements Observer {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HTMLPreview.class.getName());
     private final Page page;
     private final File root;
-    private final HtmlPanel htmlPanel;
-    private final UserAgentContext ucontext;
-    private final HtmlRendererContext context;
+    private final FSScrollPane scrollPane;
+    private final XHTMLPanel htmlPanel;
     
     
     /**
      * Creates new form HTMLPreview
      */
-    public HTMLPreview(Page page, PageEditorHost host, File root) {
+    public HTMLPreview(Page page, final PageEditorHost host, File root) {
         initComponents();
         
         this.page = page;
-        this.root = root;
+        this.root = root;                
         
-        htmlPanel = new HtmlPanel();               
-        htmlPanel.setVisible(true);        
+        htmlPanel = new XHTMLPanel();
+        htmlPanel.setVisible(true);
+        
+        scrollPane = new FSScrollPane(htmlPanel);
                 
-        add(htmlPanel, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
         
-        ucontext = new SimpleUserAgentContext();
-        context = new HtmlPreviewRendererContext(htmlPanel, ucontext, root.toURI(), host);
+        NaiveUserAgent uac = new NaiveUserAgent();
+        
+        final String rootUri = root.toURI().toString();
+        uac.setBaseURL(rootUri);
+        
+        htmlPanel.getSharedContext().setUserAgentCallback(uac);
+        //htmlPanel.getSharedContext().setReplacedElementFactory(new SwingReplacedElementFactory());
+        
+        for (Object listener : htmlPanel.getMouseTrackingListeners())
+            if (listener instanceof LinkListener)
+                htmlPanel.removeMouseTrackingListener((FSMouseListener)listener);
+        
+        htmlPanel.addMouseTrackingListener(
+                new LinkListener() {
+
+                    @Override
+                    public void linkClicked(BasicPanel panel, String uri) {
+                        
+                        if (!uri.startsWith("http://") && 
+                            !uri.startsWith("https://") &&
+                            !uri.startsWith("file://") &&
+                             uri.length() > ".html".length()) {
+                        
+                            String id = uri.substring(0, uri.length() - ".html".length());
+                            host.openOrFocusPage(id);
+                            
+                        } else if (uri.toString().startsWith(rootUri)) {
+                            String fileName = uri.toString().substring(rootUri.length());
+                            fileName = fileName.substring(0, fileName.length() - ".html".length());
+
+                            host.openOrFocusPage(fileName);
+                        } else {
+                            try {
+                                Desktop.getDesktop().browse(new URI(uri));
+                            }
+                            catch (Exception ex) {
+                                logger.error(null, ex);
+                            }
+                        }                        
+                    }                    
+                });
         
         page.addObserver(this);
         
@@ -71,8 +117,13 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer {
     private void renderPage() {
         // Getting the HTML representation of the page
         String html = page.asHTMLembeddingCSS();
+        byte[] htmlBytes = html.getBytes(Charset.forName("utf-8"));
         
-        htmlPanel.setHtml(html, root.toURI().toString(), context);
+        try {
+            htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());
+        } catch (Exception ex) {
+            logger.error(null, ex);
+        }
     }
 
     @Override
