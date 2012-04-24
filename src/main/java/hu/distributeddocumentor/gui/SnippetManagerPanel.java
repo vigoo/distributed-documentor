@@ -132,7 +132,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
     private void btRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRemoveActionPerformed
 
         int row = snippetTable.getSelectedRow();
-        String item = (String)snippetModel.getValueAt(row, 0);
+        String item = (String)snippetTable.getValueAt(row, 0);
         
         doc.removeSnippet(item);
 
