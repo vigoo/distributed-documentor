@@ -6,7 +6,6 @@ import java.awt.Desktop;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Observable;
 import java.util.Observer;
@@ -120,9 +119,23 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer {
         byte[] htmlBytes = html.getBytes(Charset.forName("utf-8"));
         
         try {
-            htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());
+            htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            
+            
         } catch (Exception ex) {
-            logger.error(null, ex);
+            logger.error(null, ex);            
+            
+            String errorHtml = "<?xml version='1.0 encoding='utf-8'?><html xmlns='http://www.w3.org/1999/xhtml'><body><h1>Failed to render page</h1><pre>"+
+                               ex.toString()+
+                               "</pre></body></html>";
+            
+            htmlBytes = errorHtml.getBytes(Charset.forName("utf-8"));
+        
+            try {
+                htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            
+            
+            } catch (Exception iex) {
+                logger.error(null, iex);            
+            }
         }
     }
 

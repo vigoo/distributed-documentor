@@ -170,7 +170,9 @@ public class Page extends Observable {
        parser = new MarkupParser(language, builder);             
 
        parser.parse(preprocessMarkup(markup));
-       return writer.toString();
+       
+       String fixed = StringUtils.replace(writer.toString(), "&#xc", " ");
+       return fixed;
     }
     
     public List<String> getReferencedPages() {
