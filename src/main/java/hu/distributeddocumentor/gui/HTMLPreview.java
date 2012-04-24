@@ -3,12 +3,17 @@ package hu.distributeddocumentor.gui;
 import hu.distributeddocumentor.model.Page;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
+import org.w3c.dom.Element;
+import org.xhtmlrenderer.render.Box;
 import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.swing.BasicPanel;
@@ -16,7 +21,7 @@ import org.xhtmlrenderer.swing.FSMouseListener;
 import org.xhtmlrenderer.swing.LinkListener;
 import org.xhtmlrenderer.swing.NaiveUserAgent;
 
-public class HTMLPreview extends javax.swing.JPanel implements Observer {
+public class HTMLPreview extends javax.swing.JPanel implements Observer, PreviewSync {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HTMLPreview.class.getName());
     private final Page page;
@@ -88,6 +93,23 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer {
         renderPage();
     }
 
+    @Override
+    public void scrollToLine(int lineIdx) {
+        
+        String lineId = "line"+Integer.toString(lineIdx);
+        Box lineAnnotation = findLineAnnotation(htmlPanel.getRootBox(), lineId);
+        
+        if (lineAnnotation != null) {
+            
+            Point pt = new Point(lineAnnotation.getAbsX(), lineAnnotation.getAbsY());
+            int top = scrollPane.getVerticalScrollBar().getValue();
+            int bottom = top + htmlPanel.getHeight();
+            
+            if (pt.y < top || pt.y > bottom)
+                htmlPanel.scrollTo(pt);
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -115,7 +137,7 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer {
 
     private void renderPage() {
         // Getting the HTML representation of the page
-        String html = page.asHTMLembeddingCSS();
+        String html = page.asAnnotatedHTMLembeddingCSS();
         byte[] htmlBytes = html.getBytes(Charset.forName("utf-8"));
         
         try {
@@ -142,5 +164,25 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer {
     @Override
     public void update(Observable o, Object o1) {
         renderPage();
-    }                    
+    }
+
+    private Box findLineAnnotation(Box box, String lineId) {
+        
+        Element elem = box.getElement();
+        if (elem != null) {
+            if ("span".equals(elem.getNodeName()) &&
+                elem.hasAttribute("id") &&
+                elem.getAttribute("id").equals(lineId)) {
+                return box;
+            }
+        }
+        for (Iterator it = box.getChildIterator(); it.hasNext();) {
+            Box child = (Box) it.next();
+            Box result = findLineAnnotation(child, lineId);
+            if (result != null)
+                return result;
+        }
+        
+        return null;
+    }
 }

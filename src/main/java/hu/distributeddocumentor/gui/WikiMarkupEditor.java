@@ -60,11 +60,14 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     private final Style defaultStyle;
     private final Style spellingErrorStyle;
     
+    private int lastCurrentLine;
+    private final PreviewSync previewSync;
+    
     
     /**
      * Creates new form WikiMarkupEditor
      */
-    public WikiMarkupEditor(final Page page, final PageEditorHost host) {
+    public WikiMarkupEditor(final Page page, final PageEditorHost host, PreviewSync previewSync) {
         initComponents();
         
         this.page = page;
@@ -130,7 +133,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                         log.error(null, ex);
                     }
                 }
-            }
+            }                        
         });
         
         document.addUndoableEditListener(
@@ -222,6 +225,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         
         if ("MediaWiki".equals(page.getMarkupLanguage()))
             editor = new MediaWikiEditor(page);
+        this.previewSync = previewSync;
     }
 
     /*
@@ -262,6 +266,11 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
             }
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 editorPaneMousePressed(evt);
+            }
+        });
+        editorPane.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                editorPaneCaretUpdate(evt);
             }
         });
         editorPane.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -652,6 +661,18 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
             showSuggestions(evt);
          }
     }//GEN-LAST:event_editorPaneMouseReleased
+
+    private void editorPaneCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_editorPaneCaretUpdate
+       
+        int currentLine = getCurrentRow();
+        if (currentLine != lastCurrentLine) {
+            
+            if (previewSync != null)
+                previewSync.scrollToLine(currentLine);
+            
+            lastCurrentLine = currentLine;
+        }        
+    }//GEN-LAST:event_editorPaneCaretUpdate
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddRemoteLink;

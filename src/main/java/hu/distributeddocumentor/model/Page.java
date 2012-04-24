@@ -136,20 +136,24 @@ public class Page extends Observable {
     
     public String asHTML() {
         
-        return asHTML(false, null);
+        return asHTML(false, null, false);
     }
     
     public String asHTMLembeddingCSS() {
         
-        return asHTML(true, null);
+        return asHTML(true, null, false);
+    }
+    
+    public String asAnnotatedHTMLembeddingCSS() {
+        return asHTML(true, null, true);
     }
     
     public String asHTMLembeddingCSS(File root) {
         
-        return asHTML(true, root);
+        return asHTML(true, root, false);
     }
     
-    private String asHTML(boolean embedCSS, File root) {
+    private String asHTML(boolean embedCSS, File root, boolean annotated) {
        if (!isParserInitialized)
            initializeParser();
        
@@ -169,7 +173,7 @@ public class Page extends Observable {
        
        parser = new MarkupParser(language, builder);             
 
-       parser.parse(preprocessMarkup(markup));
+       parser.parse(preprocessMarkup(annotateMarkup(annotated, markup)));
        
        String fixed = StringUtils.replace(writer.toString(), "&#xc", " ");
        return fixed;
@@ -255,6 +259,52 @@ public class Page extends Observable {
         }
         
         return markup;
+    }
+
+    private String annotateMarkup(boolean annotated, String markup) {
+        
+        if (annotated) {
+            
+            List<String> lines = Arrays.asList(markup.split("\n"));
+            StringBuilder result = new StringBuilder();
+            
+            for (int i = 0; i < lines.size(); i++) {
+                
+                String line = lines.get(i);
+                
+                int ipoint;
+                int linkContext = 0;
+                boolean found = false;
+                for (ipoint = 0; ipoint < line.length(); ipoint++) {                    
+                    char ch = line.charAt(ipoint);
+                    
+                    if (ch == '[')
+                        linkContext++;
+                    else if (ch == ']')
+                        linkContext--;
+                    else if (linkContext == 0 && Character.isLetterOrDigit(ch)) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (found) {
+                    result.append(line.substring(0, ipoint))
+                          .append("<span id=\"line")
+                          .append(Integer.toString(i))
+                          .append("\"/>")
+                          .append(line.substring(ipoint))
+                          .append('\n');                
+                }
+                else {
+                    result.append(line).append('\n');
+                }
+            }
+            
+            return result.toString();
+        } else {
+            return markup;
+        }
     }
 
 }

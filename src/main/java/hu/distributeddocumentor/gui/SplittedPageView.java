@@ -14,9 +14,9 @@ public class SplittedPageView extends javax.swing.JPanel {
      */
     public SplittedPageView(Page page, File root, PageEditorHost host) {
         initComponents();
-        
-        editor = new WikiMarkupEditor(page, host);
+                
         preview = new HTMLPreview(page, host, root);
+        editor = new WikiMarkupEditor(page, host, preview);
         
         jSplitPane1.setLeftComponent(editor);
         jSplitPane1.setRightComponent(preview);
