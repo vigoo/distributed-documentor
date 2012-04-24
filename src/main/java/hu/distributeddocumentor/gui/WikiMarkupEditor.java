@@ -20,6 +20,7 @@ import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -256,6 +257,9 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
 
         editorPane.setFont(new java.awt.Font("Monaco", 0, 13)); // NOI18N
         editorPane.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                editorPaneMouseReleased(evt);
+            }
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 editorPaneMousePressed(evt);
             }
@@ -607,37 +611,47 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     private void editorPaneMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_editorPaneMousePressed
         
         if (evt.isPopupTrigger()) {
-         
-            int pos = editorPane.viewToModel(new Point(evt.getX(), evt.getY()));
-            
-            for (final IntRange range : suggestions.keySet()) {
-                
-                if (range.contains(pos)) {
-                    
-                    JPopupMenu popup = new JPopupMenu();
-                    
-                    List<String> sgs = suggestions.get(range);
-                    for (final String suggestion : sgs) {
-                        JMenuItem item = new JMenuItem(suggestion);                        
-                        item.addActionListener(
-                                new ActionListener() {
-
-                                    @Override
-                                    public void actionPerformed(ActionEvent ae) {
-                                        editorPane.setSelectionStart(range.getStart());
-                                        editorPane.setSelectionEnd(range.getEnd());
-                                        editorPane.replaceSelection(suggestion);
-                                    }
-                        });
-                        
-                        popup.add(item);
-                    }
-                    
-                    popup.show(editorPane, evt.getX(), evt.getY());
-                }
-            }
-        }        
+            showSuggestions(evt);
+        }             
     }//GEN-LAST:event_editorPaneMousePressed
+
+    private void showSuggestions(MouseEvent evt) {
+        int pos = editorPane.viewToModel(new Point(evt.getX(), evt.getY()));
+        
+        for (final IntRange range : suggestions.keySet()) {
+            
+            if (range.contains(pos)) {
+                
+                JPopupMenu popup = new JPopupMenu();
+                
+                List<String> sgs = suggestions.get(range);
+                for (final String suggestion : sgs) {
+                    JMenuItem item = new JMenuItem(suggestion);                        
+                    item.addActionListener(
+                            new ActionListener() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent ae) {
+                                    editorPane.setSelectionStart(range.getStart());
+                                    editorPane.setSelectionEnd(range.getEnd());
+                                    editorPane.replaceSelection(suggestion);
+                                }
+                    });
+                    
+                    popup.add(item);
+                }
+                
+                popup.show(editorPane, evt.getX(), evt.getY());
+            }
+        }   
+    }
+    
+    private void editorPaneMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_editorPaneMouseReleased
+     
+         if (evt.isPopupTrigger()) {
+            showSuggestions(evt);
+         }
+    }//GEN-LAST:event_editorPaneMouseReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddRemoteLink;
