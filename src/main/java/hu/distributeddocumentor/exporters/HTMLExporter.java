@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import org.apache.commons.lang3.StringUtils;
 
 
 public class HTMLExporter extends HTMLBasedExporter implements Exporter {
@@ -136,6 +137,6 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     }
 
     private String fixTitle(String title) {
-        return title.replaceAll("'", "\\'");
+        return StringUtils.replace(title, "'", "\\'");
     }
 }
