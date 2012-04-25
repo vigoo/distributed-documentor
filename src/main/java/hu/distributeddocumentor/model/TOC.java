@@ -91,7 +91,7 @@ public class TOC {
         xformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");        
         
         xformer.transform(source, result);
-        
+                
         modified = false;
     }
 
