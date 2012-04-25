@@ -97,16 +97,20 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
     public void scrollToLine(int lineIdx) {
         
         String lineId = "line"+Integer.toString(lineIdx);
-        Box lineAnnotation = findLineAnnotation(htmlPanel.getRootBox(), lineId);
         
-        if (lineAnnotation != null) {
-            
-            Point pt = new Point(lineAnnotation.getAbsX(), lineAnnotation.getAbsY());
-            int top = scrollPane.getVerticalScrollBar().getValue();
-            int bottom = top + htmlPanel.getHeight();
-            
-            if (pt.y < top || pt.y > bottom)
-                htmlPanel.scrollTo(pt);
+        Box rootBox = htmlPanel.getRootBox();
+        if (rootBox != null) {
+            Box lineAnnotation = findLineAnnotation(rootBox, lineId);
+
+            if (lineAnnotation != null) {
+
+                Point pt = new Point(lineAnnotation.getAbsX(), lineAnnotation.getAbsY());
+                int top = scrollPane.getVerticalScrollBar().getValue();
+                int bottom = top + htmlPanel.getHeight();
+
+                if (pt.y < top || pt.y > bottom)
+                    htmlPanel.scrollTo(pt);
+            }
         }
     }
     
