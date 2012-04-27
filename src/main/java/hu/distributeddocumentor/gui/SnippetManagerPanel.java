@@ -40,7 +40,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
                 JTable table = (JTable)jc;
                 
                 int row = table.getSelectedRow();
-                String item = (String)table.getModel().getValueAt(row, 0);
+                String item = (String)table.getValueAt(row, 0);
 
                 return new StringSelection("\n[Snippet:" + StringUtils.convertSpaces(item) + "]\n");
             }
