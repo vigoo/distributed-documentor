@@ -4,7 +4,6 @@ import hu.distributeddocumentor.model.Page;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URI;
@@ -12,6 +11,7 @@ import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.render.Box;
 import org.xhtmlrenderer.simple.FSScrollPane;
@@ -106,7 +106,7 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
 
                 Point pt = new Point(lineAnnotation.getAbsX(), lineAnnotation.getAbsY());
                 int top = scrollPane.getVerticalScrollBar().getValue();
-                int bottom = top + htmlPanel.getHeight();
+                int bottom = top + scrollPane.getHeight();
 
                 if (pt.y < top || pt.y > bottom)
                     htmlPanel.scrollTo(pt);
@@ -150,17 +150,26 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
         } catch (Exception ex) {
             logger.error(null, ex);            
             
-            String errorHtml = "<?xml version='1.0 encoding='utf-8'?><html xmlns='http://www.w3.org/1999/xhtml'><body><h1>Failed to render page</h1><pre>"+
-                               ex.toString()+
-                               "</pre></body></html>";
-            
-            htmlBytes = errorHtml.getBytes(Charset.forName("utf-8"));
+            String simpleHtml = page.asHTMLembeddingCSS();
+            htmlBytes = simpleHtml.getBytes(Charset.forName("utf-8"));
         
             try {
                 htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            
-            
+
             } catch (Exception iex) {
-                logger.error(null, iex);            
+            
+                String errorHtml = "<?xml version='1.0' encoding='utf-8'?><html xmlns='http://www.w3.org/1999/xhtml'><body><h1>Failed to render page</h1><pre>"+
+                                StringEscapeUtils.escapeXml(iex.toString())+
+                                "</pre></body></html>";
+            
+                htmlBytes = errorHtml.getBytes(Charset.forName("utf-8"));
+        
+                try {
+                    htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            
+
+                } catch (Exception iiex) {
+                    logger.error(null, iiex);            
+                }
             }
         }
     }

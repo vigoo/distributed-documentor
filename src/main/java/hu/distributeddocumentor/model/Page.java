@@ -274,15 +274,20 @@ public class Page extends Observable {
                 
                 int ipoint;
                 int linkContext = 0;
+                int tagContext = 0;
                 boolean found = false;
                 for (ipoint = 0; ipoint < line.length(); ipoint++) {                    
                     char ch = line.charAt(ipoint);
                     
                     if (ch == '[')
                         linkContext++;
+                    else if (ch == '<')
+                        tagContext++;
                     else if (ch == ']')
                         linkContext--;
-                    else if (linkContext == 0 && Character.isLetterOrDigit(ch)) {
+                    else if (ch == '>')
+                        tagContext--;
+                    else if (linkContext == 0 && tagContext == 0 && Character.isLetterOrDigit(ch)) {
                         found = true;
                         break;
                     }
