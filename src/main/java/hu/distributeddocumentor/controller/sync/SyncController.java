@@ -75,6 +75,8 @@ public class SyncController {
                 } else {
                     cancelled = true;
                 }
+            } else {
+                syncer.update();
             }
         }
 

@@ -7,5 +7,6 @@ public interface RepositorySynchronizer {
 
     void pull(URI uri) throws IOException;
     void push(URI uri) throws IOException;
+    void update() throws IOException;
     
 }

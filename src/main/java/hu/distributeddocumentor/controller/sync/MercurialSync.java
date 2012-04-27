@@ -157,4 +157,10 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
         }
     }
 
+    @Override
+    public void update() throws IOException {
+        UpdateCommand update = new UpdateCommand(doc.getRepository());
+        update.execute();
+    }
+
 }
