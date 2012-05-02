@@ -7,10 +7,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-/**
- *
- * @author vigoo
- */
 public class CreateNewPageDialog extends javax.swing.JDialog {
 
     private Documentation doc;

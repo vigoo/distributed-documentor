@@ -7,10 +7,6 @@ import java.util.Map;
 import javax.swing.ListModel;
 import javax.swing.event.ListDataListener;
 
-/**
- *
- * @author vigoo
- */
 public class CommittableItemsModel implements ListModel {
 
     final String[] ordered;

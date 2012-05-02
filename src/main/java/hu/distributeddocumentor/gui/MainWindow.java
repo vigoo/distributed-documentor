@@ -420,7 +420,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File targetDir = chooser.getSelectedFile();
-            Exporter exporter = new HTMLExporter(prefs, doc, targetDir);
+            Exporter exporter = new HTMLExporter(doc, targetDir);
             
             try {
                 exporter.export();

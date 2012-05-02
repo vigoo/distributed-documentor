@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JOptionPane;
+import org.apache.commons.lang3.StringUtils;
 
 public class CHMExporter extends HTMLBasedExporter implements Exporter {
     
@@ -33,10 +34,11 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         
         // Creating the target directory if necessary
         if (!targetDir.exists())
-            targetDir.mkdirs();
+            if (!targetDir.mkdirs())
+                throw new RuntimeException("Failed to create target directory!");                   
         
         // Exporting the CSS file
-        extract(getClass().getResourceAsStream("/documentation.css"), "documentation.css", targetDir);
+        extractResource("/documentation.css", "documentation.css", targetDir);
         contentFiles.add("documentation.css");
         
         // Exporting the pages
@@ -50,7 +52,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         // Exporting the images
         File mediaDir = new File(targetDir, "media");
         if (!mediaDir.exists())
-            mediaDir.mkdir();
+            if (!mediaDir.mkdir())
+                throw new RuntimeException("Failed to create media directory!");
         
         for (String image : doc.getImages().getImages()) {
             Files.copy(new File(doc.getImages().getMediaRoot(), image), 
@@ -156,9 +159,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
     }
 
     private void exportTOCNode(TOCNode node, PrintWriter out, int indent) {        
-        String i = "";
-        for (int j = 0; j < indent; j++)
-            i += " ";
+        String i = StringUtils.repeat(" ", indent);
         
         out.println(i + "<LI><OBJECT type=\"text/sitemap\">");
         out.println(i + "    <param name=\"Name\" value=\"" + node.getTitle() + "\">");

@@ -6,10 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
 
-/**
- *
- * @author vigoo
- */
 public class SelectExistingUnorganizedPageDialog extends javax.swing.JDialog {
 
     private final UnorganizedPagesModel unorganizedPagesModel;

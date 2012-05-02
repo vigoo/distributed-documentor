@@ -35,8 +35,21 @@ public class HTMLBasedExporter {
         
         return target;
     }
+    
+    protected final void extractResource(final String resourceName,
+                                         final String fileName,
+                                         final File targetDir)
+            throws IOException {
+
+        final InputStream input = HTMLBasedExporter.class.getResourceAsStream(resourceName);
+        try {
+            extract(input, fileName, targetDir);
+        } finally {
+            input.close();
+        }       
+    }
         
-    protected void extract(InputStream stream, String fileName, File targetDir) throws FileNotFoundException, IOException {
+    protected void extract(InputStream stream, String fileName, File targetDir) throws IOException {
         
         byte[] buf = new byte[16384];
         int read;

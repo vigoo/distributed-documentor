@@ -9,7 +9,6 @@ import hu.distributeddocumentor.utils.CaseInsensitiveMap;
 import hu.distributeddocumentor.utils.RepositoryUriGenerator;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.CodingErrorAction;
 import java.util.*;
@@ -20,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 public class Documentation extends Observable implements Observer, SnippetCollection {
     
-    private static final Logger logger = LoggerFactory.getLogger(Documentation.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(Documentation.class.getName());
     
     private final TOC toc;
     private final Map<String, Page> pages;    
@@ -72,24 +71,17 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         try {
             toc.save(repositoryRoot);
             AddCommand cmd = new AddCommand(repository);
-            cmd.execute(new File(repositoryRoot, "toc.xml"));
-        } catch (TransformerConfigurationException ex) {
-            logger.error(null, ex);
-            
-            throw new IllegalStateException("Must be called on a fresh instance!");
-        } catch (TransformerException ex) {
-            logger.error(null, ex);                        
-            
-            throw new IllegalStateException("Must be called on a fresh instance!");
-        } catch (FileNotFoundException ex) {
-            logger.error(null, ex);
+            cmd.execute(new File(repositoryRoot, "toc.xml"));        
+        } catch (Exception ex) {
+            log.error(null, ex);
             
             throw new IllegalStateException("Must be called on a fresh instance!");
         }
         
         File snippetsDir = getSnippetsDirectory();
         if (!snippetsDir.exists())
-            snippetsDir.mkdirs();
+            if (!snippetsDir.mkdirs())
+                throw new RuntimeException("Failed to create snippets directory!");
     }   
     
     public void initFromExisting(File repositoryRoot) throws FailedToLoadPageException, FailedToLoadTOCException {
@@ -97,9 +89,9 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         File realRepositoryRoot = findRealRepositoryRoot(repositoryRoot);
         relativeRoot = realRepositoryRoot.toURI().relativize(repositoryRoot.toURI()).getPath();
         
-        logger.info("Specified root: {0}", repositoryRoot.toString());
-        logger.info("Real root:      {0}", realRepositoryRoot.toString());
-        logger.info("Relative root:  {0}", relativeRoot);
+        log.info("Specified root: {0}", repositoryRoot.toString());
+        log.info("Real root:      {0}", realRepositoryRoot.toString());
+        log.info("Relative root:  {0}", relativeRoot);
         
         repository = Repository.open(createRepositoryConfiguration(), realRepositoryRoot);
         images = new Images(repository, relativeRoot);
@@ -139,7 +131,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
         File snippetsDir = getSnippetsDirectory();
         if (!snippetsDir.exists())
-            snippetsDir.mkdirs();
+            if (!snippetsDir.mkdirs())
+                throw new RuntimeException("Failed to create snippets directory!");
         else {
             for (File child : snippetsDir.listFiles(
                     new FileFilter() {
@@ -220,7 +213,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         
         File pageFile = page.save(getDocumentationDirectory());
         
-        logger.info("Adding new file to repository: {0}", pageFile.getName());
+        log.info("Adding new file to repository: {0}", pageFile.getName());
         
         AddCommand cmd = new AddCommand(repository);
         cmd.execute(pageFile);
@@ -263,15 +256,15 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             toc.saveIfModified(root);
         }
         catch (IOException ex) {
-            logger.error(null, ex);
+            log.error(null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);        
         } catch (TransformerConfigurationException ex) {
-            logger.error(null, ex);
+            log.error(null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);
         } catch (TransformerException ex) {
-            logger.error(null, ex);
+            log.error(null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);
         }    
@@ -362,11 +355,11 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                         addNewPage(newPage);
                     }
                     catch (IOException ex) {
-                        logger.error(null, ex);
+                        log.error(null, ex);
                     }
                     catch (PageAlreadyExistsException ex) {
                         // This cannot happen
-                        logger.error(null, ex);
+                        log.error(null, ex);
                     }
                 } else {
                 
@@ -386,7 +379,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     
     public void processOrphanedPages() {
         
-        logger.info("Processing orphaned pages...");
+        log.info("Processing orphaned pages...");
         
         // Collect all references
         Set<String> referencedPages = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
@@ -410,7 +403,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         
         for (String pageId : orphanedPages) {
             
-            logger.info("Found orphaned page: {0}", pageId);
+            log.info("Found orphaned page: {0}", pageId);
             
             Page page = pages.get(pageId);
             
@@ -419,14 +412,14 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             // If the page does not equals the default template
             if (!page.equalsTemplate()) {                      
                 
-                logger.info(" -> putting it to recycle bin");
+                log.info(" -> putting it to recycle bin");
                 
                 // ..then we don't delete it, but put into the recycle bin
                 // node instead of the unorganized pages node
                 toc.addToEnd(toc.getRecycleBin(), new TOCNode(page));
             } else {
                 
-                logger.info(" -> was not modified, removing it");
+                log.info(" -> was not modified, removing it");
                 
                 // ..otherwise we don't keep reference to it in the TOC and
                 // delete it from the repository as well                                           
@@ -435,11 +428,13 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 RemoveCommand remove = new RemoveCommand(repository).force();
                 remove.execute(page.getFile(getDocumentationDirectory()));
                 
-                page.getFile(getDocumentationDirectory()).delete();
+                boolean deleteSucceeded = page.getFile(getDocumentationDirectory()).delete();
+                if (!deleteSucceeded)
+                    log.error("Failed to delete page " + page.getId());
             }                   
         }
         
-        logger.info("Finished processing orphaned pages.");
+        log.info("Finished processing orphaned pages.");
     }
 
     public List<Changeset> pull(String source) throws IOException {
@@ -493,7 +488,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         
         File snippetFile = snippet.save(getSnippetsDirectory());
         
-        logger.info("Adding new snippet to repository: {0}", snippetFile.getName());
+        log.info("Adding new snippet to repository: {0}", snippetFile.getName());
         
         AddCommand cmd = new AddCommand(repository);
         cmd.execute(snippetFile);
@@ -505,7 +500,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     @Override
     public void removeSnippet(String id) {
                
-       logger.info("Removing snippet {0} from repository", id);
+       log.info("Removing snippet {0} from repository", id);
                             
        Snippet snippet = snippets.get(id);
        snippets.remove(id);
@@ -513,7 +508,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
        RemoveCommand remove = new RemoveCommand(repository).force();
        remove.execute(snippet.getFile(getSnippetsDirectory()));
                 
-       snippet.getFile(getSnippetsDirectory()).delete();
+       if (!snippet.getFile(getSnippetsDirectory()).delete())
+           log.error("Failed to delete snippet " + snippet.getId());
        
        setChanged();
        notifyObservers();
@@ -531,15 +527,15 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             File missingFile = new File(root, missing);
             
             if (missingFile.getAbsolutePath().startsWith(getDocumentationDirectory().getAbsolutePath())) {
-                logger.info("Forgetting missing file {0}", missing);                                
+                log.info("Forgetting missing file {0}", missing);                                
                 toRemove.add(missing);
             }
             else {
-                logger.info("Leaving missing file {0}", missing);
+                log.info("Leaving missing file {0}", missing);
             }
         }
         
-        if (toRemove.size() > 0) {
+        if (!toRemove.isEmpty()) {
             RemoveCommand remove = new RemoveCommand(repository).after().force();
 
             remove.execute(toRemove.toArray(new String[0]));

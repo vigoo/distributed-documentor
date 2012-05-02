@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.model;
 
 import java.util.*;
@@ -10,10 +6,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/**
- *
- * @author vigoo
- */
 public class TOCNode {
     
     private String title;
@@ -122,34 +114,36 @@ public class TOCNode {
                 break;
         }
         
-        Element elem = (Element)sibling;
-        title = elem.getAttribute("title");        
-        
-        if (elem.hasAttribute("target")) {
-            String targetId = elem.getAttribute("target");
-            
-            target = doc.getPage(targetId);
-            
-        } else {
-            
-            target = null;
+        if (sibling != null) {
+            Element elem = (Element)sibling;
+            title = elem.getAttribute("title");        
+
+            if (elem.hasAttribute("target")) {
+                String targetId = elem.getAttribute("target");
+
+                target = doc.getPage(targetId);
+
+            } else {
+
+                target = null;
+            }
+
+            children.clear();
+
+            NodeList childNodes = elem.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                Node childNode = childNodes.item(i);
+
+                if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+
+                    TOCNode child = new TOCNode();
+                    child.fromXML(childNode, doc);
+                    child.setParent(this);
+
+                    children.add(child);
+                }            
+            }        
         }
-        
-        children.clear();
-        
-        NodeList childNodes = elem.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            Node childNode = childNodes.item(i);
-            
-            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
-                
-                TOCNode child = new TOCNode();
-                child.fromXML(childNode, doc);
-                child.setParent(this);
-                
-                children.add(child);
-            }            
-        }        
     }     
     
     public boolean isReferenced(Page page) {

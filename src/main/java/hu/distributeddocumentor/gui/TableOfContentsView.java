@@ -14,10 +14,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author vigoo
- */
 public class TableOfContentsView extends javax.swing.JPanel {
 
     private final Documentation doc;

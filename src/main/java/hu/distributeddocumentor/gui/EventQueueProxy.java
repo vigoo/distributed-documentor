@@ -10,16 +10,18 @@ public class EventQueueProxy extends EventQueue {
     protected void dispatchEvent(AWTEvent newEvent) {
         try {
             super.dispatchEvent(newEvent);
-        } catch (Throwable t) {
-            t.printStackTrace();
-
-            String message = t.getMessage();
+        } catch (Exception ex) {
+            String message = ex.getMessage();
 
             if (message == null || message.length() == 0) {
-                message = "Fatal: " + t.getClass();
+                message = "Fatal: " + ex.getClass();
             }
 
-            JOptionPane.showMessageDialog(null, message, "General Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    null, 
+                    message, 
+                    "General Error", 
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 }

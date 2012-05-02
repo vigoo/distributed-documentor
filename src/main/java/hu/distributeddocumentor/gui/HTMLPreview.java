@@ -23,7 +23,7 @@ import org.xhtmlrenderer.swing.NaiveUserAgent;
 
 public class HTMLPreview extends javax.swing.JPanel implements Observer, PreviewSync {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HTMLPreview.class.getName());
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HTMLPreview.class.getName());
     private final Page page;
     private final File root;
     private final FSScrollPane scrollPane;
@@ -82,7 +82,7 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
                                 Desktop.getDesktop().browse(new URI(uri));
                             }
                             catch (Exception ex) {
-                                logger.error(null, ex);
+                                log.error(null, ex);
                             }
                         }                        
                     }                    
@@ -148,7 +148,7 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
             htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            
             
         } catch (Exception ex) {
-            logger.error(null, ex);            
+            log.error(null, ex);            
             
             String simpleHtml = page.asHTMLembeddingCSS();
             htmlBytes = simpleHtml.getBytes(Charset.forName("utf-8"));
@@ -168,7 +168,7 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
                     htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            
 
                 } catch (Exception iiex) {
-                    logger.error(null, iiex);            
+                    log.error(null, iiex);            
                 }
             }
         }

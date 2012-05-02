@@ -4,7 +4,6 @@ import com.google.common.io.Files;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
-import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,35 +13,35 @@ import org.apache.commons.lang3.StringUtils;
 
 public class HTMLExporter extends HTMLBasedExporter implements Exporter {
 
-    private final DocumentorPreferences prefs;    
     private final Documentation doc;
 
-    public HTMLExporter(DocumentorPreferences prefs, Documentation doc, File targetDir) {
+    public HTMLExporter(Documentation doc, File targetDir) {
         
         super(targetDir);
         
-        this.prefs = prefs;
         this.doc = doc;
     }
     
     
     @Override
     public void export() throws FileNotFoundException, IOException {
-          if (!targetDir.exists())
-            targetDir.mkdirs();
+        if (!targetDir.exists())
+            if (!targetDir.mkdirs())
+                throw new RuntimeException("Failed to create target directory!");
         
         // Exporting the pages
-        TOC toc = doc.getTOC();
+        final TOC toc = doc.getTOC();
         for (TOCNode node : toc.getRoot().getChildren()) {
-            if (node != toc.getRecycleBin()) {                
+            if (node != toc.getRecycleBin()) {
                 exportReferencedPages(node);
             }
         }
-        
+
         // Exporting the images
         File mediaDir = new File(targetDir, "media");
         if (!mediaDir.exists())
-            mediaDir.mkdir();
+            if (!mediaDir.mkdir())
+                throw new RuntimeException("Failed to create media directory!");
         
         for (String image : doc.getImages().getImages()) {
             Files.copy(new File(doc.getImages().getMediaRoot(), image), 
@@ -53,31 +52,32 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         createTreeItemsJS(new File(targetDir, "tree_items.js"), toc);
         
         // Extracting static files (icons, scripts, etc)
-        extract(getClass().getResourceAsStream("/documentation.css"), "documentation.css", targetDir);
-        extract(getClass().getResourceAsStream("/tree/tree.html"), "tree.html", targetDir);
-        extract(getClass().getResourceAsStream("/tree/index.html"), "index.html", targetDir);
+        extractResource("/documentation.css", "documentation.css", targetDir);
+        extractResource("/tree/tree.html", "tree.html", targetDir);
+        extractResource("/tree/index.html", "index.html", targetDir);
         
-        extract(getClass().getResourceAsStream("/tree/tree.js"), "tree.js", targetDir);
-        extract(getClass().getResourceAsStream("/tree/tree_tpl.js"), "tree_tpl.js", targetDir);
+        extractResource("/tree/tree.js", "tree.js", targetDir);
+        extractResource("/tree/tree_tpl.js", "tree_tpl.js", targetDir);
         
         File iconsDir = new File(targetDir, "icons");
         if (!iconsDir.exists())
-            iconsDir.mkdir();
+            if (!iconsDir.mkdir())
+                throw new RuntimeException("Failed to create icons directory!");
         
-        extract(getClass().getResourceAsStream("/tree/icons/empty.gif"), "empty.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/folder.gif"), "folder.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/folderopen.gif"), "folderopen.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/foldersel.gif"), "foldersel.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/minus.gif"), "minus.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/page.gif"), "page.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/pagesel.gif"), "pagesel.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/plus.gif"), "plus.gif", iconsDir);        
-        extract(getClass().getResourceAsStream("/tree/icons/base.gif"), "base.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/join.gif"), "join.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/joinbottom.gif"), "joinbottom.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/line.gif"), "line.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/minusbottom.gif"), "minusbottom.gif", iconsDir);
-        extract(getClass().getResourceAsStream("/tree/icons/plusbottom.gif"), "plusbottom.gif", iconsDir);        
+        extractResource("/tree/icons/empty.gif", "empty.gif", iconsDir);
+        extractResource("/tree/icons/folder.gif", "folder.gif", iconsDir);
+        extractResource("/tree/icons/folderopen.gif", "folderopen.gif", iconsDir);
+        extractResource("/tree/icons/foldersel.gif", "foldersel.gif", iconsDir);
+        extractResource("/tree/icons/minus.gif", "minus.gif", iconsDir);
+        extractResource("/tree/icons/page.gif", "page.gif", iconsDir);
+        extractResource("/tree/icons/pagesel.gif", "pagesel.gif", iconsDir);
+        extractResource("/tree/icons/plus.gif", "plus.gif", iconsDir);        
+        extractResource("/tree/icons/base.gif", "base.gif", iconsDir);
+        extractResource("/tree/icons/join.gif", "join.gif", iconsDir);
+        extractResource("/tree/icons/joinbottom.gif", "joinbottom.gif", iconsDir);
+        extractResource("/tree/icons/line.gif", "line.gif", iconsDir);
+        extractResource("/tree/icons/minusbottom.gif", "minusbottom.gif", iconsDir);
+        extractResource("/tree/icons/plusbottom.gif", "plusbottom.gif", iconsDir);        
     }
 
     private void createTreeItemsJS(File file, TOC toc) throws FileNotFoundException {
@@ -103,9 +103,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     }
 
     private void exportTOCNode(TOCNode node, PrintWriter out, int indent, boolean isFirst) {
-        String i = "";
-        for (int j = 0; j < indent; j++)
-            i += " ";
+        String i = StringUtils.repeat(" ", indent);
         
         if (isFirst)
             out.println();

@@ -18,11 +18,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-
-/**
- *
- * @author vigoo
- */
 public class TOC {
     
     private final TOCNode root;
@@ -84,7 +79,7 @@ public class TOC {
         Result result = new StreamResult(target);
         
         TransformerFactory factory = TransformerFactory.newInstance();
-        factory.setAttribute("indent-number", new Integer(4));
+        factory.setAttribute("indent-number", Integer.valueOf(4));
         
         Transformer xformer = factory.newTransformer();
         xformer.setOutputProperty(OutputKeys.INDENT, "yes");        

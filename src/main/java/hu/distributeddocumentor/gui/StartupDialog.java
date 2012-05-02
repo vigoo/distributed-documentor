@@ -1,4 +1,3 @@
-
 package hu.distributeddocumentor.gui;
 
 import com.jidesoft.swing.FolderChooser;
@@ -8,10 +7,6 @@ import java.awt.Frame;
 import java.io.File;
 import java.util.List;
 
-/**
- *
- * @author vigoo
- */
 public class StartupDialog extends javax.swing.JDialog {
     
         public enum Action {
@@ -141,7 +136,7 @@ public class StartupDialog extends javax.swing.JDialog {
         chooser.setRecentList(recent);
         chooser.setRecentListVisible(true);
         
-        if (recent.size() > 0)
+        if (!recent.isEmpty())
             chooser.setSelectedFolder(new File(recent.get(0)));
                 
         if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {

@@ -25,7 +25,8 @@ public class Images extends Observable {
         images = new HashSet<String>();
         
         if (!mediaDir.exists()) {            
-            mediaDir.mkdir();
+            if (!mediaDir.mkdir())
+                throw new RuntimeException("Failed to create media directory");
         } else {
             collectImages();
         }                

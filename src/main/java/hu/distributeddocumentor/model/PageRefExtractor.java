@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.model;
 
 import java.util.LinkedList;
@@ -12,10 +8,6 @@ import org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
 import org.eclipse.mylyn.wikitext.core.parser.markup.MarkupLanguage;
 import org.eclipse.mylyn.wikitext.core.util.ServiceLocator;
 
-/**
- *
- * @author vigoo
- */
 public class PageRefExtractor extends DocumentBuilder {
     
     private final MarkupParser parser;

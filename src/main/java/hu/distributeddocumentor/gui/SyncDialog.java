@@ -1,4 +1,3 @@
-
 package hu.distributeddocumentor.gui;
 
 import com.aragost.javahg.Changeset;
@@ -8,10 +7,6 @@ import java.awt.event.KeyEvent;
 import java.util.List;
 import javax.swing.*;
 
-/**
- *
- * @author vigoo
- */
 public class SyncDialog extends javax.swing.JDialog {
 
     /**

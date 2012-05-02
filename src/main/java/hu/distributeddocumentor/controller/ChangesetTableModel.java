@@ -10,7 +10,7 @@ public class ChangesetTableModel implements TableModel {
     
     private final List<Changeset> changesets;
 
-    public ChangesetTableModel(List<Changeset> changesets) {
+    public ChangesetTableModel(final List<Changeset> changesets) {
         this.changesets = changesets;
     }
         

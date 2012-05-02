@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.controller.CommittableItem;
@@ -13,10 +9,6 @@ import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-/**
- *
- * @author vigoo
- */
 public class CommitDialog extends javax.swing.JDialog {
 
     final CommittableItemsModel committableItems;

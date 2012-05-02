@@ -37,17 +37,20 @@ public class MediaWikiEditor implements WikiEditor {
             new Function<String, String>() {
                 @Override
                 public String apply(String selection) {
-                                
-                    if (selection.startsWith("'''") &&
-                        selection.endsWith("'''") &&
-                        selection.length() > 6) {
+                    
+                    final String boldMarker = "'''";
+                    final int boldMarkerSize = boldMarker.length();
+                    
+                    if (selection.startsWith(boldMarker) &&
+                        selection.endsWith(boldMarker) &&
+                        selection.length() > (boldMarkerSize*2)) {
                         // Already set to bold
 
-                        return selection.substring(3, selection.length()-3);
+                        return selection.substring(boldMarkerSize, selection.length()-boldMarkerSize);
                     } else {
                         // Setting to bold
 
-                        return "'''" + selection + "'''";
+                        return boldMarker + selection + boldMarker;
                     }
                 }});
     }

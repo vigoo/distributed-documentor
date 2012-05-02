@@ -8,10 +8,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.swing.*;
 
-/**
- *
- * @author vigoo
- */
 public class ConnectionVerifierDialog extends javax.swing.JDialog {
 
     /**

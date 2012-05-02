@@ -5,10 +5,6 @@ import java.util.Observable;
 import java.util.Observer;
 import javax.swing.table.AbstractTableModel;
 
-/**
- *
- * @author vigoo
- */
 public class ImageListModel extends AbstractTableModel implements Observer {
     
     private final Images images;

@@ -38,10 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-/**
- *
- * @author vigoo
- */
 public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckListener {
 
     private static final Logger log = LoggerFactory.getLogger(WikiMarkupEditor.class.getName());
@@ -49,7 +45,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     private final Page page;
     private final DropTarget dropTarget;
     private final UndoManager undoManager = new UndoManager();
-    private final PageEditorHost host;
+    private final PageEditorHost host;        
     private WikiEditor editor;
     
     private final Timer spellCheckTimer;
@@ -759,7 +755,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         List wordSuggestions = spellChecker.getSuggestions(event.getInvalidWord(), 0);
         List<String> sgs = new LinkedList<String>();                
                 
-        if (wordSuggestions != null && wordSuggestions.size() > 0) {
+        if (wordSuggestions != null && !wordSuggestions.isEmpty()) {
             for (Object suggestion : wordSuggestions) {
                 Word word = (Word)suggestion;
                 sgs.add(word.getWord());

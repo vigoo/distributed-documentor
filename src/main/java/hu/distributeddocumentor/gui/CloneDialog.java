@@ -1,17 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.gui;
 
 import com.jidesoft.swing.FolderChooser;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.util.List;
 
-/**
- *
- * @author vigoo
- */
 public class CloneDialog extends javax.swing.JDialog {
 
     private final DocumentorPreferences prefs;

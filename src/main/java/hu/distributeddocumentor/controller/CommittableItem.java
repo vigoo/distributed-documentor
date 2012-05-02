@@ -2,10 +2,6 @@ package hu.distributeddocumentor.controller;
 
 import hu.distributeddocumentor.model.Change;
 
-/**
- *
- * @author vigoo
- */
 public class CommittableItem {
     
     private final String path;
@@ -53,7 +49,7 @@ public class CommittableItem {
         if (friendlyPath.equals("toc.xml"))
             friendlyPath = "Table of Contents";
         else {
-            int lastDot = friendlyPath.lastIndexOf(".");
+            int lastDot = friendlyPath.lastIndexOf('.');
             String id = friendlyPath.substring(0, lastDot);
             String markupLanguage = friendlyPath.substring(lastDot + 1);
             

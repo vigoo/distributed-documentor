@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 public class MercurialSync implements RepositoryQuery, RepositoryMerger, RepositorySynchronizer {
 
-    private static final Logger logger = LoggerFactory.getLogger(MercurialSync.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(MercurialSync.class.getName());
     private final Documentation doc;
     private final DocumentorPreferences prefs;
     
@@ -45,22 +45,22 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
         Repository repo = doc.getRepository();
         IncomingCommand incoming = new IncomingCommand(repo).insecure();
         
-        logger.debug("Getting incoming change sets...");
+        log.debug("Getting incoming change sets...");
         
         incomingBundle = incoming.execute(uri.toASCIIString());
         
         if (incomingBundle != null) {
             List<Changeset> changesets = incomingBundle.getChangesets();
 
-            logger.debug("Got {0} change sets:", changesets.size());
+            log.debug("Got {0} change sets:", changesets.size());
             for (Changeset cs : changesets) {
-                logger.debug(" - {0}", cs.toString());
+                log.debug(" - {0}", cs.toString());
             }
 
-            return changesets.size() > 0;
+            return !changesets.isEmpty();
         }
         else {
-            logger.debug("No change sets found");
+            log.debug("No change sets found");
             return false;
         }
     }
@@ -89,7 +89,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
                         new File(doc.getRepositoryRoot()));
                 proc.waitFor();
             } catch (InterruptedException ex) {                
-                logger.error(null, ex);
+                log.error(null, ex);
             }
         }        
         
@@ -117,7 +117,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
         OutgoingCommand outgoing = new OutgoingCommand(repo).insecure();
         
         outgoingChangesets = outgoing.execute(uri.toASCIIString());
-        return outgoingChangesets.size() > 0;
+        return !outgoingChangesets.isEmpty();
         
     }
 
@@ -152,7 +152,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
             return URI.create(defaultUri);
         }
         catch (Exception ex) {
-            logger.error(null, ex);
+            log.error(null, ex);
             return null;
         }
     }

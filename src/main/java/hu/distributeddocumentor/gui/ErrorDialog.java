@@ -4,10 +4,6 @@ import java.awt.Frame;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-/**
- *
- * @author vigoo
- */
 public final class ErrorDialog extends javax.swing.JDialog {
 
     public static void show(Frame parent, String title, Exception ex) {

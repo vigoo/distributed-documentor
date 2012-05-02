@@ -12,7 +12,8 @@ import org.eclipse.mylyn.wikitext.core.util.ServiceLocator;
 
 public class Page extends Observable {
     
-    private final static String template = "= Title =\n\nBody\n";
+    private final static String TEMPLATE = "= Title =\n\nBody\n";
+    private static final Pattern SNIPPET_PATTERN = Pattern.compile("\\[Snippet\\:(\\w+)\\]");
     
     private final String id;
     private String markupLanguage;
@@ -26,9 +27,7 @@ public class Page extends Observable {
     private PageRefExtractor refExtractor;    
     private MarkupLanguage language;
     
-    private final SnippetCollection snippets;
-    
-    private static final Pattern snippetPattern = Pattern.compile("\\[Snippet\\:(\\w+)\\]");
+    private final SnippetCollection snippets;    
     
     private boolean hasChanged;
     
@@ -37,7 +36,7 @@ public class Page extends Observable {
         this.snippets = snippets;
         
         markupLanguage = "MediaWiki";
-        markup = template;
+        markup = TEMPLATE;
         isParserInitialized = false;        
         hasChanged = true;
         
@@ -49,13 +48,13 @@ public class Page extends Observable {
         
         this.snippets = snippets;
         
-        String fileName = source.getName();
-        int lastDot = fileName.lastIndexOf(".");
+        final String fileName = source.getName();
+        final int lastDot = fileName.lastIndexOf('.');
         id = fileName.substring(0, lastDot);
         markupLanguage = fixMarkupLanguage(fileName.substring(lastDot + 1));
         
-        FileInputStream stream = new FileInputStream(source);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        final FileInputStream stream = new FileInputStream(source);
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         try {        
             String line;
             StringBuilder builder = new StringBuilder();
@@ -212,7 +211,7 @@ public class Page extends Observable {
     }
 
     boolean equalsTemplate() {
-        return markup.equals(template);
+        return markup.equals(TEMPLATE);
     }
 
     private String fixMarkupLanguage(String substring) {
@@ -238,7 +237,7 @@ public class Page extends Observable {
 
             for (String line : lines) {
 
-                Matcher matcher = snippetPattern.matcher(line);
+                Matcher matcher = SNIPPET_PATTERN.matcher(line);
 
                 if (matcher.matches()) {
 

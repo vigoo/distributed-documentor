@@ -2,34 +2,45 @@ package hu.distributeddocumentor.utils;
 
 import java.net.URI;
 
-public class RepositoryUriGenerator {
+public abstract class RepositoryUriGenerator {        
     
-    public static String addCredentials(String uri, String userName, String password) {
+    public static String addCredentials(final String uri, 
+                                        final String userName, 
+                                        final String password) {
         
-        if (userName == null || password == null ||
+        if (userName == null || 
+            password == null ||
             userName.length() == 0 ||
             password.length() == 0) {
             return uri;
         } else {
             
-            URI parsed = URI.create(uri);
+            final URI parsed = URI.create(uri);
             
             String scheme = parsed.getScheme();
             if (scheme == null)
                 scheme = "http";
             
-            String result = scheme + "://" + userName + ":" + password + "@";
+            final StringBuilder result = new StringBuilder();
+            result.append(scheme);
+            result.append("://");
+            result.append(userName);
+            result.append(':');
+            result.append(password);
+            result.append('@');
                     
             if (parsed.getAuthority() != null)
-                result = result + parsed.getAuthority();
+                result.append(parsed.getAuthority());
             
             if (parsed.getPath() != null)
-                result = result + parsed.getPath();
+                result.append(parsed.getPath());
             
-            if (parsed.getQuery() != null)
-                result = result + "?" + parsed.getQuery();
+            if (parsed.getQuery() != null) {
+                result.append('?');
+                result.append(parsed.getQuery());
+            }
             
-            return result;
+            return result.toString();
             
         }        
     }

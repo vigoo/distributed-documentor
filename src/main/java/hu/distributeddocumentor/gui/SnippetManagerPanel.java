@@ -1,4 +1,3 @@
-
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.controller.SnippetListModel;
