@@ -28,12 +28,15 @@ public class Page extends Observable {
     private MarkupLanguage language;
     
     private final SnippetCollection snippets;    
+    private final PageMetadata metadata;
     
     private boolean hasChanged;
     
     public Page(String id, SnippetCollection snippets) {
         this.id = id;
         this.snippets = snippets;
+        
+        metadata = new PageMetadata(id);
         
         markupLanguage = "MediaWiki";
         markup = TEMPLATE;
@@ -46,12 +49,15 @@ public class Page extends Observable {
     
     public Page(File source, SnippetCollection snippets) throws FileNotFoundException, IOException {
         
-        this.snippets = snippets;
+        this.snippets = snippets;        
         
         final String fileName = source.getName();
         final int lastDot = fileName.lastIndexOf('.');
         id = fileName.substring(0, lastDot);
         markupLanguage = fixMarkupLanguage(fileName.substring(lastDot + 1));
+        
+        metadata = new PageMetadata(id);
+        metadata.load(source.getParentFile());
         
         final FileInputStream stream = new FileInputStream(source);
         final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
@@ -75,15 +81,24 @@ public class Page extends Observable {
         }
     }
     
-    public File getFile(File targetDirectory) {
+    private File getFile(File targetDirectory) {
         return new File(targetDirectory, id + "." + markupLanguage);
     }
     
-    public File save(File targetDirectory) throws IOException {
+    public File[] getFiles(File targetDirectory) {
         
-        File target = getFile(targetDirectory);
+        File[] files = new File[2];
+        files[0] = getFile(targetDirectory);
+        files[1] = metadata.getFile(targetDirectory);
+        return files;
         
-        PrintWriter fwriter = new PrintWriter(new FileWriter(target));
+    }
+    
+    public File[] save(File targetDirectory) throws IOException {
+        
+        File[] targets = getFiles(targetDirectory);
+        
+        PrintWriter fwriter = new PrintWriter(new FileWriter(targets[0]));
         try {
             fwriter.print(markup);
             
@@ -93,12 +108,18 @@ public class Page extends Observable {
             fwriter.close();
         }      
         
-        return target;
+        metadata.save(targetDirectory);
+        
+        return targets;
     }
 
     public String getId() {
         return id;
     }    
+    
+    public PageMetadata getMetadata() {
+        return metadata;
+    }
 
     public String getMarkup() {
         return markup;
@@ -195,10 +216,15 @@ public class Page extends Observable {
         notifyObservers();
     }
     
-    public void saveIfModified(File root) throws IOException {
+    public boolean saveIfModified(File root) throws IOException {
         
-        if (hasChanged)
-            save(root);
+        if (hasChanged || metadata.hasChanged()) {
+            save(root);  
+            
+            return true;
+        } else {
+            return false;
+        }
     }    
 
     private void initializeParser() {

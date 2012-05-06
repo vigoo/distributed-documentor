@@ -7,6 +7,7 @@ import com.aragost.javahg.commands.*;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.CaseInsensitiveMap;
 import hu.distributeddocumentor.utils.RepositoryUriGenerator;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -89,9 +90,9 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         File realRepositoryRoot = findRealRepositoryRoot(repositoryRoot);
         relativeRoot = realRepositoryRoot.toURI().relativize(repositoryRoot.toURI()).getPath();
         
-        log.info("Specified root: {0}", repositoryRoot.toString());
-        log.info("Real root:      {0}", realRepositoryRoot.toString());
-        log.info("Relative root:  {0}", relativeRoot);
+        log.info("Specified root: " + repositoryRoot.toString());
+        log.info("Real root:      " + realRepositoryRoot.toString());
+        log.info("Relative root:  " + relativeRoot);
         
         repository = Repository.open(createRepositoryConfiguration(), realRepositoryRoot);
         images = new Images(repository, relativeRoot);
@@ -143,7 +144,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                                isSupportedMarkup(file);
                     }})) {
                 try {
-                    Snippet snippet = new Snippet(child, this);
+                    Snippet snippet = new Snippet(child, this);                                        
                     registerSnippet(snippet);
                 }
                 catch (Exception ex) {
@@ -211,12 +212,13 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         if (!toc.getReferencedPages().contains(id))
             toc.addToEnd(toc.getUnorganized(), new TOCNode(page));                
         
-        File pageFile = page.save(getDocumentationDirectory());
+        File[] pageFiles = page.save(getDocumentationDirectory());
         
-        log.info("Adding new file to repository: {0}", pageFile.getName());
+        for (File pageFile : pageFiles)
+            log.info("Adding new file to repository: " + pageFile.getName());
         
         AddCommand cmd = new AddCommand(repository);
-        cmd.execute(pageFile);
+        cmd.execute(pageFiles);
     }      
     
     private void registerPage(Page page) {
@@ -245,12 +247,14 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         
         try {
             for (Page page : pages.values()) {
-                page.saveIfModified(root);
+                if (page.saveIfModified(root))
+                    ensurePageFilesAdded(page, getDocumentationDirectory());
             }        
             
             File snippetsDir = getSnippetsDirectory();
             for (Snippet snippet : snippets.values()) {
-                snippet.saveIfModified(snippetsDir);
+                if (snippet.saveIfModified(snippetsDir))
+                    ensurePageFilesAdded(snippet, getSnippetsDirectory());
             }
         
             toc.saveIfModified(root);
@@ -403,7 +407,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         
         for (String pageId : orphanedPages) {
             
-            log.info("Found orphaned page: {0}", pageId);
+            log.info("Found orphaned page: " + pageId);
             
             Page page = pages.get(pageId);
             
@@ -426,11 +430,15 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 pages.remove(pageId);
                 
                 RemoveCommand remove = new RemoveCommand(repository).force();
-                remove.execute(page.getFile(getDocumentationDirectory()));
                 
-                boolean deleteSucceeded = page.getFile(getDocumentationDirectory()).delete();
-                if (!deleteSucceeded)
-                    log.error("Failed to delete page " + page.getId());
+                File[] files = page.getFiles(getDocumentationDirectory());
+                remove.execute(files);
+                
+                for (File f : files) {
+                    boolean deleteSucceeded = f.delete();
+                    if (!deleteSucceeded)
+                        log.error("Failed to delete file " + f.getName());
+                }
             }                   
         }
         
@@ -486,12 +494,13 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         else
             throw new PageAlreadyExistsException();        
         
-        File snippetFile = snippet.save(getSnippetsDirectory());
+        File[] snippetFiles = snippet.save(getSnippetsDirectory());
         
-        log.info("Adding new snippet to repository: {0}", snippetFile.getName());
+        for (File snippetFile : snippetFiles)
+            log.info("Adding new snippet to repository: " + snippetFile.getName());
         
         AddCommand cmd = new AddCommand(repository);
-        cmd.execute(snippetFile);
+        cmd.execute(snippetFiles);
         
         setChanged();
         notifyObservers();
@@ -500,16 +509,20 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     @Override
     public void removeSnippet(String id) {
                
-       log.info("Removing snippet {0} from repository", id);
+       log.info("Removing snippet " + id + " from repository");
                             
        Snippet snippet = snippets.get(id);
        snippets.remove(id);
                 
        RemoveCommand remove = new RemoveCommand(repository).force();
-       remove.execute(snippet.getFile(getSnippetsDirectory()));
+       
+       File[] files = snippet.getFiles(getSnippetsDirectory());
+       remove.execute(files);
                 
-       if (!snippet.getFile(getSnippetsDirectory()).delete())
-           log.error("Failed to delete snippet " + snippet.getId());
+       for (File f : files) {
+        if (!f.delete())
+            log.error("Failed to delete snippet file " + f.getName());
+       }
        
        setChanged();
        notifyObservers();
@@ -527,11 +540,11 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             File missingFile = new File(root, missing);
             
             if (missingFile.getAbsolutePath().startsWith(getDocumentationDirectory().getAbsolutePath())) {
-                log.info("Forgetting missing file {0}", missing);                                
+                log.info("Forgetting missing file " + missing);                                
                 toRemove.add(missing);
             }
             else {
-                log.info("Leaving missing file {0}", missing);
+                log.info("Leaving missing file " + missing);
             }
         }
         
@@ -539,6 +552,43 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             RemoveCommand remove = new RemoveCommand(repository).after().force();
 
             remove.execute(toRemove.toArray(new String[0]));
+        }
+    }
+
+    private void ensurePageFilesAdded(Page page, File root) {
+        
+        File[] files = page.getFiles(root);
+        for (File f : files) {
+            if (f.exists()) {
+                
+                log.debug("Checking status of " + f.getName());
+                
+                StatusCommand status = new StatusCommand(repository);
+                StatusResult result = status.execute(f);
+                
+                if (result.getUnknown().size() > 0) {
+                    
+                    log.debug(" -> status is unknown, adding to repository...");
+                    
+                    AddCommand add = new AddCommand(repository);
+                    add.execute(f);                    
+                }
+            }
+        }
+    }
+
+    public Color getStatusColor(String status) {
+        // TODO: make it user configurable
+        if ("Reviewed".equals(status))
+            return new Color(192, 255, 192, 255);
+        else if ("Completed".equals(status))
+            return Color.GREEN;
+        else if ("In progress".equals(status))
+            return Color.YELLOW;
+        else if ("Not started".equals(status))
+            return Color.WHITE;
+        else {
+                return Color.WHITE;
         }
     }
 }

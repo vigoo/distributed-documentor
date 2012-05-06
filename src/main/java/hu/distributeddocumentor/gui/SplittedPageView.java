@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.model.Page;
+import hu.distributeddocumentor.model.PageMetadata;
 import java.io.File;
 import javax.swing.undo.UndoManager;
 
@@ -8,6 +9,7 @@ public class SplittedPageView extends javax.swing.JPanel {
 
     private final WikiMarkupEditor editor;
     private final HTMLPreview preview;
+    private final PageMetadata metadata;
     
     /**
      * Creates new form SplittedPageView
@@ -15,6 +17,7 @@ public class SplittedPageView extends javax.swing.JPanel {
     public SplittedPageView(Page page, File root, PageEditorHost host) {
         initComponents();
                 
+        metadata = page.getMetadata();
         preview = new HTMLPreview(page, host, root);
         editor = new WikiMarkupEditor(page, host, preview);
         
@@ -22,6 +25,11 @@ public class SplittedPageView extends javax.swing.JPanel {
         jSplitPane1.setRightComponent(preview);
         
         jSplitPane1.setDividerLocation(0.5);
+        
+        String currentStatus = (String)metadata.get("Status");
+        if (currentStatus == null)
+            currentStatus = "Not started";
+        cbStatus.setSelectedItem(currentStatus);
     }
 
     /**
@@ -34,22 +42,69 @@ public class SplittedPageView extends javax.swing.JPanel {
     private void initComponents() {
 
         jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        cbStatus = new javax.swing.JComboBox();
 
         jSplitPane1.setDividerLocation(200);
         jSplitPane1.setResizeWeight(0.5);
+
+        jPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("ToolTip.background"));
+
+        jLabel1.setText("Page status:");
+
+        cbStatus.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Reviewed", "Completed", "In progress", "Not started" }));
+        cbStatus.setSelectedIndex(3);
+        cbStatus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbStatusActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(0, 6, Short.MAX_VALUE)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1)))
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStatusActionPerformed
+        
+        metadata.put("Status", cbStatus.getSelectedItem().toString());
+    }//GEN-LAST:event_cbStatusActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox cbStatus;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSplitPane jSplitPane1;
     // End of variables declaration//GEN-END:variables
 

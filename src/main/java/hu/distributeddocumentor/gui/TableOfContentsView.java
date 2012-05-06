@@ -7,8 +7,10 @@ import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
+import java.awt.Component;
 import java.awt.HeadlessException;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -25,12 +27,30 @@ public class TableOfContentsView extends javax.swing.JPanel {
     /**
      * Creates new form TableOfContentsView
      */
-    public TableOfContentsView(Documentation doc, PageEditorHost pageEditorHost) {
+    public TableOfContentsView(final Documentation doc, PageEditorHost pageEditorHost) {
         this.doc = doc;
         toc = doc.getTOC();
         this.pageEditorHost = pageEditorHost;
         
         initComponents();      
+        
+        tree.setCellRenderer(new DefaultTreeCellRenderer() {
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {      
+            
+                TOCNode node = (TOCNode)value;
+                if (node.hasTarget()) {
+                    setBackgroundNonSelectionColor(
+                            doc.getStatusColor(
+                                (String)node.getTarget().getMetadata().get("Status")));
+                } else {
+                    setBackgroundNonSelectionColor(
+                            getBackground());
+                }
+                
+                return super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+            }  
+        });
         
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.setCellEditor(new TOCNodeCellEditor(tree, (DefaultTreeCellRenderer)tree.getCellRenderer()));                

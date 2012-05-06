@@ -52,9 +52,9 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
         if (incomingBundle != null) {
             List<Changeset> changesets = incomingBundle.getChangesets();
 
-            log.debug("Got {0} change sets:", changesets.size());
+            log.debug("Got " + changesets.size() + " change sets:");
             for (Changeset cs : changesets) {
-                log.debug(" - {0}", cs.toString());
+                log.debug(" - " + cs.toString());
             }
 
             return !changesets.isEmpty();

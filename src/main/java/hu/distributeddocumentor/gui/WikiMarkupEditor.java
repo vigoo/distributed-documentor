@@ -709,7 +709,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         if (spellChecker != null) {
                                
             
-            log.debug("Starting spell check for {0}", page.getId());
+            log.debug("Starting spell check for " + page.getId());
 
             synchronized (spellChecker) {
 
@@ -734,14 +734,14 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                     isSpellChecking = false;
                 }
 
-                log.debug("Finished spell check for {0}", page.getId());
+                log.debug("Finished spell check for " + page.getId());
             }
         }
     }
 
     @Override
     public void spellingError(SpellCheckEvent event) {
-        log.info("Spelling error: ''{0}''", new Object[]{event.getInvalidWord()});
+        log.info("Spelling error: ''" + event.getInvalidWord() + "''");
         
         int start = event.getWordContextPosition();
         int length = event.getInvalidWord().length();
