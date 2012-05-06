@@ -1,5 +1,7 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.builders.LinkFixingBuilder;
+import hu.distributeddocumentor.model.builders.ExtendedHtmlDocumentBuilder;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -179,7 +181,7 @@ public class Page extends Observable {
        
        StringWriter writer = new StringWriter();
        
-       HtmlDocumentBuilder builder = new LinkFixingBuilder(writer, root);
+       ExtendedHtmlDocumentBuilder builder = new ExtendedHtmlDocumentBuilder(writer, root);
        
        HtmlDocumentBuilder.Stylesheet stylesheet;
        if (embedCSS) {

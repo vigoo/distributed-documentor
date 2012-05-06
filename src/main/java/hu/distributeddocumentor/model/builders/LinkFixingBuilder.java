@@ -1,4 +1,4 @@
-package hu.distributeddocumentor.model;
+package hu.distributeddocumentor.model.builders;
 
 import java.io.File;
 import java.io.Writer;
