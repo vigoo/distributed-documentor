@@ -17,6 +17,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.URI;
 import java.util.Properties;
@@ -25,6 +27,8 @@ import javax.swing.undo.UndoManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.noos.xing.mydoggy.*;
 import org.noos.xing.mydoggy.event.ContentManagerEvent;
+import org.noos.xing.mydoggy.event.DockableManagerEvent;
+import org.noos.xing.mydoggy.event.ToolWindowTabEvent;
 import org.noos.xing.mydoggy.plaf.MyDoggyToolWindowManager;
 import org.noos.xing.mydoggy.plaf.ui.content.MyDoggyTabbedContentManagerUI;
 import org.slf4j.LoggerFactory;
@@ -39,6 +43,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private final Timer removeOrphanedPagesTimer;
     private UndoManager currentUndoManager;
     private SpellChecker spellChecker;
+
+    private ToolWindow twImages;
+    private ToolWindow twSnippets;
+    private ToolWindow twTOC;
 
     @Override
     public SpellChecker getSpellChecker() {
@@ -66,7 +74,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         prefs = new DocumentorPreferences();
         doc = new Documentation(prefs);
         
-        toolWindowManager = new MyDoggyToolWindowManager();
+        toolWindowManager = new MyDoggyToolWindowManager();        
+        
         ContentManager contentManager = toolWindowManager.getContentManager();
         MyDoggyTabbedContentManagerUI contentManagerUI = new MyDoggyTabbedContentManagerUI();                        
         contentManager.setContentManagerUI(contentManagerUI);       
@@ -75,17 +84,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         contentManager.addContentManagerListener(this);
        
         add(toolWindowManager, BorderLayout.CENTER);
-                
-        ToolWindow twTOC = toolWindowManager.registerToolWindow(
-                "TOC", "Table of contents", null, 
-                new TableOfContentsView(doc, this), 
-                ToolWindowAnchor.LEFT);
-                
-        twTOC.setType(ToolWindowType.DOCKED);
-        twTOC.setAutoHide(false);
-        twTOC.setVisible(true);
-        twTOC.setAvailable(true);        
-        
+                        
         showPreferencesIfNecessary();
             
         final StartupDialog startup = new StartupDialog(this, prefs);
@@ -94,8 +93,25 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         boolean loaded = false;
         if (startup.getFinalAction() != StartupDialog.Action.Cancel) {
             if (startup.initialize(doc)) {
+                twTOC = toolWindowManager.registerToolWindow(
+                        "TOC", "Table of contents", null, 
+                        new TableOfContentsView(doc, this), 
+                        ToolWindowAnchor.LEFT);
 
-                ToolWindow twImages = toolWindowManager.registerToolWindow(
+                twTOC.setType(ToolWindowType.DOCKED);
+                twTOC.setAutoHide(false);
+                twTOC.setVisible(true);
+                twTOC.setAvailable(true);
+                twTOC.addPropertyChangeListener("visible",
+                        new PropertyChangeListener() {
+
+                            @Override
+                            public void propertyChange(PropertyChangeEvent pce) {
+                                tocItem.setState((Boolean)pce.getNewValue());
+                    }
+                });
+
+                twImages = toolWindowManager.registerToolWindow(
                         "IMG", 
                         "Image manager", 
                         null, 
@@ -104,9 +120,17 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 twImages.setType(ToolWindowType.DOCKED);
                 twImages.setAutoHide(false);
                 twImages.setVisible(true);
-                twImages.setAvailable(true);                                
+                twImages.setAvailable(true);  
+                twImages.addPropertyChangeListener("visible",
+                        new PropertyChangeListener() {
 
-                ToolWindow twSnippets = toolWindowManager.registerToolWindow(
+                            @Override
+                            public void propertyChange(PropertyChangeEvent pce) {
+                                imageManagerItem.setState((Boolean)pce.getNewValue());
+                    }
+                });
+
+                twSnippets = toolWindowManager.registerToolWindow(
                         "SNIP",
                         "Snippets manager",
                         null,
@@ -116,6 +140,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 twSnippets.setAutoHide(false);
                 twSnippets.setVisible(true);
                 twSnippets.setAvailable(true);
+                twSnippets.addPropertyChangeListener("visible",
+                        new PropertyChangeListener() {
+
+                            @Override
+                            public void propertyChange(PropertyChangeEvent pce) {
+                                snippetManagerItem.setState((Boolean)pce.getNewValue());
+                    }
+                });
                 
                 labelRoot.setText(doc.getRepositoryRoot());
 
@@ -198,6 +230,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         synchronizeMenu = new javax.swing.JMenu();
         pullMenuItem = new javax.swing.JMenuItem();
         pushMenuItem = new javax.swing.JMenuItem();
+        viewMenu = new javax.swing.JMenu();
+        tocItem = new javax.swing.JCheckBoxMenuItem();
+        imageManagerItem = new javax.swing.JCheckBoxMenuItem();
+        snippetManagerItem = new javax.swing.JCheckBoxMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        resetLayoutItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         userManualItem = new javax.swing.JMenuItem();
 
@@ -331,6 +369,46 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         synchronizeMenu.add(pushMenuItem);
 
         menuBar.add(synchronizeMenu);
+
+        viewMenu.setText("View");
+
+        tocItem.setSelected(true);
+        tocItem.setText("Table of contents");
+        tocItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tocItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(tocItem);
+
+        imageManagerItem.setSelected(true);
+        imageManagerItem.setText("Image manager");
+        imageManagerItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imageManagerItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(imageManagerItem);
+
+        snippetManagerItem.setSelected(true);
+        snippetManagerItem.setText("Snippet manager");
+        snippetManagerItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                snippetManagerItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(snippetManagerItem);
+        viewMenu.add(jSeparator1);
+
+        resetLayoutItem.setText("Reset layout");
+        resetLayoutItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetLayoutItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(resetLayoutItem);
+
+        menuBar.add(viewMenu);
 
         helpMenu.setText("Help");
 
@@ -480,6 +558,63 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
     }//GEN-LAST:event_redoMenuItemActionPerformed
 
+    private void tocItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tocItemActionPerformed
+        
+        if (tocItem.getState()) {
+            twTOC.setAvailable(true);
+            twTOC.setVisible(true);
+            twTOC.setActive(true);
+        }
+        else {
+            twTOC.setVisible(false);
+        }
+    }//GEN-LAST:event_tocItemActionPerformed
+
+    private void imageManagerItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageManagerItemActionPerformed
+        
+        if (imageManagerItem.getState()) {
+            twImages.setAvailable(true);;
+            twImages.setVisible(true);
+            twImages.setActive(true);
+        }
+        else {
+            twImages.setVisible(false);
+        }
+    }//GEN-LAST:event_imageManagerItemActionPerformed
+
+    private void snippetManagerItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_snippetManagerItemActionPerformed
+        
+        if (snippetManagerItem.getState()) {
+            twSnippets.setAvailable(true);;
+            twSnippets.setVisible(true);
+            twSnippets.setActive(true);        
+        }
+        else {
+            twSnippets.setVisible(false);
+        }
+    }//GEN-LAST:event_snippetManagerItemActionPerformed
+
+    private void resetLayoutItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetLayoutItemActionPerformed
+        
+        twTOC.setAvailable(true);
+        twTOC.setVisible(true);
+        twTOC.setVisible(true);
+        twTOC.setAnchor(ToolWindowAnchor.LEFT);
+        twTOC.setType(ToolWindowType.DOCKED);
+        
+        twImages.setAvailable(true);
+        twImages.setVisible(true);
+        twImages.setVisible(true);
+        twImages.setAnchor(ToolWindowAnchor.LEFT);
+        twImages.setType(ToolWindowType.DOCKED);
+        
+        twSnippets.setAvailable(true);
+        twSnippets.setVisible(true);
+        twSnippets.setVisible(true);
+        twSnippets.setAnchor(ToolWindowAnchor.RIGHT);
+        twSnippets.setType(ToolWindowType.DOCKED);
+    }//GEN-LAST:event_resetLayoutItemActionPerformed
+
     private void showPreferencesIfNecessary() {
         
         if (!prefs.hasValidMercurialPath()) {
@@ -502,7 +637,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 // TODO: better location for this file
                 FileInputStream input = new FileInputStream(workspaceFile);
                 delegate.merge(input, PersistenceDelegate.MergePolicy.RESET);
-                input.close();        
+                input.close();   
+                
+                tocItem.setState(twTOC.isVisible());
+                imageManagerItem.setState(twImages.isVisible());
+                snippetManagerItem.setState(twSnippets.isVisible());
+                
             } catch (Exception e) {
                 // TODO
             }  
@@ -575,7 +715,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JMenu fileMenu;
     private javax.swing.Box.Filler filler1;
     private javax.swing.JMenu helpMenu;
+    private javax.swing.JCheckBoxMenuItem imageManagerItem;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JLabel labelRoot;
     private javax.swing.JLabel labelUncommitted;
     private javax.swing.JMenuBar menuBar;
@@ -583,10 +725,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JMenuItem pullMenuItem;
     private javax.swing.JMenuItem pushMenuItem;
     private javax.swing.JMenuItem redoMenuItem;
+    private javax.swing.JMenuItem resetLayoutItem;
+    private javax.swing.JCheckBoxMenuItem snippetManagerItem;
     private javax.swing.JMenu synchronizeMenu;
+    private javax.swing.JCheckBoxMenuItem tocItem;
     private javax.swing.JToolBar toolBar;
     private javax.swing.JMenuItem undoMenuItem;
     private javax.swing.JMenuItem userManualItem;
+    private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 
 
