@@ -131,9 +131,10 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     private void loadRepository() throws FailedToLoadPageException, FailedToLoadTOCException {
 
         File snippetsDir = getSnippetsDirectory();
-        if (!snippetsDir.exists())
+        if (!snippetsDir.exists()) {
             if (!snippetsDir.mkdirs())
                 throw new RuntimeException("Failed to create snippets directory!");
+        }
         else {
             for (File child : snippetsDir.listFiles(
                     new FileFilter() {
