@@ -30,6 +30,13 @@ public class TOCNode {
         this.target = target;
     }
     
+    public TOCNode(String title, Page target) {
+        this();
+        
+        this.title = title;
+        this.target = target;
+    }
+    
     public List<TOCNode> getChildren() {
         return Collections.unmodifiableList(children);
     }

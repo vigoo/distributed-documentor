@@ -134,7 +134,10 @@ public class TOC {
             listener.treeNodesInserted(evt);
         }
         
-        modified = true;
+        // Adding items to the recycle bin does not count as a significant
+        // modification, as it is not saved within the TOC
+        if (parent != recycleBin)
+            modified = true;
     }
     
     public void addBefore(TOCNode existingNode, TOCNode newChild) {
@@ -182,7 +185,10 @@ public class TOC {
             listener.treeNodesRemoved(evt);
         }
         
-        modified = true;
+        // Removing nodes from recycle bin does not count 
+        // as a modification to be saved
+        if (parent != recycleBin)
+            modified = true;
     }
     
     public void remove(Page page) {
