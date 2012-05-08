@@ -27,8 +27,6 @@ import javax.swing.undo.UndoManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.noos.xing.mydoggy.*;
 import org.noos.xing.mydoggy.event.ContentManagerEvent;
-import org.noos.xing.mydoggy.event.DockableManagerEvent;
-import org.noos.xing.mydoggy.event.ToolWindowTabEvent;
 import org.noos.xing.mydoggy.plaf.MyDoggyToolWindowManager;
 import org.noos.xing.mydoggy.plaf.ui.content.MyDoggyTabbedContentManagerUI;
 import org.slf4j.LoggerFactory;
@@ -513,6 +511,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
     private void pullMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullMenuItemActionPerformed
         
+        saveTimer.stop();
+        statusCheckTimer.stop();
+        removeOrphanedPagesTimer.stop();
+        
         try {
             SyncController controller = createSyncConrtoller();
             controller.pull();
@@ -520,9 +522,18 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         catch (Exception ex) {
             ErrorDialog.show(this, "Failed to download changes", ex);
         }
+        finally {
+            saveTimer.start();
+            statusCheckTimer.start();
+            removeOrphanedPagesTimer.start();    
+        }
     }//GEN-LAST:event_pullMenuItemActionPerformed
 
     private void pushMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pushMenuItemActionPerformed
+        
+        saveTimer.stop();
+        statusCheckTimer.stop();
+        removeOrphanedPagesTimer.stop();
         
         try {
             SyncController controller = createSyncConrtoller();
@@ -530,6 +541,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
         catch (Exception ex) {
             ErrorDialog.show(this, "Failed to upload changes", ex);
+        }
+        finally {
+            saveTimer.start();
+            statusCheckTimer.start();
+            removeOrphanedPagesTimer.start();    
         }
     }//GEN-LAST:event_pushMenuItemActionPerformed
 
