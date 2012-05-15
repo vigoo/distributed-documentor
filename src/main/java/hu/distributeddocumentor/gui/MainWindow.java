@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.gui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
+import com.jidesoft.swing.FolderChooser;
 import com.swabunga.spell.engine.SpellDictionary;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
 import com.swabunga.spell.event.SpellChecker;
@@ -22,7 +23,10 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.URI;
 import java.util.Properties;
-import javax.swing.*;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.undo.UndoManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.noos.xing.mydoggy.*;
@@ -465,12 +469,18 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
     private void exportToCHMMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToCHMMenuItemActionPerformed
        
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle("Select the target directory");
+        FolderChooser chooser = new FolderChooser();
+        chooser.setDialogTitle("Select the target folder");
+        
+        java.util.List<String> recent = prefs.getRecentTargets();
+        chooser.setRecentList(recent);
+        chooser.setRecentListVisible(true);
                 
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
+            
             File targetDir = chooser.getSelectedFile();
+            String path = targetDir.getAbsolutePath();
+         
             Exporter exporter = new CHMExporter(prefs, doc, targetDir);
             
             try {
@@ -479,9 +489,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             catch (Exception ex) {
                 org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
                 
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Export failed", JOptionPane.ERROR_MESSAGE);
+                ErrorDialog.show(this, "Export failed", ex);
             }
-        }  
+            
+            if (!recent.contains(path)) {               
+                recent.add(path);
+                prefs.setRecentTargets(recent);
+            }            
+        }
     }//GEN-LAST:event_exportToCHMMenuItemActionPerformed
 
     private void preferencesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMenuItemActionPerformed
@@ -490,12 +505,18 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
     private void exportToHTMLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToHTMLMenuItemActionPerformed
         
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle("Select the target directory");
+        FolderChooser chooser = new FolderChooser();
+        chooser.setDialogTitle("Select the target folder");
+        
+        java.util.List<String> recent = prefs.getRecentTargets();
+        chooser.setRecentList(recent);
+        chooser.setRecentListVisible(true);
                 
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
+            
             File targetDir = chooser.getSelectedFile();
+            String path = targetDir.getAbsolutePath();
+         
             Exporter exporter = new HTMLExporter(doc, targetDir);
             
             try {
@@ -506,7 +527,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 
                 ErrorDialog.show(this, "Export failed", ex);
             }
-        }  
+            
+            if (!recent.contains(path)) {               
+                recent.add(path);
+                prefs.setRecentTargets(recent);
+            }            
+        }                                
     }//GEN-LAST:event_exportToHTMLMenuItemActionPerformed
 
     private void pullMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullMenuItemActionPerformed
