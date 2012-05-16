@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.builders.PageRefExtractor;
 import hu.distributeddocumentor.model.builders.LinkFixingBuilder;
 import hu.distributeddocumentor.model.builders.ExtendedHtmlDocumentBuilder;
 import java.io.*;
@@ -231,7 +232,8 @@ public class Page extends Observable {
 
     private void initializeParser() {
         ServiceLocator serviceLocator = ServiceLocator.getInstance();              
-        language = serviceLocator.getMarkupLanguage(markupLanguage);                
+        language = serviceLocator.getMarkupLanguage(markupLanguage);
+        language.setInternalLinkPattern("{0}");
         
         refExtractor = new PageRefExtractor(markupLanguage);
         

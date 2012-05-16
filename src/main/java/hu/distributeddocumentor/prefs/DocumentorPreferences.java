@@ -72,6 +72,45 @@ public class DocumentorPreferences {
             logger.error(null, ex);
         }
     }
+    
+     public List<String> getRecentTargets() {        
+        
+        try {
+            List<String> result = new LinkedList<String>();
+            Preferences reposNode = prefs.node("recentTargets");
+
+            for (String key : reposNode.keys()) {
+                String item = reposNode.get(key, null);
+                if (item != null)
+                    result.add(item);
+            }
+
+            return result;
+        }
+        catch (BackingStoreException ex) {
+            logger.error(null, ex);
+            return new LinkedList<String>();
+        }
+    }
+    
+    public void setRecentTargets(List<String> list) {
+        
+        try {
+            Preferences reposNode = prefs.node("recentTargets");
+
+            for (String key : reposNode.keys())
+                reposNode.remove(key);
+            
+            for (int i = 0; i < list.size(); i++) {
+                reposNode.put(Integer.toString(i), list.get(i));
+            }
+            
+            prefs.flush();
+        }
+        catch (BackingStoreException ex) {
+            logger.error(null, ex);
+        }
+    }
  
     public boolean isWindows() {
         return System.getProperty("os.name").startsWith("Windows");

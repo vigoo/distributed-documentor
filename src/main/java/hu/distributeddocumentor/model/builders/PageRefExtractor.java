@@ -1,4 +1,4 @@
-package hu.distributeddocumentor.model;
+package hu.distributeddocumentor.model.builders;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,8 +16,9 @@ public class PageRefExtractor extends DocumentBuilder {
     public PageRefExtractor(String markupLanguage) {
         ServiceLocator serviceLocator = ServiceLocator.getInstance();              
         MarkupLanguage language = serviceLocator.getMarkupLanguage(markupLanguage);                
+        language.setInternalLinkPattern("{0}");
         
-        parser = new MarkupParser(language, this);     
+        parser = new MarkupParser(language, this);         
     }
     
     public List<String> getReferencedPages(String markup) {
@@ -80,11 +81,22 @@ public class PageRefExtractor extends DocumentBuilder {
     @Override
     public void link(Attributes attributes, String hrefOrHashName, String text) {        
         
-        if (!hrefOrHashName.startsWith("http://")) {         
-            if (!refs.contains(hrefOrHashName))
-                if (!hrefOrHashName.startsWith("Snippet:"))
-                    refs.add(hrefOrHashName);            
+        if (!hrefOrHashName.startsWith("http://") &&
+            !hrefOrHashName.startsWith("https://") &&
+            !hrefOrHashName.startsWith("file://") &&
+            !hrefOrHashName.endsWith(".html") &&
+            !hrefOrHashName.startsWith("#") &&
+            !hrefOrHashName.startsWith("Snippet:")) {                     
+            
+            String id = trimAnchor(hrefOrHashName);
+            if (!refs.contains(id))            
+                refs.add(id);
         }        
+    }
+    
+    private String trimAnchor(String target) {
+        String[] parts = target.split("#");
+        return parts[0];
     }
 
     @Override

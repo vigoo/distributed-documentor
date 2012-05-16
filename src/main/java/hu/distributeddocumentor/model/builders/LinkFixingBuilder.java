@@ -45,11 +45,20 @@ public class LinkFixingBuilder extends HtmlDocumentBuilder {
         if (hrefOrHashName.startsWith("http://") ||
             hrefOrHashName.startsWith("https://") ||
             hrefOrHashName.startsWith("file://") ||
-            hrefOrHashName.startsWith(".html")) {             
+            hrefOrHashName.endsWith(".html") ||
+            hrefOrHashName.startsWith("#")) {
                 
             super.link(attributes, hrefOrHashName, text);
         } else {
-            super.link(attributes, hrefOrHashName+".html", text);
+            
+            if (hrefOrHashName.contains("#")) {            
+                
+                String[] parts = hrefOrHashName.split("#");
+                super.link(attributes, parts[0]+".html#"+parts[1], text);
+                
+            } else {
+                super.link(attributes, hrefOrHashName+".html", text);
+            }
         }        
     }
     
