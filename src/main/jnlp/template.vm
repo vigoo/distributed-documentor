@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<jnlp spec="1.0+" codebase="file:/Volumes/Data/Home/vigoo/Projects/DistributedDocumentor-mvn/target/jnlp" href="$outputFile">
+<jnlp codebase="http://downloads.kotem.hu/ddoc/" href="$outputFile" spec="1.0+">
  <information>
     <title>DistributedDocumentor</title>
     <vendor>Daniel Vigovszky</vendor>
