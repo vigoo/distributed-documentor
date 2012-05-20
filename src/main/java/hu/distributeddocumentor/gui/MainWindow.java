@@ -153,7 +153,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 
                 labelRoot.setText(doc.getRepositoryRoot());
 
-                openOrFocusPage("start");
+                openOrFocusPage("start", "");
 
                 setVisible(true);        
                 loadLayout();
@@ -779,10 +779,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
 
     @Override
-    public void openOrFocusPage(String id) {
+    public void openOrFocusPage(final String id, final String anchor) {
                 
         ContentManager contentManager = toolWindowManager.getContentManager();
-        
+                
         Content content = contentManager.getContent(id);
         if (content == null) {            
             content = contentManager.addContent(
@@ -793,6 +793,20 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
          
         content.setSelected(true);        
+        
+        if (!anchor.isEmpty()) {
+            
+            final HTMLPreview preview = ((SplittedPageView)content.getComponent()).getPreview();
+            
+            EventQueue.invokeLater(
+                    new Runnable() {
+
+                        @Override
+                        public void run() {                            
+                            preview.scrollToId(anchor);
+                        }                        
+                    });            
+        }
     }    
 
     @Override

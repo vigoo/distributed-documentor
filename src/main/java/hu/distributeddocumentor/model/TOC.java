@@ -1,5 +1,7 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
+import hu.distributeddocumentor.model.virtual.builders.DocXmlHierarchyBuilder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,6 +35,13 @@ public class TOC {
         
         unorganized = new TOCNode("Unorganized pages");
         recycleBin = new TOCNode("Recycle bin");
+        
+//        VirtualHierarchyBuilder builder = 
+//                new DocXmlHierarchyBuilder(
+//                    new File("/Volumes/Data/Home/vigoo/Desktop/SmartCore.General.xml"),
+//                    "General module", 
+//                    "MediaWiki");
+//        root.addToEnd(builder.build());
         
         root.addToEnd(unorganized);
         root.addToEnd(recycleBin);

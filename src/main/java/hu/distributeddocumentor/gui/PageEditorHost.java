@@ -4,7 +4,7 @@ import com.swabunga.spell.event.SpellChecker;
 import java.awt.Frame;
 
 public interface PageEditorHost {
-    void openOrFocusPage(String id);
+    void openOrFocusPage(String id, String anchor);
     void openOrFocusSnippet(String id);
     
     void documentationReloaded();

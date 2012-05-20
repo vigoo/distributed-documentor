@@ -68,15 +68,18 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
                             !uri.startsWith("https://") &&
                             !uri.startsWith("file://") &&
                              uri.length() > ".html".length()) {
-                        
-                            String id = uri.substring(0, uri.length() - ".html".length());
-                            host.openOrFocusPage(id);
+                            
+                            String[] parts = uri.split("#");
+                            String id = parts[0].substring(0, parts[0].length() - ".html".length());
+                            String anchor = parts.length > 1 ? parts[1] : "";
+                                                    
+                            host.openOrFocusPage(id, anchor);
                             
                         } else if (uri.toString().startsWith(rootUri)) {
                             String fileName = uri.toString().substring(rootUri.length());
                             fileName = fileName.substring(0, fileName.length() - ".html".length());
 
-                            host.openOrFocusPage(fileName);
+                            host.openOrFocusPage(fileName, "");
                         } else {
                             try {
                                 Desktop.getDesktop().browse(new URI(uri));
@@ -98,9 +101,15 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
         
         String lineId = "line"+Integer.toString(lineIdx);
         
+        scrollToId(lineId);
+    }
+    
+    @Override
+    public void scrollToId(String id) {
+       
         Box rootBox = htmlPanel.getRootBox();
         if (rootBox != null) {
-            Box lineAnnotation = findLineAnnotation(rootBox, lineId);
+            Box lineAnnotation = findId(rootBox, id);
 
             if (lineAnnotation != null) {
 
@@ -178,20 +187,24 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
     public void update(Observable o, Object o1) {
         renderPage();
     }
-
-    private Box findLineAnnotation(Box box, String lineId) {
+    
+    private Box findId(Box box, String id) {
         
         Element elem = box.getElement();
         if (elem != null) {
-            if ("span".equals(elem.getNodeName()) &&
-                elem.hasAttribute("id") &&
-                elem.getAttribute("id").equals(lineId)) {
-                return box;
+            if (elem.hasAttribute("id")) {                
+                // We are using 'endsWith' here because the adding the line number 
+                // spans to header elements corrupts their id which is otherwise used
+                // as anchors. This way the method can work with both the line number spans
+                // and the mediawiki style automatic anchors.
+                if (elem.getAttribute("id").endsWith(id)) 
+                    return box;                                    
             }
         }
+        
         for (Iterator it = box.getChildIterator(); it.hasNext();) {
             Box child = (Box) it.next();
-            Box result = findLineAnnotation(child, lineId);
+            Box result = findId(child, id);
             if (result != null)
                 return result;
         }

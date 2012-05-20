@@ -80,7 +80,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to add new page", JOptionPane.ERROR_MESSAGE);
             }
 
-            pageEditorHost.openOrFocusPage(newID);
+            pageEditorHost.openOrFocusPage(newID, "");
         }
     }
 
@@ -257,7 +257,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
 
                 if (node.hasTarget()) {
                     String pageId = node.getTarget().getId();
-                    pageEditorHost.openOrFocusPage(pageId);
+                    pageEditorHost.openOrFocusPage(pageId, "");
                 } else {
 
                     if (node != toc.getUnorganized() &&
@@ -375,7 +375,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
     private void miOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miOpenActionPerformed
         
         String pageId = contextMenuTarget.getTarget().getId();
-        pageEditorHost.openOrFocusPage(pageId);
+        pageEditorHost.openOrFocusPage(pageId, "");
     }//GEN-LAST:event_miOpenActionPerformed
 
     private void miCreateNewPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCreateNewPageActionPerformed
@@ -393,7 +393,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
                 
                 Page page = selected.getTarget();
                 toc.changeNodeTarget(contextMenuTarget, page);
-                pageEditorHost.openOrFocusPage(page.getId());
+                pageEditorHost.openOrFocusPage(page.getId(), "");
             }
         }
     }//GEN-LAST:event_miAssignUnorganizedPageActionPerformed

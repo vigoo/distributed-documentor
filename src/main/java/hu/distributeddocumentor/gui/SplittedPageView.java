@@ -10,6 +10,11 @@ public class SplittedPageView extends javax.swing.JPanel {
     private final WikiMarkupEditor editor;
     private final HTMLPreview preview;
     private final PageMetadata metadata;
+
+    public HTMLPreview getPreview() {
+        return preview;
+    }
+        
     
     /**
      * Creates new form SplittedPageView
