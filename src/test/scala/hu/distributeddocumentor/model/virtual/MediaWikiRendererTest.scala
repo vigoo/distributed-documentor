@@ -43,14 +43,18 @@ class MediaWikiRendererTest extends FunSuite {
   test("Rendering indented multi-line paragraph") {
     
     val para = Paragraph(List(Text("hello world\n"), Text("second line")))
-    assert(render(IndentedParagraph(1, para)) === "; hello world\n; second line\n\n")
-    assert(render(IndentedParagraph(3, para)) === ";;; hello world\n;;; second line\n\n")
+    
+    val result1 = render(IndentedParagraph(1, para))
+    val result2 = render(IndentedParagraph(3, para))
+    
+    assert(result1 === "; hello world\n; second line\n\n")
+    assert(result2 === ";;; hello world\n;;; second line\n\n")
   }
   
   test("Rendering bulleted list") {
     
-    val paras = List(Paragraph(List(Text("hello world"))),
-                     Paragraph(List(Text("second line"))))
+    val paras = List(List(Paragraph(List(Text("hello world")))),
+                     List(Paragraph(List(Text("second line")))))
 
     assert(render(BulletList(1, paras)) === "* hello world\n* second line\n\n")
     assert(render(BulletList(2, paras)) === "** hello world\n** second line\n\n")
@@ -60,8 +64,8 @@ class MediaWikiRendererTest extends FunSuite {
   
   test("Rendering enumerated list") {
     
-    val paras = List(Paragraph(List(Text("hello world"))),
-                     Paragraph(List(Text("second line"))))
+    val paras = List(List(Paragraph(List(Text("hello world")))),
+                     List(Paragraph(List(Text("second line")))))
 
     assert(render(EnumeratedList(1, paras)) === "# hello world\n# second line\n\n")
     assert(render(EnumeratedList(2, paras)) === "## hello world\n## second line\n\n")

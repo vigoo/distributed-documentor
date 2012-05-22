@@ -1,6 +1,11 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
+import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -8,10 +13,15 @@ import org.w3c.dom.NodeList;
 
 public class TOCNode {
     
+    private static final Logger log = LoggerFactory.getLogger(Documentation.class.getName());
+    
     private String title;
     private Page target;   
     private TOCNode parent;
     private final List<TOCNode> children;
+    
+    private Class virtualHierarchyBuilder;
+    private String sourcePath;
     
     public TOCNode() {
         children = new LinkedList<TOCNode>();
@@ -61,6 +71,22 @@ public class TOCNode {
         this.title = title;
     }
 
+    public String getSourcePath() {
+        return sourcePath;
+    }
+
+    public void setSourcePath(String sourcePath) {
+        this.sourcePath = sourcePath;
+    }
+
+    public Class getVirtualHierarchyBuilder() {
+        return virtualHierarchyBuilder;
+    }
+
+    public void setVirtualHierarchyBuilder(Class virtualHierarchyBuilder) {
+        this.virtualHierarchyBuilder = virtualHierarchyBuilder;
+    }        
+
     public void addToEnd(TOCNode child) {
         children.add(child);
         child.setParent(this);
@@ -106,6 +132,11 @@ public class TOCNode {
         if (target != null)
             elem.setAttribute("target", target.getId());
         
+        if (virtualHierarchyBuilder != null) {
+            elem.setAttribute("virtual-hierarchy-builder", virtualHierarchyBuilder.getName());
+            elem.setAttribute("source", sourcePath);
+        }
+        
         for (TOCNode node : children) {
             elem.appendChild(node.toXML(doc));
         }
@@ -113,7 +144,7 @@ public class TOCNode {
         return elem;
     }
 
-    public void fromXML(Node node, Documentation doc) {
+    public void fromXML(Node node, Documentation doc) throws ClassNotFoundException {
         
         Node sibling;
         for (sibling = node; sibling != null; sibling = sibling.getNextSibling()) {
@@ -133,6 +164,13 @@ public class TOCNode {
             } else {
 
                 target = null;
+            }
+            
+            if (elem.hasAttribute("virtual-hierarchy-builder")) {
+                String className = elem.getAttribute("virtual-hierarchy-builder");
+                sourcePath = elem.getAttribute("source");
+                                
+                virtualHierarchyBuilder = Class.forName(className);                
             }
 
             children.clear();
@@ -235,5 +273,25 @@ public class TOCNode {
 
     public void clearChildren() {
         children.clear();
+    }
+    
+    public TOCNode getRealNode(File repositoryRoot) {
+        
+        if (virtualHierarchyBuilder == null) {
+            return this;
+        }
+        else {
+           try{
+                Constructor ct = virtualHierarchyBuilder.getConstructor(File.class, String.class, String.class);
+                VirtualHierarchyBuilder builder = (VirtualHierarchyBuilder) ct.newInstance(new File(repositoryRoot, sourcePath), title, "MediaWiki");
+                
+                return builder.build();
+           }
+           catch (Exception ex) {
+               log.error("Failed to create virtual hierarcby builder", ex);
+               
+               return this;
+           }
+        }
     }
 }

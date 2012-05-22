@@ -2,7 +2,7 @@ package hu.distributeddocumentor.model.virtual
 
 import org.apache.commons.lang3.StringUtils._
 
-object MediaWikiRenderer extends WikiRenderer {
+object MediaWikiRenderer extends WikiRenderer {  
  def render(item: WikiItem): String =  
     item match {
       case Heading(level, title) => {
@@ -16,10 +16,10 @@ object MediaWikiRenderer extends WikiRenderer {
         prefixPerLine(level, ';', removeEnd(render(para), "\n\n").split('\n') toList)        
       
       case BulletList(level, items) =>
-        prefixPerLine(level, '*', items map (i => removeEnd(render(i), "\n\n")))
+        prefixPerLine(level, '*', items map renderTight)
       
       case EnumeratedList(level, items) =>
-        prefixPerLine(level, '#', items map (i => removeEnd(render(i), "\n\n")))
+        prefixPerLine(level, '#', items map renderTight)
         
       case SourceCode(lang, code) =>
         "<pre class='brush: %s'>\n%s\n</pre>\n\n".format(lang, code)
@@ -36,7 +36,7 @@ object MediaWikiRenderer extends WikiRenderer {
       case _ => item.toString
     }    
   
-  private def prefixPerLine(level: Int, ch: Char, lines: List[String]): String = {          
+  private def prefixPerLine(level: Int, ch: Char, lines: Seq[String]): String = {          
     val prefix = repeat(ch, level) + " "
     (lines map (line => prefix + line) mkString("\n")) + "\n\n"
   }                        

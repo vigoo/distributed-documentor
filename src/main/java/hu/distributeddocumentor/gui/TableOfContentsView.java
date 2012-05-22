@@ -7,10 +7,16 @@ import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.virtual.builders.DocXmlHierarchyBuilder;
 import java.awt.Component;
 import java.awt.HeadlessException;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -97,6 +103,9 @@ public class TableOfContentsView extends javax.swing.JPanel {
         miOpen = new javax.swing.JMenuItem();
         miCreateNewPage = new javax.swing.JMenuItem();
         miAssignUnorganizedPage = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        jMenu1 = new javax.swing.JMenu();
+        miSetAsDocXmlRoot = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         miRemove = new javax.swing.JMenuItem();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -133,6 +142,19 @@ public class TableOfContentsView extends javax.swing.JPanel {
             }
         });
         popupMenu.add(miAssignUnorganizedPage);
+        popupMenu.add(jSeparator2);
+
+        jMenu1.setText("Special");
+
+        miSetAsDocXmlRoot.setText("DocXml root node");
+        miSetAsDocXmlRoot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSetAsDocXmlRootActionPerformed(evt);
+            }
+        });
+        jMenu1.add(miSetAsDocXmlRoot);
+
+        popupMenu.add(jMenu1);
         popupMenu.add(jSeparator1);
 
         miRemove.setText("Remove");
@@ -247,7 +269,10 @@ public class TableOfContentsView extends javax.swing.JPanel {
 
     private void treeMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMousePressed
         
-        if (evt.getClickCount() == 2) {
+        if (evt.isPopupTrigger()) {                     
+            onPopup(evt);            
+        } 
+        else if (evt.getClickCount() == 2) {
             // On double click...
             
             TreePath path = tree.getPathForLocation(evt.getX(), evt.getY());
@@ -343,32 +368,8 @@ public class TableOfContentsView extends javax.swing.JPanel {
 
     private void treeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseReleased
         
-        if (evt.isPopupTrigger()) {
-                     
-            TreePath selPath = tree.getPathForLocation(evt.getX(), evt.getY());
-            TOCNode node = (TOCNode)selPath.getLastPathComponent();
-            
-            if (node != toc.getUnorganized() &&
-                node != toc.getRoot() &&
-                node != toc.getRecycleBin()) {            
-                
-                if (node.hasTarget()) {
-                    miOpen.setEnabled(true);
-                    miOpen.setFont(miRemove.getFont().deriveFont(miRemove.getFont().getStyle() | java.awt.Font.BOLD));
-                    miCreateNewPage.setEnabled(false);
-                    miCreateNewPage.setFont(miRemove.getFont());
-                    miAssignUnorganizedPage.setEnabled(false);
-                } else {
-                    miOpen.setEnabled(false);
-                    miOpen.setFont(miRemove.getFont());
-                    miCreateNewPage.setEnabled(true);  
-                    miCreateNewPage.setFont(miRemove.getFont().deriveFont(miRemove.getFont().getStyle() | java.awt.Font.BOLD));
-                    miAssignUnorganizedPage.setEnabled(true);
-                }
-
-                contextMenuTarget = node;
-                popupMenu.show(tree, evt.getX(), evt.getY());
-            }
+        if (evt.isPopupTrigger()) {                     
+            onPopup(evt);            
         }
     }//GEN-LAST:event_treeMouseReleased
 
@@ -402,6 +403,33 @@ public class TableOfContentsView extends javax.swing.JPanel {
         toc.remove(contextMenuTarget);
     }//GEN-LAST:event_miRemoveActionPerformed
 
+    private void miSetAsDocXmlRootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSetAsDocXmlRootActionPerformed
+              
+        JFileChooser chooser = new JFileChooser();
+        chooser.setAcceptAllFileFilterUsed(true);
+        chooser.setDialogTitle("Choose DocXml file...");
+        chooser.setDialogType(JFileChooser.OPEN_DIALOG);
+        
+        FileFilter xmlFilter = new FileNameExtensionFilter("DocXml files", "xml");
+        
+        chooser.addChoosableFileFilter(xmlFilter);
+        chooser.setFileFilter(xmlFilter);
+        
+        if (chooser.showDialog(pageEditorHost.getMainFrame(), null) == JFileChooser.APPROVE_OPTION) {
+            
+            File xmlFile = chooser.getSelectedFile(); 
+            
+            try {
+                String relativePath = new File(doc.getRepositoryRoot()).toURI().relativize(xmlFile.toURI()).getPath();
+            
+                toc.convertToVirtualRoot(contextMenuTarget, DocXmlHierarchyBuilder.class, relativePath);
+            }
+            catch (Exception ex) {
+                ErrorDialog.show(pageEditorHost.getMainFrame(), "Failed to create DocXml root node", ex);
+            }
+        }
+    }//GEN-LAST:event_miSetAsDocXmlRootActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAdd;
     private javax.swing.JButton btDown;
@@ -409,15 +437,44 @@ public class TableOfContentsView extends javax.swing.JPanel {
     private javax.swing.JButton btRemove;
     private javax.swing.JButton btRight;
     private javax.swing.JButton btUp;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JMenuItem miAssignUnorganizedPage;
     private javax.swing.JMenuItem miCreateNewPage;
     private javax.swing.JMenuItem miOpen;
     private javax.swing.JMenuItem miRemove;
+    private javax.swing.JMenuItem miSetAsDocXmlRoot;
     private javax.swing.JPopupMenu popupMenu;
     private javax.swing.JTree tree;
     // End of variables declaration//GEN-END:variables
 
+    private void onPopup(MouseEvent evt) {
+        TreePath selPath = tree.getPathForLocation(evt.getX(), evt.getY());
+            TOCNode node = (TOCNode)selPath.getLastPathComponent();
+            
+            if (node != toc.getUnorganized() &&
+                node != toc.getRoot() &&
+                node != toc.getRecycleBin()) {            
+                
+                if (node.hasTarget()) {
+                    miOpen.setEnabled(true);
+                    miOpen.setFont(miRemove.getFont().deriveFont(miRemove.getFont().getStyle() | java.awt.Font.BOLD));
+                    miCreateNewPage.setEnabled(false);
+                    miCreateNewPage.setFont(miRemove.getFont());
+                    miAssignUnorganizedPage.setEnabled(false);
+                } else {
+                    miOpen.setEnabled(false);
+                    miOpen.setFont(miRemove.getFont());
+                    miCreateNewPage.setEnabled(true);  
+                    miCreateNewPage.setFont(miRemove.getFont().deriveFont(miRemove.getFont().getStyle() | java.awt.Font.BOLD));
+                    miAssignUnorganizedPage.setEnabled(true);
+                }
+
+                contextMenuTarget = node;
+                popupMenu.show(tree, evt.getX(), evt.getY());
+            }
+    }
 }

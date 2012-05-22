@@ -42,10 +42,12 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         contentFiles.add("documentation.css");
         
         // Exporting the pages
-        TOC toc = doc.getTOC();
+        final TOC toc = doc.getTOC();
+        final File repoRoot = new File(doc.getRepositoryRoot());
+        
         for (TOCNode node : toc.getRoot().getChildren()) {
             if (node != toc.getRecycleBin()) {                
-                exportReferencedPages(node);
+                exportReferencedPages(repoRoot, node);
             }
         }
         

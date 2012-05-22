@@ -14,12 +14,14 @@ import org.apache.commons.lang3.StringUtils;
 public class HTMLExporter extends HTMLBasedExporter implements Exporter {
 
     private final Documentation doc;
+    private final File repositoryRoot;        
 
     public HTMLExporter(Documentation doc, File targetDir) {
         
         super(targetDir);
         
         this.doc = doc;
+        repositoryRoot = new File(doc.getRepositoryRoot());
     }
     
     
@@ -31,9 +33,10 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         
         // Exporting the pages
         final TOC toc = doc.getTOC();
+        
         for (TOCNode node : toc.getRoot().getChildren()) {
             if (node != toc.getRecycleBin()) {
-                exportReferencedPages(node);
+                exportReferencedPages(repositoryRoot, node);
             }
         }
 
@@ -139,6 +142,9 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     }
 
     private void exportTOCNode(TOCNode node, PrintWriter out, int indent, boolean isFirst) {
+        
+        final TOCNode realNode = realNodes.get(node);
+        
         String i = StringUtils.repeat(" ", indent);
         
         if (isFirst)
@@ -146,20 +152,20 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         else
             out.println(",");
 
-        out.print(i+"['"+fixTitle(node.getTitle())+"'");
-        if (node.hasTarget()) {            
-            out.print(", '"+node.getTarget().getId()+".html'");
+        out.print(i+"['"+fixTitle(realNode.getTitle())+"'");
+        if (realNode.hasTarget()) {            
+            out.print(", '"+realNode.getTarget().getId()+".html'");
         } else {
             out.print(", null");
         }
         
-        if (node.getChildren().size() > 0) {
+        if (realNode.getChildren().size() > 0) {
             
             out.println(",");
             
-            for (int j = 0; j < node.getChildren().size(); j++) {
+            for (int j = 0; j < realNode.getChildren().size(); j++) {
                 
-                TOCNode child = node.getChildren().get(j);
+                TOCNode child = realNode.getChildren().get(j);
                 exportTOCNode(child, out, indent + 4, j == 0);
             }
             

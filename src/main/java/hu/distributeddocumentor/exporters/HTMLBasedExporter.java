@@ -3,25 +3,33 @@ package hu.distributeddocumentor.exporters;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOCNode;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class HTMLBasedExporter {
     
     protected final File targetDir;
+    protected final Map<TOCNode, TOCNode> realNodes;                    
 
     public HTMLBasedExporter(File targetDir) {
         this.targetDir = targetDir;
+        
+        realNodes = new HashMap<TOCNode, TOCNode>();
     }        
 
-    protected void exportReferencedPages(TOCNode node) throws FileNotFoundException {
+    protected void exportReferencedPages(File repositoryRoot, TOCNode node) throws FileNotFoundException {
         
-        Page page = node.getTarget();
+        TOCNode realNode = node.getRealNode(repositoryRoot);        
+        realNodes.put(node, realNode);
+        
+        Page page = realNode.getTarget();
         if (page != null) {
             exportPage(page);
         }
         
-        for (TOCNode childNode : node.getChildren())
-            exportReferencedPages(childNode);
+        for (TOCNode childNode : realNode.getChildren())
+            exportReferencedPages(repositoryRoot, childNode);
     }
 
     protected File exportPage(Page page) throws FileNotFoundException {        

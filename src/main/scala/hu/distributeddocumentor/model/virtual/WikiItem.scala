@@ -6,10 +6,10 @@ abstract class WikiItem
 abstract class Inline extends WikiItem
 
 case class Heading(level: Int, title: String) extends WikiItem
-case class Paragraph(inlines: List[Inline]) extends WikiItem
+case class Paragraph(inlines: Seq[Inline]) extends WikiItem
 case class IndentedParagraph(level: Int, para: Paragraph) extends WikiItem
-case class BulletList(level: Int, items: List[Paragraph]) extends WikiItem
-case class EnumeratedList(level: Int, items: List[Paragraph]) extends WikiItem
+case class BulletList(level: Int, items: Seq[Seq[WikiItem]]) extends WikiItem
+case class EnumeratedList(level: Int, items: Seq[Seq[WikiItem]]) extends WikiItem
 case class SourceCode(lang: String, code: String) extends WikiItem
 
 case class Text(text: String) extends Inline
