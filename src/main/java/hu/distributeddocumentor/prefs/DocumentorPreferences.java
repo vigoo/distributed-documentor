@@ -5,19 +5,57 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DocumentorPreferences {
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentorPreferences.class.getName());
-    private final Preferences prefs;
     
-    public DocumentorPreferences() {
+    private final Preferences prefs;
+    private final Options cmdOptions;
+    private final Option docRootOption;
+    private final Option exportTargetOption;
+    private final Option exportHTMLOption;
+    private final Option exportCHMOption;
+    private final CommandLine cmdLine;
+    
+    public DocumentorPreferences(String[] args) {
         
         prefs = Preferences.userRoot().node(this.getClass().getName());        
+        
+        docRootOption = OptionBuilder.withArgName("path")
+                                     .hasArg()
+                                     .withDescription("open documentation from the given root directory")
+                                     .create("root");
+        
+        exportTargetOption = OptionBuilder.withArgName("path")
+                                          .hasArg()
+                                          .withDescription("target directory for the export operation")
+                                          .create("target");
+        
+        exportHTMLOption = new Option("html", "export to static HTML pages");
+        exportCHMOption = new Option("chm", "export to CHM");
+        
+        cmdOptions = new Options();
+        cmdOptions.addOption(docRootOption);
+        cmdOptions.addOption(exportTargetOption);
+        cmdOptions.addOption(exportHTMLOption);
+        cmdOptions.addOption(exportCHMOption);
+        
+        CommandLineParser parser = new GnuParser();
+        CommandLine line = null;
+        try {
+            line = parser.parse(cmdOptions, args);            
+        }
+        catch (ParseException ex) {
+            System.err.println("Command line parsing failed. Reason: " + ex.getMessage());                        
+        }
+        
+        cmdLine = line;
     }
-    
+       
     public String getMercurialPath() {        
         return prefs.get("hgpath", null);
     }
@@ -140,5 +178,41 @@ public class DocumentorPreferences {
         }
         
         return false;
+    }
+    
+    public boolean exportToHTML() {
+        if (cmdLine != null)
+            return cmdLine.hasOption("html") && 
+                   cmdLine.hasOption("target") &&
+                   cmdLine.hasOption("root");
+        else
+            return false;
+    }
+    
+    public boolean exportToCHM() {
+        if (cmdLine != null)
+            return cmdLine.hasOption("chm") && 
+                   cmdLine.hasOption("target") &&
+                   cmdLine.hasOption("root");
+        else
+            return false;
+    }
+    
+    public File getInitialRoot() {
+        if (cmdLine != null) {
+            if (cmdLine.hasOption("root"))
+                return new File(cmdLine.getOptionValue("root"));
+        }
+        
+        return null;
+    }
+    
+    public File getExportTarget() {
+        if (cmdLine != null) {
+            if (cmdLine.hasOption("target"))
+                return new File(cmdLine.getOptionValue("target"));           
+        }
+        
+        return null;
     }
 }

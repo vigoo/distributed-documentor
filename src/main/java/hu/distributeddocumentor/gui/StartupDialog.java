@@ -37,6 +37,13 @@ public class StartupDialog extends javax.swing.JDialog {
         
         this.prefs = prefs;
         setLocationRelativeTo(parent);
+        
+        File initialRoot = prefs.getInitialRoot();
+        if (initialRoot != null)
+        {
+            repositoryRoot = initialRoot;
+            finalAction = Action.OpenLocal;
+        }
     }
 
     /**

@@ -5,6 +5,7 @@ import com.jidesoft.swing.FolderChooser;
 import com.swabunga.spell.engine.SpellDictionary;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
 import com.swabunga.spell.event.SpellChecker;
+import hu.distributeddocumentor.controller.CommandLineExporter;
 import hu.distributeddocumentor.controller.sync.DialogBasedSyncInteraction;
 import hu.distributeddocumentor.controller.sync.MercurialSync;
 import hu.distributeddocumentor.controller.sync.SyncController;
@@ -58,7 +59,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     /**
      * Creates new form MainWindow
      */
-    public MainWindow() {
+    public MainWindow(DocumentorPreferences prefs) {
         initComponents();
         setSize(1024, 768);
         
@@ -73,7 +74,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             ErrorDialog.show(this, "Failed to initialize spell checker", ex);            
         }
         
-        prefs = new DocumentorPreferences();
+        this.prefs = prefs;
         doc = new Documentation(prefs);
         
         toolWindowManager = new MyDoggyToolWindowManager();        
@@ -88,9 +89,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         add(toolWindowManager, BorderLayout.CENTER);
                         
         showPreferencesIfNecessary();
-            
+                    
         final StartupDialog startup = new StartupDialog(this, prefs);
-        startup.setVisible(true);
+        
+        if (prefs.getInitialRoot() == null)
+            startup.setVisible(true);
         
         boolean loaded = false;
         if (startup.getFinalAction() != StartupDialog.Action.Cancel) {
@@ -732,19 +735,28 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
         LookAndFeelFactory.installJideExtension( LookAndFeelFactory.VSNET_STYLE_WITHOUT_MENU);  
         
-        /*
-         * Create and display the form
-         */
-        SwingUtilities.invokeLater(new Runnable() {
+        final DocumentorPreferences prefs = new DocumentorPreferences(args);
+        
+        if (prefs.exportToCHM() || prefs.exportToHTML()) {
+            
+            CommandLineExporter exporter = new CommandLineExporter(prefs);
+            exporter.run();
+        }
+        else {                    
+            /*
+            * Create and display the form
+            */
+            SwingUtilities.invokeLater(new Runnable() {
 
-            @Override
-            public void run() {
-                java.awt.EventQueue queue = Toolkit.getDefaultToolkit().getSystemEventQueue();
-                queue.push(new EventQueueProxy());
-                
-                new MainWindow().setVisible(true);
-            }
-        });        
+                @Override
+                public void run() {
+                    java.awt.EventQueue queue = Toolkit.getDefaultToolkit().getSystemEventQueue();
+                    queue.push(new EventQueueProxy());
+
+                    new MainWindow(prefs).setVisible(true);
+                }
+            });        
+        }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCommit;
