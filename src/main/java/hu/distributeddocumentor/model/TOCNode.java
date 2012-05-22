@@ -2,8 +2,8 @@ package hu.distributeddocumentor.model;
 
 import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.util.*;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -250,10 +250,9 @@ public class TOCNode {
         Object[] parentPath = parent == null ? new Object[0] : parent.toPath();
         Object[] result = new Object[parentPath.length + 1];
         
-        for (int i = 0; i < parentPath.length; i++)
-            result[i] = parentPath[i];
+        System.arraycopy(parentPath, 0, result, 0, parentPath.length);        
         result[parentPath.length] = this;
-        
+                
         return result;
     }
     
@@ -281,17 +280,16 @@ public class TOCNode {
             return this;
         }
         else {
-           try{
-                Constructor ct = virtualHierarchyBuilder.getConstructor(File.class, String.class, String.class);
-                VirtualHierarchyBuilder builder = (VirtualHierarchyBuilder) ct.newInstance(new File(repositoryRoot, sourcePath), title, "MediaWiki");
+            try{
+                VirtualHierarchyBuilder builder = (VirtualHierarchyBuilder) ConstructorUtils.invokeConstructor(virtualHierarchyBuilder, new File(repositoryRoot, sourcePath), title, "MediaWiki");
                 
                 return builder.build();
-           }
-           catch (Exception ex) {
-               log.error("Failed to create virtual hierarcby builder", ex);
+            }
+            catch (Exception ex) {
+                log.error("Failed to create virtual hierarcby builder", ex);
                
-               return this;
-           }
+                return this;
+            }
         }
     }
 }
