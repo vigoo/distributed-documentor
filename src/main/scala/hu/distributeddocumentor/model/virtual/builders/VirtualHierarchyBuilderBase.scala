@@ -9,9 +9,15 @@ import hu.distributeddocumentor.model.virtual.WikiItem
 import hu.distributeddocumentor.model.virtual.WikiRenderer
 import hu.distributeddocumentor.model.virtual.MediaWikiRenderer
 import java.util.UUID
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 
-abstract class VirtualHierarchyBuilderBase(val markupLanguage: String) extends VirtualHierarchyBuilder {
+object VirtualHierarchyBuilderBase {    
+  private val log: Logger = LoggerFactory.getLogger(classOf[VirtualHierarchyBuilderBase].getName)
+}
+
+abstract class VirtualHierarchyBuilderBase(val markupLanguage: String) extends VirtualHierarchyBuilder {   
   
   private val renderer: WikiRenderer = 
     markupLanguage match {
@@ -58,9 +64,15 @@ abstract class VirtualHierarchyBuilderBase(val markupLanguage: String) extends V
     return node
   }    
   
-  private def render(contents: Seq[WikiItem]): String = 
-    renderer.render(contents)    
+  private def render(contents: Seq[WikiItem]): String = {
+    val result = renderer.render(contents)    
+    VirtualHierarchyBuilderBase.log.debug(result)    
+    return result
+  }
   
-  private def render(item: WikiItem): String = 
-    renderer.render(item)
+  private def render(item: WikiItem): String = {
+    val result = renderer.render(item)
+    VirtualHierarchyBuilderBase.log.debug(result)    
+    return result
+  }
 }
