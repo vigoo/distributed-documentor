@@ -1,16 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.model;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.*;
 
-/**
- *
- * @author vigoo
- */
 public class TOCTest {
     
     public TOCTest() {
