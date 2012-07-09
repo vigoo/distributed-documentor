@@ -7,7 +7,7 @@ import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
-import hu.distributeddocumentor.model.virtual.builders.DocXmlHierarchyBuilder;
+import hu.distributeddocumentor.model.virtual.builders.docxml.DocXmlHierarchyBuilder;
 import java.awt.Component;
 import java.awt.HeadlessException;
 import java.awt.event.MouseEvent;
