@@ -11,12 +11,12 @@ import org.eclipse.mylyn.wikitext.core.parser.Attributes;
 
 public class ExtendedHtmlDocumentBuilder extends LinkFixingBuilder {
 
-    private Set<String> usedSyntaxes = new HashSet<String>();
+    private Set<String> usedSyntaxes = new HashSet<>();
     
     private static Map<String, String> syntaxMap;
     
     {
-        syntaxMap = new HashMap<String, String>();
+        syntaxMap = new HashMap<>();
         syntaxMap.put("applescript", "AppleScript");
         syntaxMap.put("actionscript3", "AS3");
         syntaxMap.put("as3", "AS3");

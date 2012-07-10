@@ -7,6 +7,9 @@ import hu.distributeddocumentor.model.virtual.WikiWriter;
 import hu.distributeddocumentor.model.virtual.builders.VirtualHierarchyBuilderBase;
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -27,9 +30,9 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     private final String title;
     
     private String assemblyName;
-    
-    private final String rootId;
+        
     private final RootNamespaceDoc rootNS;
+    private final Function<String, String> idGenerator;
 
     public DocXmlHierarchyBuilder(File xmlFile, String title, String markupLanguage) {
         super(markupLanguage);
@@ -37,8 +40,16 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
         this.xmlFile = xmlFile;
         this.title = title;
         
-        rootId = generateId();
-        rootNS = new RootNamespaceDoc();
+        idGenerator = new Function<String, String>() {
+
+            @Override
+            public String apply(String input) {
+                return generateId(assemblyName, input);
+            }            
+        };
+        
+        String rootId = idGenerator.apply("");
+        rootNS = new RootNamespaceDoc(rootId, idGenerator);
     }   
     
     @Override
@@ -46,7 +57,7 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
         
         load();
         
-        Page rootPage = virtualPage(rootId, 
+        Page rootPage = virtualPage(rootNS.getPageId(), 
                 new Function<WikiWriter, Void>() {
 
                     @Override
@@ -56,10 +67,34 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
                     }});
         
         TOCNode root = createNode(title, rootPage);
-        // TODO: add flat namespace nodes
+        SortedSet<NamespaceDoc> flatNamespaces = createFlatNamespaces();
+        
+        for (NamespaceDoc ns : flatNamespaces) {
+            if (ns != rootNS) {                
+                root.addToEnd(buildNamespaceNode(ns));
+            }
+        }
         
         return root;
            
+    }
+
+    private SortedSet<NamespaceDoc> createFlatNamespaces() {
+        SortedSet<NamespaceDoc> flatNamespaces = new TreeSet<>(
+                new Comparator<NamespaceDoc>() {
+                    @Override
+                    public int compare(NamespaceDoc o1, NamespaceDoc o2) {
+                        return o1.getFullName().compareTo(o2.getFullName());
+                    }});       
+        fillFlatNamespaces(flatNamespaces, rootNS);
+        return flatNamespaces;
+    }
+    
+    private void fillFlatNamespaces(final SortedSet<NamespaceDoc> target, final NamespaceDoc current) {
+        
+        target.add(current);
+        for (NamespaceDoc child : current.getChildNamespaces().values()) 
+            fillFlatNamespaces(target, child);
     }
     
     private void load() {
@@ -88,7 +123,7 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
                 
                 String name = memberNode.getAttribute("name");
                 if (name.startsWith("T:")) {
-                    addClass(name.substring(2));
+                    addClass(name.substring(2), memberNode);
                 }
             }
         }
@@ -97,22 +132,26 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
         }
     }
     
-    private ClassDoc addClass(String fullClassName) {
+    private ClassDoc addClass(final String fullClassName, final Element elem) {
         
         int lastDot = fullClassName.lastIndexOf('.');
         String nn = fullClassName.substring(0, lastDot);
         String cn = fullClassName.substring(lastDot+1);
         
         NamespaceDoc ns = buildNamespace(nn);
-        return ns.addChildClass(cn);
+        ClassDoc cl = ns.addChildClass(cn, idGenerator.apply(fullClassName));
+        cl.storeData(elem);
+        
+        return cl;
+        
     }
     
-    private NamespaceDoc buildNamespace(String fullName) {
+    private NamespaceDoc buildNamespace(final String fullName) {
         
         return rootNS.buildSubtree(fullName);
     }
                 
-    private void renderRootPage(WikiWriter writer) {
+    private void renderRootPage(final WikiWriter writer) {
         
         try {
             writer.heading(1, assemblyName); 
@@ -126,14 +165,102 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
             writer.text("all the fields, properties, events and methods of the class.");
             writer.newParagraph();
             
-            for (NamespaceDoc ns : rootNS.getChildNamespaces().values()) {
+            for (NamespaceDoc ns : rootNS.getSortedNamespaces()) {
                 ns.writeBullet(writer, 1);
             }
             writer.newParagraph();
         }
         catch (IOException ex) {
-            // TODO: write exception to log and generated page
+            log.error("Failed to render root page because of: " + ex.getMessage());
+            // TODO: write to output as well
         }
     }
 
+    private TOCNode buildNamespaceNode(final NamespaceDoc ns) {
+        
+        Page page = virtualPage(ns.getPageId(), 
+                new Function<WikiWriter, Void>() {
+
+                    @Override
+                    public Void apply(WikiWriter writer) {
+                        renderNamespacePage(writer, ns);
+                        return null;
+                    }           
+        });
+        
+        TOCNode node = createNode(ns.getFullName(), page);        
+        
+        for (ClassDoc cl : ns.getSortedClasses()) {                    
+            node.addToEnd(buildClassNode(cl));           
+        }        
+        
+        return node;
+    }
+    
+    private void renderNamespacePage(final WikiWriter writer, final NamespaceDoc ns) {                
+        
+        try {
+            writer.heading(1, ns.getFullName()); 
+            writer.newParagraph();
+            
+            writer.internalLink(ns.getParent().getPageId(), "Parent");
+            writer.newParagraph();
+            
+            if (ns.getChildNamespaces().size() > 0) {
+            
+                writer.heading(2, "Namespaces");
+                writer.text("This namespace contains the following ");
+                writer.italic("sub-namespaces");
+                writer.text(":\n");
+                writer.newParagraph();
+
+                for (NamespaceDoc child : ns.getSortedNamespaces())
+                    child.writeBullet(writer, 1);
+                writer.newParagraph();
+            }
+            
+            if (ns.getChildClasses().size() > 0) {
+                writer.heading(2, "Classes");
+                writer.text("This namespace contains the following ");            
+                writer.italic("classes");
+                writer.text(":\n");
+                writer.newParagraph();
+
+                for (ClassDoc cl : ns.getSortedClasses()) {
+                    cl.writeBullet(writer, 1);
+                }
+                writer.newParagraph();
+            }
+        }
+        catch (IOException ex) {
+            log.error("Failed to render namespace page: " + ns.getFullName() + " because of: " + ex.getMessage());
+            // TODO: write exception to log and generated page
+        }            
+    }
+
+    private TOCNode buildClassNode(final ClassDoc cl) {
+         Page page = virtualPage(cl.getPageId(), 
+                new Function<WikiWriter, Void>() {
+
+                    @Override
+                    public Void apply(WikiWriter writer) {
+                        renderClassPage(writer, cl);
+                        return null;
+                    }
+        });
+        
+        TOCNode node = createNode(cl.getName(), page);
+        return node;
+    }
+
+    private void renderClassPage(WikiWriter writer, ClassDoc cl) {
+     
+        try {            
+            cl.renderPage(writer);
+        }
+        catch (IOException ex) {
+            log.error("Failed to render class page: " + cl.getName() + " because of: " + ex.getMessage());
+            // TODO: write exception to log and generated page
+        }            
+    }
 }

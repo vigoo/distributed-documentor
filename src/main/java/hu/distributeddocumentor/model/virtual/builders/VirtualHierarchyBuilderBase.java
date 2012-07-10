@@ -72,6 +72,13 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
         return UUID.randomUUID().toString();
     }
     
+    protected String generateId(String baseName, String itemFullName) {
+        
+        String result = baseName + "__" + itemFullName;
+        return result
+                .replace('.', '_');
+    }
+    
     private WikiWriter createWriter(Writer out) {
     
         switch (markupLanguage) {

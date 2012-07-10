@@ -89,9 +89,9 @@ public class MediaWikiWriter implements WikiWriter {
         if (indentLevel != 0)
             throw new IllegalStateException("Cannot begin an enumeration in indented mode");
         
-        writer.write("<pre class='brush: ");
+        writer.write("<pre class=\"brush: ");
         writer.write(lang);
-        writer.write("'>\n");
+        writer.write("\">\n");
         writer.write(code);
         writer.write("\n</pre>");
         newLine();

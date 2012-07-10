@@ -165,7 +165,7 @@ public class MediaWikiWriterTest {
         wikiWriter.sourceCode("java", "public static int func() {\n\treturn 0;\n}");
         wikiWriter.newParagraph();
         
-        assertEquals("<pre class='brush: java'>\npublic static int func() {\n\treturn 0;\n}\n</pre>\n\n", getResult());
+        assertEquals("<pre class=\"brush: java\">\npublic static int func() {\n\treturn 0;\n}\n</pre>\n\n", getResult());
     }
     
     @Test
