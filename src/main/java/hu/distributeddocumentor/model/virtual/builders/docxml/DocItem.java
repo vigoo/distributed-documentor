@@ -77,12 +77,29 @@ public class DocItem {
 
     protected void writeReference(WikiWriter writer, String cref) throws IOException {
     
-        cref = StringUtils.removeStart(cref, "N:");
-        cref = StringUtils.removeStart(cref, "T:");
+        String link;
+        
+        if (cref.startsWith("P:")) {
+            cref = cref.substring(2);
+            
+            int classPropertySep = cref.lastIndexOf('.');
+            String fullClassName = cref.substring(0, classPropertySep);
+            String propertyName = cref.substring(classPropertySep+1);
+            
+            link = idGenerator.apply(fullClassName) + "#" + propertyName;            
+            
+        }
+        else {
+            cref = StringUtils.removeStart(cref, "N:");
+            cref = StringUtils.removeStart(cref, "T:");
+
+            link = idGenerator.apply(cref);
+        }
         
         writer.text(" ");
-        writer.internalLink(idGenerator.apply(cref), cref);
+        writer.internalLink(link, cref);
         writer.text(" ");
+
     }
 
     protected void writeCode(WikiWriter writer, String code) throws IOException {

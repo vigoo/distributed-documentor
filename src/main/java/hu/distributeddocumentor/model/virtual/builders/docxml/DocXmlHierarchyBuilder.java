@@ -124,6 +124,9 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
                 if (name.startsWith("T:")) {
                     addClass(name.substring(2), memberNode);
                 }
+                else if (name.startsWith("P:")) {
+                    addProperty(name.substring(2), memberNode);
+                }
             }
         }
         catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException ex) {
@@ -133,16 +136,41 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     
     private ClassDoc addClass(final String fullClassName, final Element elem) {
         
-        int lastDot = fullClassName.lastIndexOf('.');
-        String nn = fullClassName.substring(0, lastDot);
-        String cn = fullClassName.substring(lastDot+1);
+        int namespaecClassSep = fullClassName.lastIndexOf('.');
+        String fullNameSpace = fullClassName.substring(0, namespaecClassSep);
+        String className = fullClassName.substring(namespaecClassSep+1);
         
-        NamespaceDoc ns = buildNamespace(nn);
-        ClassDoc cl = ns.addChildClass(cn, idGenerator.apply(fullClassName));
+        NamespaceDoc ns = buildNamespace(fullNameSpace);
+        ClassDoc cl = ns.addChildClass(className, idGenerator.apply(fullClassName));
         cl.storeData(elem);
         
         return cl;
         
+    }
+    
+    private PropertyDoc addProperty(final String fullPropertyName, final Element elem) {
+        
+        int classPropertySep = fullPropertyName.lastIndexOf('.');
+        String fullClassName = fullPropertyName.substring(0, classPropertySep);
+        String propertyName = fullPropertyName.substring(classPropertySep+1);
+        
+        int namespaceClassSep = fullClassName.lastIndexOf('.');
+        String fullNameSpace = fullClassName.substring(0, namespaceClassSep);
+        String className = fullClassName.substring(namespaceClassSep+1);        
+        
+        NamespaceDoc ns = buildNamespace(fullNameSpace);
+        ClassDoc cl = ns.getChildClasses().get(className);
+        
+        if (cl == null) {
+            cl = addClass(fullClassName, null);
+        }
+        
+        PropertyDoc prop = new PropertyDoc(cl, propertyName, idGenerator);
+        prop.storeData(elem);
+
+        cl.getProperties().add(prop);
+
+        return prop;        
     }
     
     private NamespaceDoc buildNamespace(final String fullName) {
