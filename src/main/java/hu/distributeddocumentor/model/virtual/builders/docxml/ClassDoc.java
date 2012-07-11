@@ -3,24 +3,19 @@ package hu.distributeddocumentor.model.virtual.builders.docxml;
 import com.google.common.base.Function;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
 import java.io.IOException;
-import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
-public class ClassDoc {
+public class ClassDoc extends DocItem {
     
     private final static Logger log = LoggerFactory.getLogger(ClassDoc.class);
 
     private final String name;
     private final NamespaceDoc parent;
     private final String pageId;        
-    private final Function<String, String> idGenerator;
-    
-    private Element elem;
 
     public String getName() {
         return name;
@@ -39,16 +34,13 @@ public class ClassDoc {
     }        
     
     public ClassDoc(NamespaceDoc parent, String name, String pageId, Function<String, String> idGenerator) {
+        super(idGenerator);
+        
         this.name = name;
         this.parent = parent;
         this.pageId = pageId;
-        this.idGenerator = idGenerator;
     }        
-    
-    public void storeData(final Element elem) {                
-        this.elem = elem;
-    }
-    
+        
     public void writeBullet(WikiWriter writer, int level) throws IOException {
         
         writer.beginBullet(level);
@@ -62,9 +54,10 @@ public class ClassDoc {
             writer.heading(1, getFullName());
             writer.newParagraph();
 
-            writer.internalLink(getParent().getPageId(), "Parent namespace");
+            writer.internalLink(getParent().getPageId(), "Parent namespace: " + getParent().getFullName());
             writer.newParagraph();
 
+            Element elem = getElem();
             if (elem != null) {
 
                 Element summaryElem = getFirstElementByName(elem, "summary");
@@ -100,78 +93,5 @@ public class ClassDoc {
             // TODO: write exception to log and generated page
         }            
     }
-    
-    private Element getFirstElementByName(final Element parent, final String name) {
-           
-        NodeList childNodes = elem.getElementsByTagName(name);
-        if (childNodes.getLength() > 0) {
-            return (Element)childNodes.item(0);
-        }      
-        else {
-            return null;
-        }
-    }
 
-    private void renderDocElem(final WikiWriter writer, final Element docElem) throws IOException {
-        
-        NodeList children = docElem.getChildNodes();
-        
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            
-            if (child.getNodeType() == Node.TEXT_NODE) {
-                writeTextContent(writer, child.getTextContent());
-            }                
-            else if (child.getNodeType() == Node.ELEMENT_NODE) {
-                
-                Element childElem = (Element)child;
-                
-                switch (child.getNodeName()) {
-                    case "para":
-                        writer.newParagraph();
-                        renderDocElem(writer, childElem);
-                        break;
-                    case "see":
-                        writeReference(writer, childElem.getAttribute("cref"));
-                        break;
-                    case "c":
-                        writeCode(writer, child.getTextContent());
-                        break;
-                    case "a":
-                        writer.text(" ");
-                        writer.externalLink(URI.create(childElem.getAttribute("href")), childElem.getTextContent());
-                        writer.text(" ");
-                        break;
-                }
-            }
-        }
-        
-        writer.newParagraph();
-    }
-
-    private void writeReference(WikiWriter writer, String cref) throws IOException {
-    
-        writer.text(" ");
-        writer.internalLink(idGenerator.apply(cref), cref);
-        writer.text(" ");
-    }
-
-    private void writeCode(WikiWriter writer, String code) throws IOException {
-        
-        writer.text(" <span class=\"inlinecode\">");
-        writer.text(code);
-        writer.text("</span> ");
-    }
-
-    private void writeTextContent(WikiWriter writer, String textContent) throws IOException {
-        
-        String[] lines = textContent.split("\n");
-        boolean first = true;
-        for (String line : lines) {
-            if (!first)
-                writer.text("\n");
-            writer.text(line.trim());
-            first = false;
-        }
-    }
 }

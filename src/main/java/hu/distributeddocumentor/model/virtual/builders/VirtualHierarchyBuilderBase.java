@@ -76,7 +76,8 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
         
         String result = baseName + "__" + itemFullName;
         return result
-                .replace('.', '_');
+                .replace('.', '_')
+                .replace("`", "___");
     }
     
     private WikiWriter createWriter(Writer out) {

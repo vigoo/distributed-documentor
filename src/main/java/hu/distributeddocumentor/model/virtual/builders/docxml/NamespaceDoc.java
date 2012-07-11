@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class NamespaceDoc {
+public class NamespaceDoc extends DocItem {
     
     private final static Logger log = LoggerFactory.getLogger(NamespaceDoc.class);
 
@@ -18,9 +18,7 @@ public class NamespaceDoc {
     private final String pageId;
     private final NamespaceDoc parent;
     private final Map<String, NamespaceDoc> childNamespaces;
-    private final Map<String, ClassDoc> childClasses;
-    private final Function<String, String> idGenerator;
-    
+    private final Map<String, ClassDoc> childClasses;   
 
     public Map<String, ClassDoc> getChildClasses() {
         return childClasses;
@@ -52,11 +50,12 @@ public class NamespaceDoc {
             
     public NamespaceDoc(NamespaceDoc parent, String name, String pageId, Function<String, String> idGenerator) {
         
+        super(idGenerator);
+        
         this.name = name;                
         this.fullName = parent == null ? name : parent.getAsPrefix() + name;
         this.parent = parent;
-        this.pageId = pageId;
-        this.idGenerator = idGenerator;
+        this.pageId = pageId;        
         
         childNamespaces = new HashMap<>();
         childClasses = new HashMap<>();
@@ -157,7 +156,7 @@ public class NamespaceDoc {
             writer.heading(1, getFullName()); 
             writer.newParagraph();
             
-            writer.internalLink(getParent().getPageId(), "Parent");
+            writer.internalLink(getParent().getPageId(), "Parent namespace: " + getParent().getFullName());
             writer.newParagraph();
             
             if (getChildNamespaces().size() > 0) {
