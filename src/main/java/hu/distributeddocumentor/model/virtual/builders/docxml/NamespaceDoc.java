@@ -5,9 +5,13 @@ import hu.distributeddocumentor.model.virtual.WikiWriter;
 import java.io.IOException;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class NamespaceDoc {
+    
+    private final static Logger log = LoggerFactory.getLogger(NamespaceDoc.class);
 
     private final String name;
     private final String fullName;
@@ -146,4 +150,45 @@ public class NamespaceDoc {
             child.writeBullet(writer, level+1);
         }
     }
+    
+    public void renderPage(final WikiWriter writer) {                
+        
+        try {
+            writer.heading(1, getFullName()); 
+            writer.newParagraph();
+            
+            writer.internalLink(getParent().getPageId(), "Parent");
+            writer.newParagraph();
+            
+            if (getChildNamespaces().size() > 0) {
+            
+                writer.heading(2, "Namespaces");
+                writer.text("This namespace contains the following ");
+                writer.italic("sub-namespaces");
+                writer.text(":\n");
+                writer.newParagraph();
+
+                for (NamespaceDoc child : getSortedNamespaces())
+                    child.writeBullet(writer, 1);
+                writer.newParagraph();
+            }
+            
+            if (getChildClasses().size() > 0) {
+                writer.heading(2, "Classes");
+                writer.text("This namespace contains the following ");            
+                writer.italic("classes");
+                writer.text(":\n");
+                writer.newParagraph();
+
+                for (ClassDoc cl : getSortedClasses()) {
+                    cl.writeBullet(writer, 1);
+                }
+                writer.newParagraph();
+            }
+        }
+        catch (IOException ex) {
+            log.error("Failed to render namespace page: " + getFullName() + " because of: " + ex.getMessage());
+            // TODO: write exception to log and generated page
+        }            
+    }    
 }

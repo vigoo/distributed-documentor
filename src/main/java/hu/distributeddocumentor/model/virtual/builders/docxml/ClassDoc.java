@@ -4,12 +4,16 @@ import com.google.common.base.Function;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
 import java.io.IOException;
 import java.net.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
 public class ClassDoc {
+    
+    private final static Logger log = LoggerFactory.getLogger(ClassDoc.class);
 
     private final String name;
     private final NamespaceDoc parent;
@@ -52,43 +56,49 @@ public class ClassDoc {
         writer.text("\n");                
     }
     
-    public void renderPage(WikiWriter writer) throws IOException {
+    public void renderPage(WikiWriter writer) {
                    
-        writer.heading(1, getFullName());
-        writer.newParagraph();
-        
-        writer.internalLink(getParent().getPageId(), "Parent namespace");
-        writer.newParagraph();
-        
-        if (elem != null) {
+        try {
+            writer.heading(1, getFullName());
+            writer.newParagraph();
 
-            Element summaryElem = getFirstElementByName(elem, "summary");
-            if (summaryElem != null) {
-                writer.heading(2, "Summary");
-                renderDocElem(writer, summaryElem);
-            }
-            
-            Element remarksElem = getFirstElementByName(elem, "remarks");
-            if (remarksElem != null) {
-                writer.heading(2, "Remarks");
-                renderDocElem(writer, remarksElem);
-            }
-            
-            NodeList seeAlsoElems = elem.getElementsByTagName("seealso");
-            if (seeAlsoElems.getLength() > 0) {
-                writer.heading(2, "See also");
-                
-                for (int i = 0; i < seeAlsoElems.getLength(); i++) {
-                    Element seeAlsoElem = (Element)seeAlsoElems.item(i);
-                    
-                    writer.beginBullet(1);
-                    writeReference(writer, seeAlsoElem.getAttribute("cref"));
-                    writer.text("\n");
+            writer.internalLink(getParent().getPageId(), "Parent namespace");
+            writer.newParagraph();
+
+            if (elem != null) {
+
+                Element summaryElem = getFirstElementByName(elem, "summary");
+                if (summaryElem != null) {
+                    writer.heading(2, "Summary");
+                    renderDocElem(writer, summaryElem);
                 }
-                
-                writer.newParagraph();
+
+                Element remarksElem = getFirstElementByName(elem, "remarks");
+                if (remarksElem != null) {
+                    writer.heading(2, "Remarks");
+                    renderDocElem(writer, remarksElem);
+                }
+
+                NodeList seeAlsoElems = elem.getElementsByTagName("seealso");
+                if (seeAlsoElems.getLength() > 0) {
+                    writer.heading(2, "See also");
+
+                    for (int i = 0; i < seeAlsoElems.getLength(); i++) {
+                        Element seeAlsoElem = (Element)seeAlsoElems.item(i);
+
+                        writer.beginBullet(1);
+                        writeReference(writer, seeAlsoElem.getAttribute("cref"));
+                        writer.text("\n");
+                    }
+
+                    writer.newParagraph();
+                }
             }
         }
+        catch (IOException ex) {
+            log.error("Failed to render class page: " + getName() + " because of: " + ex.getMessage());
+            // TODO: write exception to log and generated page
+        }            
     }
     
     private Element getFirstElementByName(final Element parent, final String name) {
