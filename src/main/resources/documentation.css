@@ -18,3 +18,9 @@ a:hover
 {
 	color: red;
 }
+
+.inlinecode
+{
+    font-family: monospace;
+    color: darkred
+}

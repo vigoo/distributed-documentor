@@ -147,9 +147,10 @@ public class ClassDoc {
     }
 
     private void writeCode(WikiWriter writer, String code) throws IOException {
-        writer.newParagraph();
-        writer.sourceCode("csharp", code);
-        writer.newParagraph();
+        
+        writer.text(" <span class=\"inlinecode\">");
+        writer.text(code);
+        writer.text("</span> ");
     }
 
     private void writeTextContent(WikiWriter writer, String textContent) throws IOException {
