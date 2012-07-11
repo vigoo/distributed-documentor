@@ -47,7 +47,7 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
             }            
         };
         
-        String rootId = idGenerator.apply("");
+        String rootId = generateId();
         rootNS = new RootNamespaceDoc(rootId, idGenerator);
     }   
     

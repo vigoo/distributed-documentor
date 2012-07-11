@@ -63,7 +63,7 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
         result.setMarkupLanguage(markupLanguage);
         result.setMarkup(stringWriter.toString());
         
-        log.debug(result.getMarkup());
+        //log.debug(result.getMarkup());
         
         return result;
     }
