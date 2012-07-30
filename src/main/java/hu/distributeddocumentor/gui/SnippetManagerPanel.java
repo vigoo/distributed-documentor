@@ -2,13 +2,19 @@ package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.controller.SnippetListModel;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.PageAlreadyExistsException;
 import hu.distributeddocumentor.model.Snippet;
 import hu.distributeddocumentor.utils.StringUtils;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.TransferHandler;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 
 
 public class SnippetManagerPanel extends javax.swing.JPanel {
@@ -20,7 +26,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
     /**
      * Creates new form SnippetManagerPanel
      */
-    public SnippetManagerPanel(PageEditorHost host, Documentation doc) {
+    public SnippetManagerPanel(PageEditorHost host, final Documentation doc) {
         
         this.host = host;
         this.doc = doc;
@@ -49,6 +55,29 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
                 return LINK;
             }
 
+        });
+        
+        TableColumn col = snippetTable.getColumnModel().getColumn(0);
+        col.setCellRenderer(new DefaultTableCellRenderer() {
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                
+                String snippetId = (String)value;
+                Snippet snippet = doc.getSnippet(snippetId);
+
+                if (!isSelected) {
+                    setBackground(doc.getStatusColor((String)snippet.getMetadata().get("Status")));                                
+                    setForeground(Color.black);
+                } else {
+                    setBackground(snippetTable.getSelectionBackground());
+                    setForeground(snippetTable.getSelectionForeground());
+                }
+                setText(snippet.getId());
+                
+                return this;
+            }
+                        
         });
         
         snippetTable.getRowSorter().toggleSortOrder(0);
@@ -82,6 +111,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
             }
         });
 
+        snippetTable.setAutoCreateRowSorter(true);
         snippetTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -93,9 +123,10 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        snippetTable.setAutoCreateRowSorter(true);
         snippetTable.setDragEnabled(true);
         snippetTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        snippetTable.setShowHorizontalLines(false);
+        snippetTable.setShowVerticalLines(false);
         snippetTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 snippetTableMouseClicked(evt);
@@ -148,7 +179,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
             Snippet snippet = new Snippet(dlg.getID(), doc);
             doc.addSnippet(snippet);
            }
-           catch (Exception ex) {
+           catch (IOException | PageAlreadyExistsException ex) {
                ErrorDialog.show(null, "Failed to add new snippet", ex);
            }
        }

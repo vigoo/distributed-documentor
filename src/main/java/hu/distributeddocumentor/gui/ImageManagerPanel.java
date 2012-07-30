@@ -33,6 +33,7 @@ public class ImageManagerPanel extends javax.swing.JPanel {
         initComponents();
 
         imagesList = new JTableWithImagePreview();
+        imagesList.setShowGrid(false);
         
         imagesList.setRoot(images.getMediaRoot());
         imagesList.setTransferHandler(
