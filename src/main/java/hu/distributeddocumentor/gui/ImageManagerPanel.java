@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import com.jidesoft.swing.SearchableUtils;
 import hu.distributeddocumentor.controller.ImageListModel;
 import hu.distributeddocumentor.model.ImageAlreadyExistsException;
 import hu.distributeddocumentor.model.Images;
@@ -33,6 +34,8 @@ public class ImageManagerPanel extends javax.swing.JPanel {
         initComponents();
 
         imagesList = new JTableWithImagePreview();
+        SearchableUtils.installSearchable(imagesList);
+        
         imagesList.setShowGrid(false);
         
         imagesList.setRoot(images.getMediaRoot());

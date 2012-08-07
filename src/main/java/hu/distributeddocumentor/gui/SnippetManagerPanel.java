@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import com.jidesoft.swing.SearchableUtils;
 import hu.distributeddocumentor.controller.SnippetListModel;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.PageAlreadyExistsException;
@@ -32,6 +33,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
         this.doc = doc;
         
         initComponents();      
+        SearchableUtils.installSearchable(snippetTable);
         
         snippetModel = new SnippetListModel(doc);
         
@@ -64,16 +66,18 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 
                 String snippetId = (String)value;
-                Snippet snippet = doc.getSnippet(snippetId);
+                if (snippetId != null) {
+                    Snippet snippet = doc.getSnippet(snippetId);
 
-                if (!isSelected) {
-                    setBackground(doc.getStatusColor((String)snippet.getMetadata().get("Status")));                                
-                    setForeground(Color.black);
-                } else {
-                    setBackground(snippetTable.getSelectionBackground());
-                    setForeground(snippetTable.getSelectionForeground());
+                    if (!isSelected) {
+                        setBackground(doc.getStatusColor((String)snippet.getMetadata().get("Status")));                                
+                        setForeground(Color.black);
+                    } else {
+                        setBackground(snippetTable.getSelectionBackground());
+                        setForeground(snippetTable.getSelectionForeground());
+                    }
+                    setText(snippet.getId());
                 }
-                setText(snippet.getId());
                 
                 return this;
             }

@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import com.jidesoft.swing.SearchableUtils;
 import hu.distributeddocumentor.controller.PageIdGenerator;
 import hu.distributeddocumentor.controller.TOCNodeCellEditor;
 import hu.distributeddocumentor.controller.TOCTreeModel;
@@ -38,7 +39,9 @@ public class TableOfContentsView extends javax.swing.JPanel {
         toc = doc.getTOC();
         this.pageEditorHost = pageEditorHost;
         
-        initComponents();      
+        initComponents();   
+        
+        SearchableUtils.installSearchable(tree);
         
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
             @Override
