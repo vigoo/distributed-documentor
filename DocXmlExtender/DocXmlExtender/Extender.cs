@@ -243,7 +243,7 @@ namespace DocXmlExtender
                                                 found = false;
                                             }
                                         }
-                                        catch (FormatException ex)
+                                        catch (FormatException)
                                         {
                                             // TODO: handle advanced cases when the owner type's generic argument is not directly used
                                         }
@@ -271,7 +271,7 @@ namespace DocXmlExtender
                     else
                     {
                         var parameters = paramTypes.Select(p => FindType(p.Trim())).ToArray();
-                        if (!parameters.Any(p => p == null))
+                        if (parameters.All(p => p != null))
                         {
                             method = type.GetMethod(methodMemberName, BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Instance|BindingFlags.Static, null, parameters, null);
                         }
@@ -335,8 +335,34 @@ namespace DocXmlExtender
             reflectionNode.AppendChild(returnsElement);
         }
 
-        private void ExtendPropertyNode(XmlDocument doc, XmlElement typeNode, XmlElement reflectionNode, string typeName)
+        private void ExtendPropertyNode(XmlDocument doc, XmlElement typeNode, XmlElement reflectionNode, string propertyName)
         {
+            var dotIdx = propertyName.LastIndexOf('.');
+            var typeName = propertyName.Substring(0, dotIdx);
+            var propertyMemberName = propertyName.Substring(dotIdx + 1);
+
+            var type = FindType(typeName);
+            if (type != null)
+            {
+                var pi = type.GetProperty(propertyMemberName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+                if (pi != null)
+                {
+                    AddAttributes(doc, pi.GetCustomAttributesData(), reflectionNode);
+                    AddPropertyInfo(doc, pi, reflectionNode);                    
+                }
+            }
+        }
+
+        private void AddPropertyInfo(XmlDocument doc, PropertyInfo pi, XmlElement reflectionNode)
+        {
+            XmlElement propertyElement = doc.CreateElement("property");
+            AddType(doc, pi.PropertyType, propertyElement);
+
+            propertyElement.SetAttribute("can-read", XmlConvert.ToString(pi.CanRead));
+            propertyElement.SetAttribute("can-write", XmlConvert.ToString(pi.CanWrite));
+
+            reflectionNode.AppendChild(propertyElement);
         }
 
         private void ExtendFieldNode(XmlDocument doc, XmlElement typeNode, XmlElement reflectionNode, string typeName)
