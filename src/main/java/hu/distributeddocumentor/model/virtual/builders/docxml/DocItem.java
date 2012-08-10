@@ -120,4 +120,16 @@ public class DocItem {
             first = false;
         }
     }
+    
+    protected void renderType(Element typeElem, StringBuilder builder) {
+        
+        if (typeElem.hasAttribute("type")) {
+            
+            // TODO: convert to native representation if possible (System.Double to double, etc.)
+            builder.append(typeElem.getAttribute("type"));
+            
+        } else {
+            // TODO: support generic types
+        }
+    }
 }

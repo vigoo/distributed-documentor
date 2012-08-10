@@ -365,12 +365,60 @@ namespace DocXmlExtender
             reflectionNode.AppendChild(propertyElement);
         }
 
-        private void ExtendFieldNode(XmlDocument doc, XmlElement typeNode, XmlElement reflectionNode, string typeName)
+        private void ExtendFieldNode(XmlDocument doc, XmlElement typeNode, XmlElement reflectionNode, string fieldName)
         {
+            var dotIdx = fieldName.LastIndexOf('.');
+            var typeName = fieldName.Substring(0, dotIdx);
+            var fieldMemberName = fieldName.Substring(dotIdx + 1);
+
+            var type = FindType(typeName);
+            if (type != null)
+            {
+                var field = type.GetField(fieldMemberName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+                if (field != null)
+                {
+                    AddAttributes(doc, field.GetCustomAttributesData(), reflectionNode);
+                    AddFieldInfo(doc, field, reflectionNode);
+                }
+            }
+        }
+        
+        private void AddFieldInfo(XmlDocument doc, FieldInfo field, XmlElement reflectionNode)
+        {
+            XmlElement fieldElement = doc.CreateElement("field");
+            AddType(doc, field.FieldType, fieldElement);
+
+            fieldElement.SetAttribute("is-readonly", XmlConvert.ToString(field.IsInitOnly));
+
+            reflectionNode.AppendChild(fieldElement);
         }
 
-        private void ExtendEventNode(XmlDocument doc, XmlElement typeNode, XmlElement reflectionNode, string typeName)
+        private void ExtendEventNode(XmlDocument doc, XmlElement typeNode, XmlElement reflectionNode, string eventName)
         {
+            var dotIdx = eventName.LastIndexOf('.');
+            var typeName = eventName.Substring(0, dotIdx);
+            var eventMemberName = eventName.Substring(dotIdx + 1);
+
+            var type = FindType(typeName);
+            if (type != null)
+            {
+                var evt = type.GetEvent(eventMemberName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+                if (evt != null)
+                {
+                    AddAttributes(doc, evt.GetCustomAttributesData(), reflectionNode);
+                    AddEventInfo(doc, evt, reflectionNode);
+                }
+            }
+        }
+
+        private void AddEventInfo(XmlDocument doc, EventInfo evt, XmlElement reflectionNode)
+        {
+            XmlElement evtElement = doc.CreateElement("event");
+            AddType(doc, evt.EventHandlerType, evtElement);
+
+            reflectionNode.AppendChild(evtElement);
         }
 
         private void AddAttributes(XmlDocument doc, IEnumerable<CustomAttributeData> attributes, XmlElement reflectionNode)

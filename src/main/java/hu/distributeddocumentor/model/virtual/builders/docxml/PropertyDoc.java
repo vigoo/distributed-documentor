@@ -41,7 +41,39 @@ public class PropertyDoc extends DocItem {
         
         writer.heading(headingLevel, name);
         writer.newParagraph();
-        writer.sourceCode("csharp", name + " { get; set; }"); // TODO: use return value and r/w/rw info
+        
+        StringBuilder code = new StringBuilder();
+        
+        Element propertyElem = null;
+        Element reflectionElem = getFirstElementByName(getElem(), "reflection");
+        if (reflectionElem != null)
+            propertyElem = getFirstElementByName(propertyElem, "property");
+        
+        if (propertyElem != null) {
+            renderType(propertyElem, code);            
+        } else {
+            code.append("?");
+        }
+        
+        code.append(" ");
+        code.append(name);
+        code.append(" { ");
+        
+        if (propertyElem != null) {
+            if (propertyElem.hasAttribute("can-read") &&
+                "true".equals(propertyElem.getAttribute("can-read"))) {
+                code.append("get; ");
+            }
+            
+            if (propertyElem.hasAttribute("can-write") &&
+                "true".equals(propertyElem.getAttribute("can-write"))) {
+                code.append("set; ");
+            }
+        }
+        
+        code.append("}");
+        
+        writer.sourceCode("csharp", code.toString());
         writer.newParagraph();
         
         Element elem = getElem();
