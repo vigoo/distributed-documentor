@@ -1,16 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hu.distributeddocumentor.utils;
 
 import org.junit.*;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author vigoo
- */
 public class RepositoryUriGeneratorTest {
     
     public RepositoryUriGeneratorTest() {
