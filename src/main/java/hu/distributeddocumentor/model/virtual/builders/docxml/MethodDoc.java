@@ -4,11 +4,15 @@ import com.google.common.base.Function;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
 import hu.distributeddocumentor.utils.XmlUtils;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 
 public class MethodDoc extends DocItem {
 
+    private static final Logger log = LoggerFactory.getLogger(MethodDoc.class);
+    
     private final String name;
     private final ClassDoc parent;
 
@@ -38,13 +42,17 @@ public class MethodDoc extends DocItem {
     }
 
     public void renderDetails(WikiWriter writer, int headingLevel) throws IOException {
-        
+                        
         writer.heading(headingLevel, name);
         writer.newParagraph();
         
         StringBuilder code = new StringBuilder();
                         
         Element elem = getElem();
+        
+        //log.debug("Generating documentation for method " + name + " from the following element:");
+        //XmlUtils.dumpElement(log, elem);
+        
         Element returnsElem = XmlUtils.getSingleElement(elem, "reflection/returns");
         
         if (returnsElem != null) {
@@ -89,7 +97,19 @@ public class MethodDoc extends DocItem {
             renderDocElem(writer, summaryElem);
         }
 
-        // TODO: parameter doc
+        Element[] paramDocElems = XmlUtils.getElements(elem, "param");
+        if (paramDocElems.length > 0) {
+            
+            writer.text("The parameters have the following meaning:");
+            writer.newParagraph();
+            for (Element paramDoc : paramDocElems) {
+                writer.beginBullet(1);
+                writer.bold(paramDoc.getAttribute("name"));
+                writer.text(": ");
+                renderDocElem(writer, paramDoc);
+                writer.text("\n");
+            }        
+        }
         
         renderContract(writer, elem);
 

@@ -223,7 +223,9 @@ public class DocItem {
                 return "double";
             case "System.Double[]":
                 return "double[]";
-            
+            case "System.Void":
+                return "void";
+                
             default:
                 return type;
         }
