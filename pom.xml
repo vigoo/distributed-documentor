@@ -166,11 +166,6 @@
             <id>swt-repo</id>
             <url>https://swt-repo.googlecode.com/svn/repo/</url>
         </repository>
-        <repository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </repository>
     </repositories>
 
     <dependencies>
