@@ -53,7 +53,13 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
     @Override
     public SpellChecker getSpellChecker() {
-        return spellChecker;
+        
+        if (prefs.isSpellCheckingEnabled()) {
+            return spellChecker;
+        }
+        else {
+            return null;
+        }
     }        
     
     /**
@@ -75,6 +81,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
         
         this.prefs = prefs;
+        
+        spellCheckingMenuItem.setSelected(prefs.isSpellCheckingEnabled());
+        
         doc = new Documentation(prefs);
         
         toolWindowManager = new MyDoggyToolWindowManager();        
@@ -232,6 +241,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         editMenu = new javax.swing.JMenu();
         undoMenuItem = new javax.swing.JMenuItem();
         redoMenuItem = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        spellCheckingMenuItem = new javax.swing.JCheckBoxMenuItem();
         synchronizeMenu = new javax.swing.JMenu();
         pullMenuItem = new javax.swing.JMenuItem();
         pushMenuItem = new javax.swing.JMenuItem();
@@ -352,6 +363,16 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             }
         });
         editMenu.add(redoMenuItem);
+        editMenu.add(jSeparator2);
+
+        spellCheckingMenuItem.setSelected(true);
+        spellCheckingMenuItem.setText("Spell checking");
+        spellCheckingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                spellCheckingMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(spellCheckingMenuItem);
 
         menuBar.add(editMenu);
 
@@ -660,6 +681,13 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         twSnippets.setType(ToolWindowType.DOCKED);
     }//GEN-LAST:event_resetLayoutItemActionPerformed
 
+    private void spellCheckingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spellCheckingMenuItemActionPerformed
+        
+        prefs.toggleSpellChecking();
+        spellCheckingMenuItem.setSelected(prefs.isSpellCheckingEnabled());
+        
+    }//GEN-LAST:event_spellCheckingMenuItemActionPerformed
+
     private void showPreferencesIfNecessary() {
         
         if (!prefs.hasValidMercurialPath()) {
@@ -772,6 +800,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JCheckBoxMenuItem imageManagerItem;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JLabel labelRoot;
     private javax.swing.JLabel labelUncommitted;
     private javax.swing.JMenuBar menuBar;
@@ -781,6 +810,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JMenuItem redoMenuItem;
     private javax.swing.JMenuItem resetLayoutItem;
     private javax.swing.JCheckBoxMenuItem snippetManagerItem;
+    private javax.swing.JCheckBoxMenuItem spellCheckingMenuItem;
     private javax.swing.JMenu synchronizeMenu;
     private javax.swing.JCheckBoxMenuItem tocItem;
     private javax.swing.JToolBar toolBar;

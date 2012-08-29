@@ -51,7 +51,6 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     private WikiEditor editor;
     
     private final Timer spellCheckTimer;
-    private final SpellChecker spellChecker;
     private boolean isSpellChecking;
     private Map<IntRange, List<String>> suggestions;
     
@@ -70,18 +69,15 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         
         this.page = page;
         
-        suggestions = new HashMap<IntRange, List<String>>();
+        suggestions = new HashMap<>();
         
         defaultStyle = editorPane.addStyle("default", null);
         
         spellingErrorStyle = editorPane.addStyle("spellingError", defaultStyle);
         StyleConstants.setForeground(spellingErrorStyle, Color.red);
         StyleConstants.setUnderline(spellingErrorStyle, true);
-        
-        spellChecker = host.getSpellChecker();
-       
-        
-        spellCheckTimer = new Timer(5000, 
+                     
+        spellCheckTimer = new Timer(2000, 
                 new ActionListener() {
 
                     @Override
@@ -669,9 +665,18 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     }
     
     private void performSpellCheck() {
+
+        suggestions.clear();
+                
+        
+        editorPane.getStyledDocument()
+                .setCharacterAttributes(0, 
+                                        editorPane.getStyledDocument().getLength(), 
+                                        defaultStyle, true);
+        
+        SpellChecker spellChecker = host.getSpellChecker();
         if (spellChecker != null) {
-                               
-            
+                                           
             log.debug("Starting spell check for " + page.getId());
 
             synchronized (spellChecker) {
@@ -679,16 +684,9 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                 isSpellChecking = true;
                 
                 spellChecker.reset();
-                spellChecker.addSpellCheckListener(this);                 
-                
-                suggestions.clear();
+                spellChecker.addSpellCheckListener(this);                                 
 
                 try {
-                    editorPane.getStyledDocument().setCharacterAttributes(
-                        0, 
-                        editorPane.getStyledDocument().getLength(), 
-                        defaultStyle, true);
-
                     spellChecker.checkSpelling(
                             new DocumentWordTokenizer(editorPane.getDocument()));
                 }
@@ -715,16 +713,20 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                 length, 
                 spellingErrorStyle, true);
         
-        List wordSuggestions = spellChecker.getSuggestions(event.getInvalidWord(), 0);
-        List<String> sgs = new LinkedList<String>();                
-                
-        if (wordSuggestions != null && !wordSuggestions.isEmpty()) {
-            for (Object suggestion : wordSuggestions) {
-                Word word = (Word)suggestion;
-                sgs.add(word.getWord());
-            }
+        SpellChecker spellChecker = host.getSpellChecker();
+        
+        if (spellChecker != null) {
+            List wordSuggestions = spellChecker.getSuggestions(event.getInvalidWord(), 0);
+            List<String> sgs = new LinkedList<>();                
 
-            suggestions.put(new IntRange(start, end), sgs);
+            if (wordSuggestions != null && !wordSuggestions.isEmpty()) {
+                for (Object suggestion : wordSuggestions) {
+                    Word word = (Word)suggestion;
+                    sgs.add(word.getWord());
+                }
+
+                suggestions.put(new IntRange(start, end), sgs);
+            }
         }
     }
 
