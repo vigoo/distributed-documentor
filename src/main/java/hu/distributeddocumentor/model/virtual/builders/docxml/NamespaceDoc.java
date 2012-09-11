@@ -87,8 +87,9 @@ public class NamespaceDoc extends DocItem {
                         return o1.getFullName().compareTo(o2.getFullName());
             }});
         
-        for (NamespaceDoc cl : childNamespaces.values())
+        for (NamespaceDoc cl : childNamespaces.values()) {
             set.add(cl);
+        }
         
         return set;
     }
@@ -105,8 +106,9 @@ public class NamespaceDoc extends DocItem {
                         return o1.getName().compareTo(o2.getName());
             }});
         
-        for (ClassDoc cl : childClasses.values())
+        for (ClassDoc cl : childClasses.values()) {
             set.add(cl);
+        }
         
         return set;
     }
@@ -132,8 +134,9 @@ public class NamespaceDoc extends DocItem {
         }
         else {                        
             String[] subParts = new String[parts.length - 1];
-            for (int i = 1; i < parts.length; i++)
+            for (int i = 1; i < parts.length; i++) {
                 subParts[i-1] = parts[i];
+            }
             
             return newChild.buildSubtree(StringUtils.join(subParts, '.'));
         }
@@ -167,8 +170,9 @@ public class NamespaceDoc extends DocItem {
                 writer.text(":\n");
                 writer.newParagraph();
 
-                for (NamespaceDoc child : getSortedNamespaces())
+                for (NamespaceDoc child : getSortedNamespaces()) {
                     child.writeBullet(writer, 1);
+                }
                 writer.newParagraph();
             }
             

@@ -2,6 +2,7 @@ package hu.distributeddocumentor.model.virtual.builders.docxml;
 
 import com.google.common.base.Function;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
+import hu.distributeddocumentor.utils.XmlUtils;
 import java.io.IOException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -45,12 +46,13 @@ public class PropertyDoc extends DocItem {
         StringBuilder code = new StringBuilder();
         
         Element propertyElem = null;
-        Element reflectionElem = getFirstElementByName(getElem(), "reflection");
-        if (reflectionElem != null)
-            propertyElem = getFirstElementByName(propertyElem, "property");
+        Element reflectionElem = XmlUtils.getSingleElement(getElem(), "reflection");
+        if (reflectionElem != null) {
+            propertyElem = XmlUtils.getSingleElement(reflectionElem, "property");
+        }
         
         if (propertyElem != null) {
-            renderType(propertyElem, code);            
+            renderType(propertyElem, code, getParent().getParent().getAsPrefix());            
         } else {
             code.append("?");
         }
@@ -60,13 +62,11 @@ public class PropertyDoc extends DocItem {
         code.append(" { ");
         
         if (propertyElem != null) {
-            if (propertyElem.hasAttribute("can-read") &&
-                "true".equals(propertyElem.getAttribute("can-read"))) {
+            if (XmlUtils.isAttributeTrue(propertyElem, "can-read")) {                
                 code.append("get; ");
             }
             
-            if (propertyElem.hasAttribute("can-write") &&
-                "true".equals(propertyElem.getAttribute("can-write"))) {
+            if (XmlUtils.isAttributeTrue(propertyElem, "can-write")) {
                 code.append("set; ");
             }
         }
@@ -79,18 +79,30 @@ public class PropertyDoc extends DocItem {
         Element elem = getElem();
         if (elem != null) {
 
-            Element summaryElem = getFirstElementByName(elem, "summary");
+            Element summaryElem = XmlUtils.getSingleElement(elem, "summary");
             if (summaryElem != null) {                
                 renderDocElem(writer, summaryElem);
             }
+            
+            Element getterElem = XmlUtils.getSingleElement(elem, "getter");
+            if (getterElem != null) {
+                writer.heading(headingLevel + 1, "Getter contract");
+                renderContract(writer, getterElem);
+            }
+            
+            Element setterElem = XmlUtils.getSingleElement(elem, "setter");
+            if (setterElem != null) {
+                writer.heading(headingLevel + 1, "Setter contract");
+                renderContract(writer, setterElem);
+            }
 
-            Element remarksElem = getFirstElementByName(elem, "remarks");
+            Element remarksElem = XmlUtils.getSingleElement(elem, "remarks");
             if (remarksElem != null) {
                 writer.heading(headingLevel + 1, "Remarks");
                 renderDocElem(writer, remarksElem);
             }
 
-            NodeList seeAlsoElems = elem.getElementsByTagName("seealso");
+            NodeList seeAlsoElems = XmlUtils.getElements(elem, "seealso");
             if (seeAlsoElems.getLength() > 0) {
                 writer.heading(headingLevel + 1, "See also");
 

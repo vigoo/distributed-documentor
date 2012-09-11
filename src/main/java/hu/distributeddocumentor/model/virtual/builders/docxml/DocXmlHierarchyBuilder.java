@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,16 +30,21 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     
     private final File xmlFile;    
     private final String title;
-    
-        
+            
     private final RootNamespaceDoc rootNS;
     private final Function<String, String> idGenerator;
+    
+    private final Pattern propertyPattern;
+    private final Pattern methodPattern;
 
     public DocXmlHierarchyBuilder(File xmlFile, String title, String markupLanguage) {
         super(markupLanguage);
         
         this.xmlFile = xmlFile;
         this.title = title;
+        
+        propertyPattern = Pattern.compile("([a-zA-Z0-9_`\\.]+)\\.(\\w+)\\(?.*\\)?");
+        methodPattern = Pattern.compile("([a-zA-Z0-9_`\\.]+)\\.(\\w+)\\(?.*\\)?");
         
         idGenerator = new Function<String, String>() {
 
@@ -92,8 +99,9 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     private void fillFlatNamespaces(final SortedSet<NamespaceDoc> target, final NamespaceDoc current) {
         
         target.add(current);
-        for (NamespaceDoc child : current.getChildNamespaces().values()) 
+        for (NamespaceDoc child : current.getChildNamespaces().values()) {
             fillFlatNamespaces(target, child);
+        }
     }
     
     private void load() {
@@ -127,6 +135,9 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
                 else if (name.startsWith("P:")) {
                     addProperty(name.substring(2), memberNode);
                 }
+                else if (name.startsWith("M:")) {
+                    addMethod(name.substring(2), memberNode);
+                }
             }
         }
         catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException ex) {
@@ -150,27 +161,66 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     
     private PropertyDoc addProperty(final String fullPropertyName, final Element elem) {
         
-        int classPropertySep = fullPropertyName.lastIndexOf('.');
-        String fullClassName = fullPropertyName.substring(0, classPropertySep);
-        String propertyName = fullPropertyName.substring(classPropertySep+1);
+        Matcher m = propertyPattern.matcher(fullPropertyName);
         
-        int namespaceClassSep = fullClassName.lastIndexOf('.');
-        String fullNameSpace = fullClassName.substring(0, namespaceClassSep);
-        String className = fullClassName.substring(namespaceClassSep+1);        
-        
-        NamespaceDoc ns = buildNamespace(fullNameSpace);
-        ClassDoc cl = ns.getChildClasses().get(className);
-        
-        if (cl == null) {
-            cl = addClass(fullClassName, null);
+        if (m.matches()) {
+            String fullClassName = m.group(1);
+            String propertyName = m.group(2);
+
+            int namespaceClassSep = fullClassName.lastIndexOf('.');
+            String fullNameSpace = fullClassName.substring(0, namespaceClassSep);
+            String className = fullClassName.substring(namespaceClassSep+1);        
+
+            NamespaceDoc ns = buildNamespace(fullNameSpace);
+            ClassDoc cl = ns.getChildClasses().get(className);
+
+            if (cl == null) {
+                cl = addClass(fullClassName, null);
+            }
+
+            PropertyDoc prop = new PropertyDoc(cl, propertyName, idGenerator);
+            prop.storeData(elem);
+
+            cl.getProperties().add(prop);
+
+            return prop;        
         }
+        else {
+            log.error("Cannot match property name: " + fullPropertyName);
+            return null;
+        }
+    }
+    
+     private MethodDoc addMethod(final String fullMethodName, final Element elem) {
         
-        PropertyDoc prop = new PropertyDoc(cl, propertyName, idGenerator);
-        prop.storeData(elem);
+        Matcher m = methodPattern.matcher(fullMethodName);
+        
+        if (m.matches()) {
+            String fullClassName = m.group(1);
+            String methodName = m.group(2);
 
-        cl.getProperties().add(prop);
+            int namespaceClassSep = fullClassName.lastIndexOf('.');
+            String fullNameSpace = fullClassName.substring(0, namespaceClassSep);
+            String className = fullClassName.substring(namespaceClassSep+1);        
 
-        return prop;        
+            NamespaceDoc ns = buildNamespace(fullNameSpace);
+            ClassDoc cl = ns.getChildClasses().get(className);
+
+            if (cl == null) {
+                cl = addClass(fullClassName, null);
+            }
+
+            MethodDoc method = new MethodDoc(cl, methodName, idGenerator);
+            method.storeData(elem);
+
+            cl.getMethods().add(method);
+
+            return method;        
+        }
+        else {
+            log.error("Cannot match method name: " + fullMethodName);
+            return null;
+        }
     }
     
     private NamespaceDoc buildNamespace(final String fullName) {
