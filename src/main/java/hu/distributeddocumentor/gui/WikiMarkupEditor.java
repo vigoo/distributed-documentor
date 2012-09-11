@@ -10,7 +10,9 @@ import hu.distributeddocumentor.controller.MediaWikiEditor;
 import hu.distributeddocumentor.controller.WikiEditor;
 import hu.distributeddocumentor.model.IntRange;
 import hu.distributeddocumentor.model.Page;
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
@@ -49,7 +51,6 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     private WikiEditor editor;
     
     private final Timer spellCheckTimer;
-    private final SpellChecker spellChecker;
     private boolean isSpellChecking;
     private Map<IntRange, List<String>> suggestions;
     
@@ -68,18 +69,15 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         
         this.page = page;
         
-        suggestions = new HashMap<IntRange, List<String>>();
+        suggestions = new HashMap<>();
         
         defaultStyle = editorPane.addStyle("default", null);
         
         spellingErrorStyle = editorPane.addStyle("spellingError", defaultStyle);
         StyleConstants.setForeground(spellingErrorStyle, Color.red);
         StyleConstants.setUnderline(spellingErrorStyle, true);
-        
-        spellChecker = host.getSpellChecker();
-       
-        
-        spellCheckTimer = new Timer(5000, 
+                     
+        spellCheckTimer = new Timer(2000, 
                 new ActionListener() {
 
                     @Override
@@ -142,40 +140,13 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
             }
         });
         
-        editorPane.getActionMap().put("Undo", 
-                new AbstractAction("Undo") {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        try {
-                            if (undoManager.canUndo()) {
-                                undoManager.undo();
-                                host.updateUndoRedoItems();
-                            }
-                        } catch (CannotUndoException ex) {                        
-                            log.warn(null, ex);
-                        }
-                    }
-                });
-        
-        editorPane.getActionMap().put("Redo", 
-                new AbstractAction("Redo") {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        try {
-                            if (undoManager.canRedo()) {
-                                undoManager.redo();
-                                host.updateUndoRedoItems();
-                            }
-                        } catch (CannotUndoException ex) {                        
-                            log.warn(null, ex);
-                        }
-                    }
-                });
-        
-        // Bind the undo action to ctl-Z (or command-Z on mac)
-        editorPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Undo" );
-        // Bind the redo action to ctl-Y (or command-Y on mac)
-        editorPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Redo" );
+        InputMap inputMap = editorPane.getInputMap();
+        ActionMap actionMap = editorPane.getActionMap();
+ 
+        addUndoAction(actionMap, host, inputMap);
+        addRedoAction(actionMap, host, inputMap);
+        addFindAction(actionMap, inputMap);        
+        addReplaceAction(actionMap, inputMap);
         
         dropTarget = new DropTarget(editorPane, 
                 new DropTargetListener() {
@@ -255,18 +226,20 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         jSeparator4 = new javax.swing.JToolBar.Separator();
         btAddRemoteLink = new javax.swing.JButton();
 
+        setLayout(new java.awt.BorderLayout());
+
         editorPane.setFont(new java.awt.Font("Monaco", 0, 13)); // NOI18N
-        editorPane.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                editorPaneMouseReleased(evt);
-            }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                editorPaneMousePressed(evt);
-            }
-        });
         editorPane.addCaretListener(new javax.swing.event.CaretListener() {
             public void caretUpdate(javax.swing.event.CaretEvent evt) {
                 editorPaneCaretUpdate(evt);
+            }
+        });
+        editorPane.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                editorPaneMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                editorPaneMouseReleased(evt);
             }
         });
         editorPane.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -278,6 +251,8 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
             }
         });
         scrollPane.setViewportView(editorPane);
+
+        add(scrollPane, java.awt.BorderLayout.CENTER);
 
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
@@ -453,24 +428,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         });
         toolBar.add(btAddRemoteLink);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(toolBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(scrollPane)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(toolBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        add(toolBar, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
     private int getCurrentRow() {
@@ -663,8 +621,9 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
         int currentLine = getCurrentRow();
         if (currentLine != lastCurrentLine) {
             
-            if (previewSync != null)
+            if (previewSync != null) {
                 previewSync.scrollToLine(currentLine);
+            }
             
             lastCurrentLine = currentLine;
         }        
@@ -706,9 +665,18 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     }
     
     private void performSpellCheck() {
+
+        suggestions.clear();
+                
+        
+        editorPane.getStyledDocument()
+                .setCharacterAttributes(0, 
+                                        editorPane.getStyledDocument().getLength(), 
+                                        defaultStyle, true);
+        
+        SpellChecker spellChecker = host.getSpellChecker();
         if (spellChecker != null) {
-                               
-            
+                                           
             log.debug("Starting spell check for " + page.getId());
 
             synchronized (spellChecker) {
@@ -716,16 +684,9 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                 isSpellChecking = true;
                 
                 spellChecker.reset();
-                spellChecker.addSpellCheckListener(this);                 
-                
-                suggestions.clear();
+                spellChecker.addSpellCheckListener(this);                                 
 
                 try {
-                    editorPane.getStyledDocument().setCharacterAttributes(
-                        0, 
-                        editorPane.getStyledDocument().getLength(), 
-                        defaultStyle, true);
-
                     spellChecker.checkSpelling(
                             new DocumentWordTokenizer(editorPane.getDocument()));
                 }
@@ -752,17 +713,128 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                 length, 
                 spellingErrorStyle, true);
         
-        List wordSuggestions = spellChecker.getSuggestions(event.getInvalidWord(), 0);
-        List<String> sgs = new LinkedList<String>();                
-                
-        if (wordSuggestions != null && !wordSuggestions.isEmpty()) {
-            for (Object suggestion : wordSuggestions) {
-                Word word = (Word)suggestion;
-                sgs.add(word.getWord());
-            }
+        SpellChecker spellChecker = host.getSpellChecker();
+        
+        if (spellChecker != null) {
+            List wordSuggestions = spellChecker.getSuggestions(event.getInvalidWord(), 0);
+            List<String> sgs = new LinkedList<>();                
 
-            suggestions.put(new IntRange(start, end), sgs);
+            if (wordSuggestions != null && !wordSuggestions.isEmpty()) {
+                for (Object suggestion : wordSuggestions) {
+                    Word word = (Word)suggestion;
+                    sgs.add(word.getWord());
+                }
+
+                suggestions.put(new IntRange(start, end), sgs);
+            }
         }
     }
+
+    private void addUndoAction(ActionMap actionMap, final PageEditorHost host, InputMap inputMap) throws HeadlessException {
+        actionMap.put("Undo", 
+                new AbstractAction("Undo") {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        try {
+                            if (undoManager.canUndo()) {
+                                undoManager.undo();
+                                host.updateUndoRedoItems();
+                            }
+                        } catch (CannotUndoException ex) {                        
+                            log.warn(null, ex);
+                        }
+                    }
+                });
+        // Bind the undo action to ctl-Z (or command-Z on mac)
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Undo" );
+    }
+
+    private void addRedoAction(ActionMap actionMap, final PageEditorHost host, InputMap inputMap) throws HeadlessException {
+        actionMap.put("Redo", 
+                new AbstractAction("Redo") {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        try {
+                            if (undoManager.canRedo()) {
+                                undoManager.redo();
+                                host.updateUndoRedoItems();
+                            }
+                        } catch (CannotUndoException ex) {                        
+                            log.warn(null, ex);
+                        }
+                    }
+                });                
+        // Bind the redo action to ctl-Y (or command-Y on mac)
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Redo" );
+    }
+
+    private void addFindAction(ActionMap actionMap, InputMap inputMap) {
+        actionMap.put("Find", 
+                new AbstractAction("Find") {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        
+                        final FindInTextPanel findPanel = new FindInTextPanel();
+                        
+                        findPanel.setListener(
+                                new FindInTextListener() {
+
+                            @Override
+                            public void findNext(String text) {
+                                performFindNext(text);                                
+                            }
+
+                            @Override
+                            public void finish() {
+                                remove(findPanel);                                
+                                revalidate();
+                                repaint();
+                                editorPane.requestFocus();
+                            }
+                        });
+                        
+                        add(findPanel, BorderLayout.SOUTH);                             
+                        revalidate();
+                        repaint();
+                        findPanel.requestFocus();
+                    }
+                });
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Find");
+    }
     
+    private void addReplaceAction(ActionMap actionMap, InputMap inputMap) {
+        actionMap.put("Replace", 
+                new AbstractAction("Replace") {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        JOptionPane.showMessageDialog(null, "Replace!");
+                    }
+                });
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Replace");
+    }
+    
+    private void performFindNext(String text) {
+        int startFrom = editorPane.getSelectionEnd();                                
+        String fullText = editorPane.getText();
+        String remainingText = fullText.substring(startFrom);
+
+        int idx = remainingText.indexOf(text);
+        if (idx != -1) {
+            editorPane.setSelectionStart(startFrom + idx);
+            editorPane.setSelectionEnd(startFrom + idx + text.length());
+        }
+        else {
+            idx = fullText.indexOf(text);
+            if (idx != -1) {
+                editorPane.setSelectionStart(idx);
+                editorPane.setSelectionEnd(idx + text.length());
+            }
+            else {
+                editorPane.setSelectionStart(0);
+                editorPane.setSelectionEnd(0);
+            }
+        }
+    }    
 }

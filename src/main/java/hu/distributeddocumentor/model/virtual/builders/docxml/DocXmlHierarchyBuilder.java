@@ -44,7 +44,7 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
         this.title = title;
         
         propertyPattern = Pattern.compile("([a-zA-Z0-9_`\\.]+)\\.(\\w+)\\(?.*\\)?");
-        methodPattern = Pattern.compile("([a-zA-Z0-9_`\\.]+)\\.(\\w+)\\(?.*\\)?");
+        methodPattern = Pattern.compile("([a-zA-Z0-9_`\\.]+)\\.([a-zA-Z_0-9#]+)\\(?.*\\)?");
         
         idGenerator = new Function<String, String>() {
 

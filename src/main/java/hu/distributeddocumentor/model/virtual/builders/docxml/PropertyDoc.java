@@ -5,7 +5,6 @@ import hu.distributeddocumentor.model.virtual.WikiWriter;
 import hu.distributeddocumentor.utils.XmlUtils;
 import java.io.IOException;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 
 public class PropertyDoc extends DocItem {
@@ -102,13 +101,12 @@ public class PropertyDoc extends DocItem {
                 renderDocElem(writer, remarksElem);
             }
 
-            NodeList seeAlsoElems = XmlUtils.getElements(elem, "seealso");
-            if (seeAlsoElems.getLength() > 0) {
+            Element[] seeAlsoElems = XmlUtils.getElements(elem, "seealso");
+            if (seeAlsoElems.length > 0) {
                 writer.heading(headingLevel + 1, "See also");
 
-                for (int i = 0; i < seeAlsoElems.getLength(); i++) {
-                    Element seeAlsoElem = (Element)seeAlsoElems.item(i);
-
+                for (Element seeAlsoElem : seeAlsoElems) {
+                    
                     writer.beginBullet(1);
                     writeReference(writer, seeAlsoElem.getAttribute("cref"));
                     writer.text("\n");

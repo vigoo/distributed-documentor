@@ -168,17 +168,16 @@ public class DocItem {
     
     protected void renderContract(WikiWriter writer, Element contractRootElem) throws IOException {
         
-        NodeList requiresNodes = XmlUtils.getElements(contractRootElem, "requires");
-        if (requiresNodes.getLength() > 0) {
+        Element[] requiresNodes = XmlUtils.getElements(contractRootElem, "requires");
+        if (requiresNodes.length > 0) {
             
             writer.text("The caller has to meet the following ");
             writer.bold("requirements:");
             writer.newParagraph();
             
             StringBuilder requirements = new StringBuilder();
-            for (int i = 0; i < requiresNodes.getLength(); i++) {
-                
-                Node requires = requiresNodes.item(i);       
+            for (Element requires : requiresNodes) {
+                                
                 requirements.append(requires.getTextContent());
                 requirements.append(";\n");
             }
@@ -186,8 +185,8 @@ public class DocItem {
             writer.sourceCode("csharp", requirements.toString());
         }
         
-        NodeList ensuresNodes = XmlUtils.getElements(contractRootElem, "ensures");
-        if (ensuresNodes.getLength() > 0) {
+        Element[] ensuresNodes = XmlUtils.getElements(contractRootElem, "ensures");
+        if (ensuresNodes.length > 0) {
             
             writer.text("The callee ");
             writer.bold("ensures");
@@ -195,9 +194,8 @@ public class DocItem {
             writer.newParagraph();
             
             StringBuilder ensurements = new StringBuilder();
-            for (int i = 0; i < ensuresNodes.getLength(); i++) {
-                
-                Node ensure = ensuresNodes.item(i);       
+            for (Element ensure : ensuresNodes) {
+                                
                 ensurements.append(ensure.getTextContent());
                 ensurements.append(";\n");
             }
@@ -225,7 +223,9 @@ public class DocItem {
                 return "double";
             case "System.Double[]":
                 return "double[]";
-            
+            case "System.Void":
+                return "void";
+                
             default:
                 return type;
         }

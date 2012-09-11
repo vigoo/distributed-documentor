@@ -1,11 +1,13 @@
 package hu.distributeddocumentor.model.virtual.builders.docxml;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
 import hu.distributeddocumentor.utils.XmlUtils;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -13,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 
 public class ClassDoc extends DocItem {
@@ -130,18 +131,20 @@ public class ClassDoc extends DocItem {
             
             Map<String, Element> genericArgs = new HashMap<>();
             if (reflection != null) {
-                
-                NodeList args = XmlUtils.getElements(reflection, "genericargs/arg");
-                if (args != null) {                    
+                                
+                List<Element> args = Lists.newArrayList(XmlUtils.getElements(reflection, "genericargs/arg"));
+                if (args.size() > 0) {                    
                     headingBuilder.append("<");
                                         
-                    for (int i = 0; i < args.getLength(); i++) {
-                        
-                        Element arg = (Element)args.item(i);
+                    boolean first = true;
+                    for (Element arg : args) {
+                                                
                         String argName = arg.getAttribute("name");
                         
-                        if (i > 0) {
+                        if (!first) {
                             headingBuilder.append(", ");
+                        } else {
+                            first = false;
                         }
                         
                         headingBuilder.append(argName);                        
@@ -172,17 +175,15 @@ public class ClassDoc extends DocItem {
                     writer.text("\n");
                 }
                 
-                NodeList interfaceNodes = XmlUtils.getElements(reflection, "implements/interface");
+                Element[] interfaceNodes = XmlUtils.getElements(reflection, "implements/interface");
                     
-                if (interfaceNodes != null && interfaceNodes.getLength() > 0) {
+                if (interfaceNodes.length > 0) {
 
                     writer.beginBullet(1);
                     writer.bold("Implements:\n");
 
-                    for (int i = 0; i < interfaceNodes.getLength(); i++) {
-
-                        Element ifaceElem = (Element)interfaceNodes.item(i);
-
+                    for (Element ifaceElem : interfaceNodes) {
+                        
                         StringBuilder builder = new StringBuilder();
                         renderType(ifaceElem, builder, getParent().getAsPrefix());
 
@@ -193,7 +194,7 @@ public class ClassDoc extends DocItem {
                 }                
                 
                 writer.newParagraph();
-            }
+            }                        
             
             if (elem != null) {
 
@@ -206,15 +207,13 @@ public class ClassDoc extends DocItem {
             
             if (elem != null) {
                 
-                NodeList typeParams = XmlUtils.getElements(elem, "typeparam");
+                Element[] typeParams = XmlUtils.getElements(elem, "typeparam");
                 
-                if (typeParams.getLength() > 0) {
+                if (typeParams.length > 0) {
                     writer.heading(2, "Type parameters");
                     
-                    for (int i = 0; i < typeParams.getLength(); i++) {
-
-                        Element typeParam = (Element)typeParams.item(i);
-                        
+                    for (Element typeParam : typeParams) {
+                                               
                         String paramName = typeParam.getAttribute("name");
                         writer.bold(paramName);
                         writer.text(": ");
@@ -231,7 +230,7 @@ public class ClassDoc extends DocItem {
                 }
                 
                 renderInvariants(writer);
-            }                       
+            }                                                                          
                 
             if (properties.size() > 0) {
                 writer.heading(2, "Properties");
@@ -250,13 +249,12 @@ public class ClassDoc extends DocItem {
                     renderDocElem(writer, remarksElem);
                 }
 
-                NodeList seeAlsoElems = XmlUtils.getElements(elem, "seealso");
-                if (seeAlsoElems.getLength() > 0) {
+                Element[] seeAlsoElems = XmlUtils.getElements(elem, "seealso");
+                if (seeAlsoElems.length > 0) {
                     writer.heading(2, "See also");
 
-                    for (int i = 0; i < seeAlsoElems.getLength(); i++) {
-                        Element seeAlsoElem = (Element)seeAlsoElems.item(i);
-
+                    for (Element seeAlsoElem : seeAlsoElems) {
+                        
                         writer.beginBullet(1);
                         writeReference(writer, seeAlsoElem.getAttribute("cref"));
                         writer.text("\n");
@@ -315,15 +313,14 @@ public class ClassDoc extends DocItem {
 
     private void renderInvariants(WikiWriter writer) throws IOException {
          
-        NodeList invariantNodes = XmlUtils.getElements(getElem(), "invariant");
-        if (invariantNodes.getLength() > 0) {
+        Element[] invariantNodes = XmlUtils.getElements(getElem(), "invariant");
+        if (invariantNodes.length > 0) {
             
             writer.heading(2, "Object invariants");            
             
             StringBuilder ensurements = new StringBuilder();
-            for (int i = 0; i < invariantNodes.getLength(); i++) {
-                
-                Node ensure = invariantNodes.item(i);       
+            for (Node ensure : invariantNodes) {
+                                
                 ensurements.append(ensure.getTextContent());
                 ensurements.append(";\n");
             }
@@ -334,12 +331,12 @@ public class ClassDoc extends DocItem {
     
     private void renderGenericConstraints(WikiWriter writer, Element arg) throws IOException {
         
-        NodeList interfaces = XmlUtils.getElements(arg, "constraints/interface");
+        Element[] interfaces = XmlUtils.getElements(arg, "constraints/interface");
         
         if (arg.hasAttribute("must-be-reference-type") ||
             arg.hasAttribute("must-be-not-nullable-value-type") ||
             arg.hasAttribute("must-have-default-constructor") ||
-            (interfaces != null && interfaces.getLength() > 0)) {
+            (interfaces.length > 0)) {
             
             writer.text("The type paramter has the following constraints:");
             writer.newParagraph();
@@ -368,18 +365,18 @@ public class ClassDoc extends DocItem {
         }
                 
         if (interfaces != null) {
-            for (int i = 0; i < interfaces.getLength(); i++) {
+            for (Element iface : interfaces) {
 
                 writer.beginBullet(1);
                 writer.text("Must implement interface: ");
 
                 StringBuilder builder = new StringBuilder();
-                renderType((Element)interfaces.item(i), builder, getParent().getAsPrefix());
+                renderType(iface, builder, getParent().getAsPrefix());
                 writeCode(writer, builder.toString());
                 
                 writer.text("\n");
             }
-        }                
+        }                                       
     }
 
 }

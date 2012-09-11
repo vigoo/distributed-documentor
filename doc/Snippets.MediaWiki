@@ -1,0 +1,27 @@
+= Using snippets =
+
+== What snippets are? ==
+
+Snippets are ''page fragments'' which can be edited as pages, and can be included into multiple real pages (or other snippets).
+
+Snippets cannot be directly put into the TOC or referred with a link. They are always inserted into the pages where they are used.
+
+== Creating and removing snippets ==
+Snippets have an ID with the same rules as pages, but their lifecycle is more primitive. 
+
+To '''add''' a new snippet, use the ''snippets panel'''s add button and specify a new ID for it.
+
+The selected snippet can be '''removed''' with the remove button.
+
+== Editing snippets ==
+To edit a snippet, double click on its item in the ''snippet manager''. This opens the usual wiki page editor for the given snippet.
+
+== Including snippets in pages ==
+
+The syntax to include a snippet in a ''MediaWiki'' page is the following:
+
+<pre>[Snippet:SnippetId]</pre>
+
+The reference always have to lie alone in its own line, and be on the beginning of that line.
+
+It is also possible to '''drag and drop''' a snippet from the ''snippet manager'' to the text editor. 

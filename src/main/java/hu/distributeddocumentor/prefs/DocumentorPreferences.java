@@ -75,13 +75,14 @@ public class DocumentorPreferences {
     public List<String> getRecentRepositories() {        
         
         try {
-            List<String> result = new LinkedList<String>();
+            List<String> result = new LinkedList<>();
             Preferences reposNode = prefs.node("recentRepositories");
 
             for (String key : reposNode.keys()) {
                 String item = reposNode.get(key, null);
-                if (item != null)
+                if (item != null) {
                     result.add(item);
+                }
             }
 
             return result;
@@ -97,8 +98,9 @@ public class DocumentorPreferences {
         try {
             Preferences reposNode = prefs.node("recentRepositories");
 
-            for (String key : reposNode.keys())
+            for (String key : reposNode.keys()) {
                 reposNode.remove(key);
+            }
             
             for (int i = 0; i < list.size(); i++) {
                 reposNode.put(Integer.toString(i), list.get(i));
@@ -114,20 +116,21 @@ public class DocumentorPreferences {
      public List<String> getRecentTargets() {        
         
         try {
-            List<String> result = new LinkedList<String>();
+            List<String> result = new LinkedList<>();
             Preferences reposNode = prefs.node("recentTargets");
 
             for (String key : reposNode.keys()) {
                 String item = reposNode.get(key, null);
-                if (item != null)
+                if (item != null) {
                     result.add(item);
+                }
             }
 
             return result;
         }
         catch (BackingStoreException ex) {
             logger.error(null, ex);
-            return new LinkedList<String>();
+            return new LinkedList<>();
         }
     }
     
@@ -136,8 +139,9 @@ public class DocumentorPreferences {
         try {
             Preferences reposNode = prefs.node("recentTargets");
 
-            for (String key : reposNode.keys())
+            for (String key : reposNode.keys()) {
                 reposNode.remove(key);
+            }
             
             for (int i = 0; i < list.size(); i++) {
                 reposNode.put(Integer.toString(i), list.get(i));
@@ -160,8 +164,9 @@ public class DocumentorPreferences {
         if (path != null) {
             
             File f = new File(path);
-            if (f.exists() && f.canExecute())
+            if (f.exists() && f.canExecute()) {
                 return true;
+            }
         }
         
         return false;
@@ -173,35 +178,41 @@ public class DocumentorPreferences {
         if (path != null) {
             
             File f = new File(path);
-            if (f.exists() && f.canExecute())
+            if (f.exists() && f.canExecute()) {
                 return true;
+            }
         }
         
         return false;
     }
     
     public boolean exportToHTML() {
-        if (cmdLine != null)
+        if (cmdLine != null) {
             return cmdLine.hasOption("html") && 
                    cmdLine.hasOption("target") &&
                    cmdLine.hasOption("root");
-        else
+        }
+        else {
             return false;
+        }
     }
     
     public boolean exportToCHM() {
-        if (cmdLine != null)
+        if (cmdLine != null) {
             return cmdLine.hasOption("chm") && 
                    cmdLine.hasOption("target") &&
                    cmdLine.hasOption("root");
-        else
+        }
+        else {
             return false;
+        }
     }
     
     public File getInitialRoot() {
         if (cmdLine != null) {
-            if (cmdLine.hasOption("root"))
+            if (cmdLine.hasOption("root")) {
                 return new File(cmdLine.getOptionValue("root"));
+            }
         }
         
         return null;
@@ -209,10 +220,23 @@ public class DocumentorPreferences {
     
     public File getExportTarget() {
         if (cmdLine != null) {
-            if (cmdLine.hasOption("target"))
-                return new File(cmdLine.getOptionValue("target"));           
+            if (cmdLine.hasOption("target")) {
+                return new File(cmdLine.getOptionValue("target"));
+            }           
         }
         
         return null;
+    }
+
+    public boolean isSpellCheckingEnabled() {
+        return prefs.getBoolean("spellchecking", true);
+    }
+    
+    public void setSpellChecking(boolean enabled) {
+        prefs.putBoolean("spellchecking", enabled);
+    }
+    
+    public void toggleSpellChecking() {
+        setSpellChecking(!isSpellCheckingEnabled());
     }
 }

@@ -4,12 +4,15 @@ import com.google.common.base.Function;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
 import hu.distributeddocumentor.utils.XmlUtils;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 
 public class MethodDoc extends DocItem {
 
+    private static final Logger log = LoggerFactory.getLogger(MethodDoc.class);
+    
     private final String name;
     private final ClassDoc parent;
 
@@ -39,13 +42,17 @@ public class MethodDoc extends DocItem {
     }
 
     public void renderDetails(WikiWriter writer, int headingLevel) throws IOException {
-        
+                        
         writer.heading(headingLevel, name);
         writer.newParagraph();
         
         StringBuilder code = new StringBuilder();
                         
         Element elem = getElem();
+        
+        //log.debug("Generating documentation for method " + name + " from the following element:");
+        //XmlUtils.dumpElement(log, elem);
+        
         Element returnsElem = XmlUtils.getSingleElement(elem, "reflection/returns");
         
         if (returnsElem != null) {
@@ -58,28 +65,27 @@ public class MethodDoc extends DocItem {
         code.append(name);
         code.append("(");
         
-        NodeList parameters = XmlUtils.getElements(elem, "reflection/parameters/parameter");
-        if (parameters != null) {
-            for (int i = 0; i < parameters.getLength(); i++) {
-                
-                if (i > 0) {
-                    code.append(", ");
-                }                
-                
-                Element param = (Element)parameters.item(i);
-                
-                if (XmlUtils.isAttributeTrue(param, "is-in")) {
-                    code.append("in ");
-                }
-                if (XmlUtils.isAttributeTrue(param, "is-out")) {
-                    code.append("out ");
-                }
-                
-                renderType(param, code, getParent().getParent().getAsPrefix());
-                code.append(" ");        
-                code.append(param.getAttribute("name"));
+        Element[] parameters = XmlUtils.getElements(elem, "reflection/parameters/parameter");
+        
+        for (int i = 0; i < parameters.length; i++) {
+
+            if (i > 0) {
+                code.append(", ");
+            }                
+
+            Element param = parameters[i];
+
+            if (XmlUtils.isAttributeTrue(param, "is-in")) {
+                code.append("in ");
             }
-        }
+            if (XmlUtils.isAttributeTrue(param, "is-out")) {
+                code.append("out ");
+            }
+
+            renderType(param, code, getParent().getParent().getAsPrefix());
+            code.append(" ");        
+            code.append(param.getAttribute("name"));
+        }        
         
         code.append(")");
         
@@ -91,7 +97,19 @@ public class MethodDoc extends DocItem {
             renderDocElem(writer, summaryElem);
         }
 
-        // TODO: parameter doc
+        Element[] paramDocElems = XmlUtils.getElements(elem, "param");
+        if (paramDocElems.length > 0) {
+            
+            writer.text("The parameters have the following meaning:");
+            writer.newParagraph();
+            for (Element paramDoc : paramDocElems) {
+                writer.beginBullet(1);
+                writer.bold(paramDoc.getAttribute("name"));
+                writer.text(": ");
+                renderDocElem(writer, paramDoc);
+                writer.text("\n");
+            }        
+        }
         
         renderContract(writer, elem);
 
@@ -101,13 +119,12 @@ public class MethodDoc extends DocItem {
             renderDocElem(writer, remarksElem);
         }
 
-        NodeList seeAlsoElems = XmlUtils.getElements(elem, "seealso");
-        if (seeAlsoElems.getLength() > 0) {
+        Element[] seeAlsoElems = XmlUtils.getElements(elem, "seealso");
+        if (seeAlsoElems.length > 0) {
             writer.heading(headingLevel + 1, "See also");
 
-            for (int i = 0; i < seeAlsoElems.getLength(); i++) {
-                Element seeAlsoElem = (Element)seeAlsoElems.item(i);
-
+            for (Element seeAlsoElem : seeAlsoElems) {
+                
                 writer.beginBullet(1);
                 writeReference(writer, seeAlsoElem.getAttribute("cref"));
                 writer.text("\n");
