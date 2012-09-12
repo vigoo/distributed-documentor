@@ -18,16 +18,37 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+/**
+ * Table of Contents for the documentation with two special nodes
+ * 
+ * <p>
+ * The special nodes are 'Unorganized' and 'Recycle bin'. Newly created pages
+ * are put by default to the unorganized node, from where it can be moved to
+ * any other location of the TOC. Pages which have content but not referenced
+ * anymore are put to the recycle bin.
+ * 
+ * <p>
+ * The TOC consists of a tree of {@link TOCNode} nodes.
+ * <p>
+ * It is also observable through the {@link TreeModelListener} interface.
+ * 
+ * @author Daniel Vigovszky
+ * @see TOCNode
+ */
 public class TOC {
     
     private final TOCNode root;
     private final TOCNode unorganized;
     private final TOCNode recycleBin;    
     
-    private final List<TreeModelListener> listeners = new LinkedList<TreeModelListener>();
+    private final List<TreeModelListener> listeners = new LinkedList<>();
     
     private boolean modified;
             
+    /**
+     * Creates a new, empty TOC
+     * 
+     */
     public TOC() {
         root = new TOCNode("Root");
         
@@ -38,24 +59,60 @@ public class TOC {
         root.addToEnd(recycleBin);
     }
 
+    /**
+     * Gets the root node
+     * 
+     * @return the root node. It is never null.
+     */
     public TOCNode getRoot() {
         return root;
     }
 
+    /**
+     * Gets the special 'Unorganized' node
+     * 
+     * @return a node, never null.
+     */
     public TOCNode getUnorganized() {
         return unorganized;
     }      
     
+    /**
+     * Gets the special 'Recycle bin' node
+     * 
+     * @return a node, never null.
+     */
     public TOCNode getRecycleBin() {
         return recycleBin;
     }
     
     
-    void saveIfModified(File targetDirectory) throws FileNotFoundException, TransformerConfigurationException, TransformerException {
-        if (modified)
+    /**
+     * Saves the TOC if it has been modified
+     * 
+     * @param targetDirectory target directory where the TOC's XML representation should be put
+     * @throws FileNotFoundException
+     * @throws TransformerConfigurationException
+     * @throws TransformerException 
+     */
+    public void saveIfModified(File targetDirectory) throws FileNotFoundException, TransformerConfigurationException, TransformerException {
+        if (modified) {
             save(targetDirectory);
+        }
     }
     
+    /**
+     * Saves the TOC
+     * 
+     * <p>
+     * The implementation currently uses an XML representation for the TOC in a 
+     * single file.
+     * 
+     * @param targetDirectory target directory where the TOC's XML representation will be put
+     * @throws FileNotFoundException
+     * @throws TransformerConfigurationException
+     * @throws TransformerException
+     */
     public void save(File targetDirectory) throws FileNotFoundException, TransformerConfigurationException, TransformerException {
         
         File target = new File(targetDirectory, "toc.xml");
@@ -90,6 +147,16 @@ public class TOC {
         modified = false;
     }
 
+    /**
+     * Loads the TOC from its XML representation
+     * 
+     * @param sourceDirectory the directory where the TOC file was saved
+     * @param documentation documentation the TOC belongs to, used to resolve page references
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws ClassNotFoundException
+     */
     public void load(File sourceDirectory, Documentation documentation) throws SAXException, IOException, ParserConfigurationException, ClassNotFoundException {
         
         File source = new File(sourceDirectory, "toc.xml");
@@ -111,6 +178,12 @@ public class TOC {
         modified = false;
     }
 
+    /**
+     * Adds a new node to the end of a parent node's child list
+     * 
+     * @param parent the parent node to modify
+     * @param child the new child node to be added
+     */
     public void addToEnd(TOCNode parent, TOCNode child) {
         
         if (parent == root) {
@@ -136,22 +209,37 @@ public class TOC {
         
         // Adding items to the recycle bin does not count as a significant
         // modification, as it is not saved within the TOC
-        if (parent != recycleBin)
+        if (parent != recycleBin) {
             modified = true;
+        }
     }
     
+    /**
+     * Adds a new child node before an other node to the same parent
+     * 
+     * @param existingNode the node which will follow the new node
+     * @param newChild the new child to be added
+     */
     public void addBefore(TOCNode existingNode, TOCNode newChild) {
         
         TOCNode parent = existingNode.getParent();
         
-        if (existingNode == recycleBin)
-            parent.addBefore(unorganized, newChild); // keeping the two special nodes at the end
-        else
+        if (existingNode == recycleBin) {
+            parent.addBefore(unorganized, newChild);
+        } // keeping the two special nodes at the end
+        else {
             parent.addBefore(existingNode, newChild);
+        }
         
         notifyInsert(parent, newChild);        
     }
 
+    /**
+     * Adds a new node after an existing node to the same parent
+     * 
+     * @param existingNode the existing node which will be followed by the new one
+     * @param newChild the new child node to be added
+     */
     public void addAfter(TOCNode existingNode, TOCNode newChild) {
         
         // keeping the two special nodes at the end
@@ -169,6 +257,11 @@ public class TOC {
     }
 
     
+    /**
+     * Removes a node from the tree
+     * 
+     * @param node the node to be removed
+     */
     public void remove(TOCNode node) {
         
         TOCNode parent = node.getParent();
@@ -187,10 +280,16 @@ public class TOC {
         
         // Removing nodes from recycle bin does not count 
         // as a modification to be saved
-        if (parent != recycleBin)
+        if (parent != recycleBin) {
             modified = true;
+        }
     }
     
+    /**
+     * Removes the node which refers to the given page
+     * 
+     * @param page the page to look for
+     */
     public void remove(Page page) {
         TOCNode node = root.findReferenceTo(page);
         
@@ -199,14 +298,30 @@ public class TOC {
         }        
     }
 
+    /**
+     * Adds a tree model listener
+     * 
+     * @param tl listener to be added
+     */
     public void addTreeModelListener(TreeModelListener tl) {
         listeners.add(tl);
     }
     
+    /**
+     * Removes a tree model listener
+     * 
+     * @param tl listener to be removed
+     */
     public void removeTreeModelListener(TreeModelListener tl) {
         listeners.remove(tl);
     }
 
+    /**
+     * Changes the title of a node in the TOC
+     * 
+     * @param node the node to be changed
+     * @param title the new title of the node
+     */
     public void changeNodeTitle(TOCNode node, String title) {
         
         if (node != root &&
@@ -234,6 +349,12 @@ public class TOC {
         
     }
     
+    /**
+     * Change the target page a node refers to
+     * 
+     * @param node the node to be changed
+     * @param target the new target page
+     */
     public void changeNodeTarget(TOCNode node, Page target) {
         
         if (node != root &&
@@ -260,6 +381,13 @@ public class TOC {
         }
     }
     
+    /**
+     * Converts a node to a 'virtual root' for a documentation hierarchy builder
+     * 
+     * @param node the node to be converted
+     * @param hierarchyBuilder the hierarchy builder class to be used
+     * @param relativeSource source path for the hierarchy builder
+     */
     public void convertToVirtualRoot(TOCNode node, Class hierarchyBuilder, String relativeSource) {
         if (node != root &&
             node != unorganized &&
@@ -287,6 +415,16 @@ public class TOC {
         }
     }
 
+    /**
+     * Moves one node up in the tree
+     * 
+     * <p>
+     * If there are other nodes in the same level before the node,
+     * it just moves within the same parent. Otherwise it is moved
+     * to the parent level.
+     * 
+     * @param node the node to be moved
+     */
     public void moveUp(TOCNode node) {
         
         if (node != root &&
@@ -306,14 +444,25 @@ public class TOC {
             } else if (idx > 0 || parent != root) {
                 
                 remove(node);                
-                if (parent.getChildren().size() >= idx)
+                if (parent.getChildren().size() >= idx) {
                     addBefore(parent.getChildren().get(idx-1), node);
-                else
+                }
+                else {
                     addBefore(parent.getChildren().get(parent.getChildren().size()-1), node);
+                }
             }
         }        
     }    
     
+    /**
+     * Moves one node down in the tree
+     * 
+     * <p>
+     * If there are more child nodes on the same level after the given node,
+     * it is just moved on the same level. Otherwise moved to the parent level.
+     * 
+     * @param node the node to be moved
+     */
     public void moveDown(TOCNode node) {
         
         if (node != root &&
@@ -333,14 +482,21 @@ public class TOC {
 
             } else {             
                 
-                if (idx > 0)
+                if (idx > 0) {
                     addAfter(parent.getChildren().get(idx), node);
-                else
+                }
+                else {
                     addAfter(parent.getChildren().get(0), node);
+                }
             }            
         }
     }
     
+    /**
+     * Moves one node left (to the parent level)
+     * 
+     * @param node the node to be moved
+     */
     public void moveLeft(TOCNode node) {
      
         if (node != root &&
@@ -359,6 +515,11 @@ public class TOC {
         }
     }
     
+    /**
+     * Moves a node right (to become a child of the node above it)
+     * 
+     * @param node the node to be moved
+     */
     public void moveRight(TOCNode node) {
         
         if (node != root &&
@@ -382,6 +543,9 @@ public class TOC {
         }
     }
 
+    /**
+     * Clears the TOC
+     */
     public void clear() {
         
         root.clearChildren();
@@ -394,8 +558,12 @@ public class TOC {
         modified = false;
     }
 
+    /**
+     * Get a collection of all the referenced page's unique identifiers
+     * @return a collection of string page identifiers
+     */
     public Collection<String> getReferencedPages() {
-        Set<String> pages = new HashSet<String>();
+        Set<String> pages = new HashSet<>();
         
         for (TOCNode child : root.getChildren()) {
             if (child != unorganized &&

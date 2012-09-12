@@ -1,8 +1,7 @@
 package hu.distributeddocumentor.model;
 
-import hu.distributeddocumentor.model.builders.PageRefExtractor;
-import hu.distributeddocumentor.model.builders.LinkFixingBuilder;
 import hu.distributeddocumentor.model.builders.ExtendedHtmlDocumentBuilder;
+import hu.distributeddocumentor.model.builders.PageRefExtractor;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -13,6 +12,22 @@ import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder;
 import org.eclipse.mylyn.wikitext.core.parser.markup.MarkupLanguage;
 import org.eclipse.mylyn.wikitext.core.util.ServiceLocator;
 
+/**
+ * One page of the documentation, represented in a markup language which can 
+ * be converted to HTML.
+ * 
+ * <p>
+ * The pages can refer to each other, can include snippets and can be referenced
+ * from the TOC. Every page has an unique string identifier which can be used
+ * in the markup languages to link to other pages.
+ * <p>
+ * Every page has an assigned set of metadata as well.
+ * 
+ * @author Daniel Vigovszky
+ * @see Snippet
+ * @see TOC
+ * @see PageMetadata
+ */
 public class Page extends Observable {
     
     private final static String TEMPLATE = "= Title =\n\nBody\n";
@@ -35,6 +50,12 @@ public class Page extends Observable {
     
     private boolean hasChanged;
     
+    /**
+     * Creates a new page object
+     * 
+     * @param id the page's unique identifier
+     * @param snippets snippet collection to be used when resolving snippet references
+     */
     public Page(String id, SnippetCollection snippets) {
         this.id = id;
         this.snippets = snippets;
@@ -50,6 +71,14 @@ public class Page extends Observable {
         refs = refExtractor.getReferencedPages(markup);
     }
     
+    /**
+     * Loads a page object from the file system
+     * 
+     * @param source the file storing the page's markup
+     * @param snippets the snippet collection to be used to resolve snippet references
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public Page(File source, SnippetCollection snippets) throws FileNotFoundException, IOException {
         
         this.snippets = snippets;        
@@ -63,8 +92,8 @@ public class Page extends Observable {
         metadata.load(source.getParentFile());
         
         final FileInputStream stream = new FileInputStream(source);
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        try {        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {     
+            
             String line;
             StringBuilder builder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
@@ -77,9 +106,7 @@ public class Page extends Observable {
             initializeParser();
             refs = refExtractor.getReferencedPages(markup);
         }
-        finally {
-            reader.close();
-            
+        finally {            
             hasChanged = false;
         }
     }
@@ -88,6 +115,16 @@ public class Page extends Observable {
         return new File(targetDirectory, id + "." + markupLanguage);
     }
     
+    /**
+     * Gets the files used to store this page and all its related data
+     * 
+     * <p>
+     * This method can be used to determine what files must be added to the repository
+     * after the page has been saved.
+     * 
+     * @param targetDirectory the directory to be used when creating the paths
+     * @return returns a list of file names belonging to the given targetDirectory
+     */
     public File[] getFiles(File targetDirectory) {
         
         File[] files = new File[2];
@@ -97,18 +134,22 @@ public class Page extends Observable {
         
     }
     
+    /**
+     * Saves the page and all its metadata to the given target directory
+     * 
+     * @param targetDirectory the target directory to be used
+     * @return returns a list of file names belonging to the given targetDirectory 
+     *         which were created by this method.
+     * @throws IOException
+     */
     public File[] save(File targetDirectory) throws IOException {
         
         File[] targets = getFiles(targetDirectory);
         
-        PrintWriter fwriter = new PrintWriter(new FileWriter(targets[0]));
-        try {
-            fwriter.print(markup);
+        try (PrintWriter fwriter = new PrintWriter(new FileWriter(targets[0]))) {
             
+            fwriter.print(markup);            
             hasChanged = false;
-        }
-        finally {
-            fwriter.close();
         }      
         
         metadata.save(targetDirectory);
@@ -116,23 +157,45 @@ public class Page extends Observable {
         return targets;
     }
 
+    /**
+     * Gets the unique identifier of the page
+     * 
+     * @return the page identifier
+     */
     public String getId() {
         return id;
     }    
     
+    /**
+     * Gets the associated metadata for this page
+     
+     * @return the metadata of the page (such as its status, etc.)
+     * @see PageMetadata
+     */
     public PageMetadata getMetadata() {
         return metadata;
     }
 
+    /**
+     * Gets the page markup 
+     * 
+     * @return the page's source in its selected markup language
+     */
     public String getMarkup() {
         return markup;
     }
 
+    /**
+     * Sets the page markup and process it immediately
+     * 
+     * @param markup the page's source in its selected markup language
+     */
     public void setMarkup(String markup) {
         this.markup = markup;
               
-        if (!isParserInitialized)
+        if (!isParserInitialized) {
             initializeParser();
+        }
         
         refs = refExtractor.getReferencedPages(preprocessMarkup(markup));
         
@@ -142,10 +205,26 @@ public class Page extends Observable {
         hasChanged = true;
     }
 
+    /**
+     * Gets the markup language used by this page
+     * 
+     * <p>
+     * Currently only MediaWiki is supported!
+     * 
+     * @return the markup language
+     */
     public String getMarkupLanguage() {
         return markupLanguage;
     }
 
+    /**
+     * Sets the markup language used by this page
+     * 
+     * <p>
+     * Currently only MediaWiki is supported!
+     * 
+     * @param markupLanguage the markup language to be used by this page
+     */
     public void setMarkupLanguage(String markupLanguage) {
         this.markupLanguage = markupLanguage;
         
@@ -157,28 +236,71 @@ public class Page extends Observable {
         hasChanged = true;        
     }
     
+    /**
+     * Gets the page's contents in HTML
+     * 
+     * <p>
+     * The HTML will contain external references to the documentation's CSS 
+     * file. Use asHTMLembeddingCSS method to make the stylesheet inline.
+     * 
+     * @return returns the page markup converted to HTML
+     */
     public String asHTML() {
         
         return asHTML(false, null, false);
     }
     
+    /**
+     * Gets the page's contents in HTML with the stylesheet embedded into it.
+     * 
+     * <p>
+     * This is useful for preview rendering, where the HTML and its CSS file
+     * is not required to be saved to the file system.
+     * <p>
+     * Use asAnnotatedHTMLembeddingCSS method to get anchor points which can
+     * be used to synchronize the preview with the editor!
+     * 
+     * @return returns the page markup converted to HTML
+     */
     public String asHTMLembeddingCSS() {
         
         return asHTML(true, null, false);
     }
     
+    /**
+     * Gets the page's contents in HTML with the stylesheet embedded into it,
+     * having annotations in the code which connect the generated HTML with 
+     * its original markup.
+     * 
+     * @return returns the page markup converted to HTML
+     */
     public String asAnnotatedHTMLembeddingCSS() {
         return asHTML(true, null, true);
     }
     
+    /**
+     * Gets the page's contents in HTML with the stylesheet embedded into it.
+     * 
+     * <p>
+     * This is useful for preview rendering, where the HTML and its CSS file
+     * is not required to be saved to the file system.
+     * <p>
+     * Use asAnnotatedHTMLembeddingCSS method to get anchor points which can
+     * be used to synchronize the preview with the editor!
+     * 
+     * @param root the root directory to be added to relative links in the generated
+     *        HTML source
+     * @return returns the page markup converted to HTML
+     */
     public String asHTMLembeddingCSS(File root) {
         
         return asHTML(true, root, false);
     }
     
     private String asHTML(boolean embedCSS, File root, boolean annotated) {
-       if (!isParserInitialized)
-           initializeParser();
+       if (!isParserInitialized) {
+            initializeParser();
+        }
        
        StringWriter writer = new StringWriter();
        
@@ -202,16 +324,32 @@ public class Page extends Observable {
        return fixed;
     }
     
+    /**
+     * Gets the list of referenced pages
+     * 
+     * @return identifies of every page referenced in the markup
+     */
     public List<String> getReferencedPages() {
         return Collections.unmodifiableList(refs);
     }    
     
     
+    /**
+     * Checks if the page has reference to a given snippet
+     * 
+     * @param snippet the examined snippet
+     * @return true if the page's markup references this particular snippet
+     * @see Snippet
+     */
     public boolean referencesSnippet(Snippet snippet) {
         
         return snippetRefs.contains(snippet.getId());
     }
 
+    /**
+     * Indicates that the page has been changed and attached views must be
+     * refreshed.
+     */
     public void refresh() {
         hasChanged = true;
         
@@ -219,6 +357,14 @@ public class Page extends Observable {
         notifyObservers();
     }
     
+    /**
+     * Saves the page and its metadata to the file system but only if
+     * they have changed.
+     * 
+     * @param root target directory to be used
+     * @return returns true if the files have been modified
+     * @throws IOException
+     */
     public boolean saveIfModified(File root) throws IOException {
         
         if (hasChanged || metadata.hasChanged()) {
@@ -246,10 +392,12 @@ public class Page extends Observable {
 
     private String fixMarkupLanguage(String substring) {
         
-        if (substring.equalsIgnoreCase("mediawiki"))
+        if (substring.equalsIgnoreCase("mediawiki")) {
             return "MediaWiki";
-        else
+        }
+        else {
             return substring;
+        }
         
     }
     
@@ -263,7 +411,7 @@ public class Page extends Observable {
             mayHaveSnippetRefs = false;
                         
             List<String> lines = Arrays.asList(markup.split("\n"));
-            List<String> resultLines = new LinkedList<String>();
+            List<String> resultLines = new LinkedList<>();
 
             for (String line : lines) {
 
@@ -308,14 +456,18 @@ public class Page extends Observable {
                 for (ipoint = 0; ipoint < line.length(); ipoint++) {                    
                     char ch = line.charAt(ipoint);
                     
-                    if (ch == '[')
+                    if (ch == '[') {
                         linkContext++;
-                    else if (ch == '<')
+                    }
+                    else if (ch == '<') {
                         tagContext++;
-                    else if (ch == ']')
+                    }
+                    else if (ch == ']') {
                         linkContext--;
-                    else if (ch == '>')
+                    }
+                    else if (ch == '>') {
                         tagContext--;
+                    }
                     else if (linkContext == 0 && tagContext == 0 && Character.isLetterOrDigit(ch)) {
                         found = true;
                         break;
