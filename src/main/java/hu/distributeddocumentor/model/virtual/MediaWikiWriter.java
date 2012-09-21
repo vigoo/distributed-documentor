@@ -5,7 +5,11 @@ import java.io.Writer;
 import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 
-
+/**
+ * WikiWriter implementation for MediaWiki syntax
+ * 
+ * @author Daniel Vigovszky
+ */
 public class MediaWikiWriter implements WikiWriter {
     
     private final Writer writer;

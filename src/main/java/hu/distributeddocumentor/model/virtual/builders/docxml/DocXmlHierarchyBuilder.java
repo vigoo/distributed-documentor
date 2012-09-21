@@ -23,7 +23,21 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-
+/**
+ * Virtual hierarchy builder implementation ({@link VirtualHierarchyBuilder}) 
+ * for .NET documentation XML files. 
+ * 
+ * <p>
+ * This builder creates reference manual from one doc-xml file.
+ * <p>
+ * As the doc-xml does not contain reflection information like paramter types
+ * etc., it first has to be <i>extended</i> with the <b>DocXmlExtender</b> 
+ * command line tool.
+ * <p>
+ * The builder also supports <i>code contract</i> information.
+ * 
+ * @author Daniel Vigovszky
+ */
 public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     
     private static final Logger log = LoggerFactory.getLogger(DocXmlHierarchyBuilder.class);

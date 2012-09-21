@@ -9,6 +9,15 @@ import java.util.Set;
 import org.eclipse.mylyn.wikitext.core.parser.Attributes;
 
 
+/**
+ * Extends the HTML document builder with syntax highlighting support.
+ * 
+ * <p>
+ * The syntax highlight is implemented using the SyntaxHighlighter javascript
+ * library: http://alexgorbatchev.com/SyntaxHighlighter/
+ * 
+ * @author Daniel Vigovszky
+ */
 public class ExtendedHtmlDocumentBuilder extends LinkFixingBuilder {
 
     private Set<String> usedSyntaxes = new HashSet<>();
@@ -79,6 +88,14 @@ public class ExtendedHtmlDocumentBuilder extends LinkFixingBuilder {
         syntaxMap.put("fsharp", "FSharp");
     }
     
+    /**
+     * Constructs the HTML builder
+     * 
+     * @param out the writer to be used to generate the HTML output
+     * @param root root directory for the documentation's html output, 
+     *             used to refer to scripts and stylesheets of the
+     *             syntax highlighter
+     */
     public ExtendedHtmlDocumentBuilder(Writer out, File root) {
         super(out, root);
     }
