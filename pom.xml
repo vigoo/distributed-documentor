@@ -183,7 +183,7 @@
         <dependency>
             <groupId>com.aragost.javahg</groupId>
             <artifactId>javahg</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>0.4</version>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
@@ -208,12 +208,12 @@
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>mylyn.wikitext.core</artifactId>
-            <version>1.7.0.I20120520-1802</version>
+            <version>1.8.0.i20120920-2001</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>mylyn.wikitext.mediawiki.core</artifactId>
-            <version>1.7.0.I20120520-1802</version>
+            <version>1.8.0.i20120920-2001</version>
         </dependency>    
         <dependency>
             <groupId>org.netbeans.external</groupId>
