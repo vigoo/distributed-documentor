@@ -1,6 +1,8 @@
-package hu.distributeddocumentor.exporters;
+package hu.distributeddocumentor.exporters.chm;
 
 import com.google.common.io.Files;
+import hu.distributeddocumentor.exporters.Exporter;
+import hu.distributeddocumentor.exporters.HTMLBasedExporter;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOC;
@@ -17,25 +19,22 @@ import org.apache.commons.lang3.StringUtils;
 
 public class CHMExporter extends HTMLBasedExporter implements Exporter {
     
-    private final DocumentorPreferences prefs;    
-    private final Documentation doc;    
-    private final Set<String> contentFiles = new HashSet<String>();
+    private final DocumentorPreferences prefs;
+    private final Set<String> contentFiles = new HashSet<>();
 
-    public CHMExporter(DocumentorPreferences prefs, Documentation doc, File targetDir) {
-        
-        super(targetDir);
-        
-        this.prefs = prefs;
-        this.doc = doc;        
+    public CHMExporter(DocumentorPreferences prefs) {
+        this.prefs = prefs;   
     }
 
     @Override
-    public void export() throws FileNotFoundException, IOException {
+    public void export(Documentation doc, File targetDir) throws FileNotFoundException, IOException {
         
         // Creating the target directory if necessary
-        if (!targetDir.exists())
-            if (!targetDir.mkdirs())
-                throw new RuntimeException("Failed to create target directory!");                   
+        if (!targetDir.exists()) {
+            if (!targetDir.mkdirs()) {
+                throw new RuntimeException("Failed to create target directory!");
+            }
+        }                   
         
         // Exporting the CSS file
         extractResource("/documentation.css", "documentation.css", targetDir);
@@ -47,15 +46,17 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         
         for (TOCNode node : toc.getRoot().getChildren()) {
             if (node != toc.getRecycleBin()) {                
-                exportReferencedPages(repoRoot, node);
+                exportReferencedPages(repoRoot, targetDir, node);
             }
         }
         
         // Exporting the images
         File mediaDir = new File(targetDir, "media");
-        if (!mediaDir.exists())
-            if (!mediaDir.mkdir())
+        if (!mediaDir.exists()) {
+            if (!mediaDir.mkdir()) {
                 throw new RuntimeException("Failed to create media directory!");
+            }
+        }
         
         for (String image : doc.getImages().getImages()) {
             Files.copy(new File(doc.getImages().getMediaRoot(), image), 
@@ -68,7 +69,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         createHHC(new File(targetDir, "toc.hhc"), toc);
 
         // Creating HHP file
-        createHHP();
+        createHHP(targetDir);
         
         // Executing HTML help compiler
         if (prefs.hasValidCHMCompilerPath()) {        
@@ -80,22 +81,21 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
     }
     
     @Override
-    protected File exportPage(Page page) throws FileNotFoundException {
-        File target = super.exportPage(page);
+    protected File exportPage(Page page, File targetDir) throws FileNotFoundException {
+        File target = super.exportPage(page, targetDir);
         
         contentFiles.add(target.getName());
         
         return target;
     }
 
-    private void createHHP() throws FileNotFoundException {
+    private void createHHP(File targetDir) throws FileNotFoundException {
         
         File hhp = new File(targetDir, "project.hhp");
-        PrintWriter out = new PrintWriter(hhp);
         
         // http://chmspec.nongnu.org/latest/INI.html#HHP
         
-        try {
+        try (PrintWriter out = new PrintWriter(hhp)) {
             out.println("[OPTIONS]");
             //out.println("Binary TOC=No");
             //out.println("Binary Index=No");
@@ -123,20 +123,17 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             //out.println();
             
             out.println("[FILES]");
-            for (String s : contentFiles)
+            for (String s : contentFiles) {
                 out.println(s);
-        }
-        finally {
-            out.close();
+            }
         }
     }
 
     private void createHHC(File file, TOC toc) throws FileNotFoundException {
-        PrintWriter out = new PrintWriter(file);
         
         // http://www.nongnu.org/chmspec/latest/Sitemap.html
         
-        try {
+        try (PrintWriter out = new PrintWriter(file)) {
             out.println("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">");
             out.println("<HTML>");
             out.println("<OBJECT type=\"text/site properties\">");
@@ -155,9 +152,6 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             out.println("</UL>");
             out.println("</HTML>");
         }
-        finally {
-            out.close();
-        }
     }
 
     private void exportTOCNode(TOCNode node, PrintWriter out, int indent) {        
@@ -166,8 +160,9 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         out.println(i + "<LI><OBJECT type=\"text/sitemap\">");
         out.println(i + "    <param name=\"Name\" value=\"" + node.getTitle() + "\">");
         
-        if (node.getTarget() != null)
+        if (node.getTarget() != null) {
             out.println(i + "    <param name=\"Local\" value=\"" + node.getTarget().getId() + ".html\">");
+        }
         out.println(i + "</OBJECT>");                
         
         if (node.getChildren().size() > 0) {

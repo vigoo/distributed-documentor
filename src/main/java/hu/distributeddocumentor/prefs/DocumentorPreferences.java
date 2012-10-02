@@ -1,5 +1,10 @@
 package hu.distributeddocumentor.prefs;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import hu.distributeddocumentor.exporters.chm.CHMExporterModule;
+import hu.distributeddocumentor.exporters.html.HTMLExporterModule;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,6 +25,8 @@ public class DocumentorPreferences {
     private final Option exportHTMLOption;
     private final Option exportCHMOption;
     private final CommandLine cmdLine;
+    
+    private final Injector injector;
     
     public DocumentorPreferences(String[] args) {
         
@@ -54,8 +61,23 @@ public class DocumentorPreferences {
         }
         
         cmdLine = line;
+        
+        injector = Guice.createInjector(
+                new HTMLExporterModule(),
+                new CHMExporterModule(),
+                new AbstractModule() {
+
+                    @Override
+                    protected void configure() {
+                        bind(DocumentorPreferences.class).toInstance(DocumentorPreferences.this);
+                    }                    
+                });        
     }
-       
+
+    public Injector getInjector() {
+        return injector;
+    }    
+    
     public String getMercurialPath() {        
         return prefs.get("hgpath", null);
     }
@@ -89,7 +111,7 @@ public class DocumentorPreferences {
         }
         catch (BackingStoreException ex) {
             logger.error(null, ex);
-            return new LinkedList<String>();
+            return new LinkedList<>();
         }
     }
     

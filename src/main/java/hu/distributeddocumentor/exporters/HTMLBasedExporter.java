@@ -9,37 +9,35 @@ import java.util.Map;
 
 public class HTMLBasedExporter {
     
-    protected final File targetDir;
     protected final Map<TOCNode, TOCNode> realNodes;                    
 
-    public HTMLBasedExporter(File targetDir) {
-        this.targetDir = targetDir;
-        
-        realNodes = new HashMap<TOCNode, TOCNode>();
+    public HTMLBasedExporter() {       
+        realNodes = new HashMap<>();
     }        
 
-    protected void exportReferencedPages(File repositoryRoot, TOCNode node) throws FileNotFoundException {
+    protected void exportReferencedPages(File repositoryRoot, File targetDir, TOCNode node) throws FileNotFoundException {
         
         TOCNode realNode = node.getRealNode(repositoryRoot);        
         realNodes.put(node, realNode);
         
         Page page = realNode.getTarget();
         if (page != null) {
-            exportPage(page);
+            exportPage(page, targetDir);
         }
         
-        for (TOCNode childNode : realNode.getChildren())
-            exportReferencedPages(repositoryRoot, childNode);
+        for (TOCNode childNode : realNode.getChildren()) {
+            exportReferencedPages(repositoryRoot, targetDir, childNode);
+        }
     }
 
-    protected File exportPage(Page page) throws FileNotFoundException {        
+    protected File exportPage(Page page, File targetDir) throws FileNotFoundException {        
         
         File target = new File(targetDir, page.getId()+".html");
         String html = page.asHTML();
         
-        PrintWriter out = new PrintWriter(target);
-        out.print(html);
-        out.close();                
+        try (PrintWriter out = new PrintWriter(target)) {
+            out.print(html);
+        }                
         
         return target;
     }
@@ -48,12 +46,9 @@ public class HTMLBasedExporter {
                                          final String fileName,
                                          final File targetDir)
             throws IOException {
-
-        final InputStream input = HTMLBasedExporter.class.getResourceAsStream(resourceName);
-        try {
+       
+        try (InputStream input = HTMLBasedExporter.class.getResourceAsStream(resourceName)) {
             extract(input, fileName, targetDir);
-        } finally {
-            input.close();
         }       
     }
         
@@ -63,16 +58,12 @@ public class HTMLBasedExporter {
         int read;
         
         File target = new File(targetDir, fileName);
-        FileOutputStream out = new FileOutputStream(target);
         
-        try {
+        try (FileOutputStream out = new FileOutputStream(target)) {
             while ((read = stream.read(buf)) != -1) {
 
                 out.write(buf, 0, read);
             }        
-        }
-        finally {
-            out.close();
         }
     }
 }
