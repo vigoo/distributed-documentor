@@ -9,11 +9,13 @@ import hu.distributeddocumentor.controller.CommandLineExporter;
 import hu.distributeddocumentor.controller.sync.DialogBasedSyncInteraction;
 import hu.distributeddocumentor.controller.sync.MercurialSync;
 import hu.distributeddocumentor.controller.sync.SyncController;
-import hu.distributeddocumentor.exporters.CHMExporter;
 import hu.distributeddocumentor.exporters.Exporter;
-import hu.distributeddocumentor.exporters.HTMLExporter;
+import hu.distributeddocumentor.exporters.chm.CHMExporter;
+import hu.distributeddocumentor.exporters.html.HTMLExporter;
 import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadPageException;
+import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -23,6 +25,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -470,10 +473,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private void saveLayout() {
         PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();
         try {
-            // TODO: better location for this file
-            FileOutputStream output = new FileOutputStream(getWorkspaceFile());
-            delegate.save(output);
-            output.close();        
+            try (FileOutputStream output = new FileOutputStream(getWorkspaceFile())) {
+                delegate.save(output);
+            }        
         } catch (Exception e) {
             // TODO
         }        
@@ -505,10 +507,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             File targetDir = chooser.getSelectedFile();
             String path = targetDir.getAbsolutePath();
          
-            Exporter exporter = new CHMExporter(prefs, doc, targetDir);
+            Exporter exporter = prefs.getInjector().getInstance(CHMExporter.class);
             
             try {
-                exporter.export();
+                exporter.export(doc, targetDir);
             }
             catch (Exception ex) {
                 org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
@@ -541,10 +543,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             File targetDir = chooser.getSelectedFile();
             String path = targetDir.getAbsolutePath();
          
-            Exporter exporter = new HTMLExporter(doc, targetDir);
+            Exporter exporter = prefs.getInjector().getInstance(HTMLExporter.class);
             
             try {
-                exporter.export();
+                exporter.export(doc, targetDir);
             }
             catch (Exception ex) {
                 org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
@@ -569,7 +571,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             SyncController controller = createSyncConrtoller();
             controller.pull();
         }
-        catch (Exception ex) {
+        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException ex) {
             ErrorDialog.show(this, "Failed to download changes", ex);
         }
         finally {
@@ -589,7 +591,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             SyncController controller = createSyncConrtoller();
             controller.push();        
         }
-        catch (Exception ex) {
+        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException ex) {
             ErrorDialog.show(this, "Failed to upload changes", ex);
         }
         finally {
@@ -603,7 +605,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
        
         try {
             Desktop.getDesktop().browse(new URI("http://freezingmoon.dyndns.org/"));
-        } catch (Exception ex) {
+        } catch (URISyntaxException | IOException ex) {
             LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
         }                    
     }//GEN-LAST:event_userManualItemActionPerformed
@@ -639,7 +641,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private void imageManagerItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageManagerItemActionPerformed
         
         if (imageManagerItem.getState()) {
-            twImages.setAvailable(true);;
+            twImages.setAvailable(true);
             twImages.setVisible(true);
             twImages.setActive(true);
         }
@@ -651,7 +653,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private void snippetManagerItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_snippetManagerItemActionPerformed
         
         if (snippetManagerItem.getState()) {
-            twSnippets.setAvailable(true);;
+            twSnippets.setAvailable(true);
             twSnippets.setVisible(true);
             twSnippets.setActive(true);        
         }
@@ -707,10 +709,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         if (workspaceFile.exists()) {        
             PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();
             try {
-                // TODO: better location for this file
-                FileInputStream input = new FileInputStream(workspaceFile);
-                delegate.merge(input, PersistenceDelegate.MergePolicy.RESET);
-                input.close();   
+                try (FileInputStream input = new FileInputStream(workspaceFile)) {
+                    delegate.merge(input, PersistenceDelegate.MergePolicy.RESET);
+                }   
                 
                 tocItem.setState(twTOC.isVisible());
                 imageManagerItem.setState(twImages.isVisible());
@@ -750,13 +751,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
          */
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException ex) {
-            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-        } catch (InstantiationException ex) {
-            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-        } catch (IllegalAccessException ex) {
-            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
         }
         //</editor-fold>

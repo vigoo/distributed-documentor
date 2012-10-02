@@ -1,6 +1,8 @@
-package hu.distributeddocumentor.exporters;
+package hu.distributeddocumentor.exporters.html;
 
 import com.google.common.io.Files;
+import hu.distributeddocumentor.exporters.Exporter;
+import hu.distributeddocumentor.exporters.HTMLBasedExporter;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
@@ -13,38 +15,37 @@ import org.apache.commons.lang3.StringUtils;
 
 public class HTMLExporter extends HTMLBasedExporter implements Exporter {
 
-    private final Documentation doc;
-    private final File repositoryRoot;        
-
-    public HTMLExporter(Documentation doc, File targetDir) {
-        
-        super(targetDir);
-        
-        this.doc = doc;
-        repositoryRoot = new File(doc.getRepositoryRoot());
+    public HTMLExporter() {        
     }
     
     
     @Override
-    public void export() throws FileNotFoundException, IOException {
-        if (!targetDir.exists())
-            if (!targetDir.mkdirs())
+    public void export(Documentation doc, File targetDir) throws FileNotFoundException, IOException {
+        
+        File repositoryRoot = new File(doc.getRepositoryRoot());
+        
+        if (!targetDir.exists()) {
+            if (!targetDir.mkdirs()) {
                 throw new RuntimeException("Failed to create target directory!");
+            }
+        }
         
         // Exporting the pages
         final TOC toc = doc.getTOC();
         
         for (TOCNode node : toc.getRoot().getChildren()) {
             if (node != toc.getRecycleBin()) {
-                exportReferencedPages(repositoryRoot, node);
+                exportReferencedPages(repositoryRoot, targetDir, node);
             }
         }
 
         // Exporting the images
         File mediaDir = new File(targetDir, "media");
-        if (!mediaDir.exists())
-            if (!mediaDir.mkdir())
+        if (!mediaDir.exists()) {
+            if (!mediaDir.mkdir()) {
                 throw new RuntimeException("Failed to create media directory!");
+            }
+        }
         
         for (String image : doc.getImages().getImages()) {
             Files.copy(new File(doc.getImages().getMediaRoot(), image), 
@@ -63,9 +64,11 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         extractResource("/tree/tree_tpl.js", "tree_tpl.js", targetDir);
         
         File iconsDir = new File(targetDir, "icons");
-        if (!iconsDir.exists())
-            if (!iconsDir.mkdir())
+        if (!iconsDir.exists()) {
+            if (!iconsDir.mkdir()) {
                 throw new RuntimeException("Failed to create icons directory!");
+            }
+        }
         
         extractResource("/tree/icons/empty.gif", "empty.gif", iconsDir);
         extractResource("/tree/icons/folder.gif", "folder.gif", iconsDir);
@@ -83,9 +86,11 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         extractResource("/tree/icons/plusbottom.gif", "plusbottom.gif", iconsDir);        
         
         File shDir = new File(targetDir, "syntaxhighlighter");
-        if (!shDir.exists())
-            if (!shDir.mkdir())
+        if (!shDir.exists()) {
+            if (!shDir.mkdir()) {
                 throw new RuntimeException("Failed to create syntaxhighlighter directory!");
+            }
+        }
                 
         extractResource("/syntaxhighlighter/shCore.css", "shCore.css", shDir);
         extractResource("/syntaxhighlighter/shThemeDefault.css", "shThemeDefault.css", shDir);
@@ -120,9 +125,8 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     }
 
     private void createTreeItemsJS(File file, TOC toc) throws FileNotFoundException {
-        PrintWriter out = new PrintWriter(file);
         
-        try {
+        try (PrintWriter out = new PrintWriter(file)) {
             out.println("var TREE_ITEMS = [");
                         
             for (TOCNode node : toc.getRoot().getChildren()) {
@@ -136,9 +140,6 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
             out.println();
             out.println("];");
         }
-        finally {
-            out.close();
-        }
     }
 
     private void exportTOCNode(TOCNode node, PrintWriter out, int indent, boolean isFirst) {
@@ -147,10 +148,12 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         
         String i = StringUtils.repeat(" ", indent);
         
-        if (isFirst)
+        if (isFirst) {
             out.println();
-        else
+        }
+        else {
             out.println(",");
+        }
 
         out.print(i+"['"+fixTitle(realNode.getTitle())+"'");
         if (realNode.hasTarget()) {            
