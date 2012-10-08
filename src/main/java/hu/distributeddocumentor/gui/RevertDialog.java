@@ -3,14 +3,35 @@ package hu.distributeddocumentor.gui;
 import hu.distributeddocumentor.controller.CommittableItem;
 import hu.distributeddocumentor.controller.CommittableItemsModel;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadPageException;
+import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JOptionPane;
 
 public class RevertDialog extends javax.swing.JDialog {
+    
+     /**
+     * A return status code - returned if Cancel button has been pressed
+     */
+    public static final int RET_CANCEL = 0;
+    /**
+     * A return status code - returned if OK button has been pressed
+     */
+    public static final int RET_OK = 1;
+    
     private final Documentation doc;
     private final CommittableItemsModel revertableItems;
     private final PageEditorHost host;
+    private int returnStatus = RET_CANCEL;
+
+    /**
+     * Gets the dialog's return status 
+     * @return RET_OK or RET_CANCEL
+     */
+    public int getReturnStatus() {
+        return returnStatus;
+    }        
     
     /**
      * Creates new form RevertDialog
@@ -109,7 +130,7 @@ public class RevertDialog extends javax.swing.JDialog {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 
-        List<String> selectedItems = new LinkedList<String>();
+        List<String> selectedItems = new LinkedList<>();
         
         for (Object obj : revertableItemList.getCheckBoxListSelectedValues()) {
             
@@ -121,16 +142,18 @@ public class RevertDialog extends javax.swing.JDialog {
             doc.revertChanges(selectedItems);            
             host.documentationReloaded();
         }
-        catch (Exception ex) {
+        catch (FailedToLoadPageException | FailedToLoadTOCException ex) {
             org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
                 
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Revert failed", JOptionPane.ERROR_MESSAGE);
         }
         
+        returnStatus = RET_OK;
         doClose();
     }//GEN-LAST:event_okButtonActionPerformed
     
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        returnStatus = RET_CANCEL;
         doClose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 

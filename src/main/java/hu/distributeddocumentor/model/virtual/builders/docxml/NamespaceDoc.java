@@ -191,7 +191,7 @@ public class NamespaceDoc extends DocItem {
         }
         catch (IOException ex) {
             log.error("Failed to render namespace page: " + getFullName() + " because of: " + ex.getMessage());
-            // TODO: write exception to log and generated page
+            // TODO: write exception to output
         }            
     }    
 }

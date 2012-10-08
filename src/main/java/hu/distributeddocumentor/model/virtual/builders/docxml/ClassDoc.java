@@ -280,7 +280,7 @@ public class ClassDoc extends DocItem {
         }
         catch (IOException ex) {
             log.error("Failed to render class page: " + getName() + " because of: " + ex.getMessage());
-            // TODO: write exception to log and generated page
+            // TODO: write to output
         }            
     }
 

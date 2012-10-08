@@ -1,7 +1,7 @@
 package hu.distributeddocumentor.gui;
 
-import com.aragost.javahg.Changeset;
 import hu.distributeddocumentor.controller.ChangesetTableModel;
+import hu.distributeddocumentor.controller.sync.RepoChangeSet;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -21,7 +21,7 @@ public class SyncDialog extends javax.swing.JDialog {
     /**
      * Creates new form PullDialog
      */
-    public SyncDialog(java.awt.Frame parent, List<Changeset> changesets, boolean pushing) {
+    public SyncDialog(java.awt.Frame parent, List<RepoChangeSet> changesets, boolean pushing) {
         super(parent, true);
         initComponents();
         

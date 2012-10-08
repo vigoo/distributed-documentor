@@ -5,6 +5,8 @@ import com.aragost.javahg.Changeset;
 import com.aragost.javahg.Repository;
 import com.aragost.javahg.commands.*;
 import com.aragost.javahg.merge.MergeContext;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
@@ -101,13 +103,21 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     }	
 
     @Override
-    public List<Changeset> incomingChangesets(URI uri) {
+    public List<RepoChangeSet> incomingChangesets(URI uri) {
         
-        if (incomingBundle == null)
-            if (!hasIncomingChangesets(uri))
-                return new LinkedList<Changeset>();
+        if (incomingBundle == null) {
+            if (!hasIncomingChangesets(uri)) {
+                return new LinkedList<>();
+            }
+        }
         
-        return incomingBundle.getChangesets();
+        return Lists.transform(incomingBundle.getChangesets(), 
+                new Function<Changeset, RepoChangeSet>() {
+                    @Override
+                    public RepoChangeSet apply(Changeset input) {
+                        return new MercurialChangeSet(input);
+                    }
+        });        
     }
 
     @Override
@@ -122,12 +132,20 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     }
 
     @Override
-    public List<Changeset> outgoingChangesets(URI uri) {
-        if (outgoingChangesets == null)
-            if (!hasOutgoingChangesets(uri))
-                return new LinkedList<Changeset>();
+    public List<RepoChangeSet> outgoingChangesets(URI uri) {
+        if (outgoingChangesets == null) {
+            if (!hasOutgoingChangesets(uri)) {
+                return new LinkedList<>();
+            }
+        }
         
-        return outgoingChangesets;
+        return Lists.transform(outgoingChangesets, 
+            new Function<Changeset, RepoChangeSet>() {
+                    @Override
+                    public RepoChangeSet apply(Changeset input) {
+                        return new MercurialChangeSet(input);
+                    }
+            });
     }
 
     @Override

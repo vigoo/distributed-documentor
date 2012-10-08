@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.nio.charset.CodingErrorAction;
 import java.util.*;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,8 +93,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     public Documentation(DocumentorPreferences prefs) {
         
         toc = new TOC();
-        pages = new CaseInsensitiveMap<Page>();
-        snippets = new CaseInsensitiveMap<Snippet>();
+        pages = new CaseInsensitiveMap<>();
+        snippets = new CaseInsensitiveMap<>();
         
         this.prefs = prefs;
     }
@@ -208,8 +207,9 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
         File snippetsDir = getSnippetsDirectory();
         if (!snippetsDir.exists()) {
-            if (!snippetsDir.mkdirs())
+            if (!snippetsDir.mkdirs()) {
                 throw new RuntimeException("Failed to create snippets directory!");
+            }
         }
         else {
             for (File child : snippetsDir.listFiles(
@@ -520,11 +520,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                     try {
                         addNewPage(newPage);
                     }
-                    catch (IOException ex) {
-                        log.error(null, ex);
-                    }
-                    catch (PageAlreadyExistsException ex) {
-                        // This cannot happen
+                    catch (IOException | PageAlreadyExistsException ex) {
                         log.error(null, ex);
                     }
                 } else {
@@ -740,7 +736,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         StatusCommand status = new StatusCommand(repository);
         StatusResult result = status.execute();
 
-        List<String> toRemove = new LinkedList<String>();
+        List<String> toRemove = new LinkedList<>();
         for (String missing : result.getMissing()) {
             
             File root = new File(getRepositoryRoot());
@@ -793,19 +789,16 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      */
     public Color getStatusColor(String status) {
         // TODO: make it user configurable
-        if ("Reviewed".equals(status)) {
-            return new Color(192, 255, 192, 255);
-        }
-        else if ("Completed".equals(status)) {
-            return Color.GREEN;
-        }
-        else if ("In progress".equals(status)) {
-            return Color.YELLOW;
-        }
-        else if ("Not started".equals(status)) {
-            return Color.WHITE;
-        }
-        else {
+        switch (status) {
+            case "Reviewed":
+                return new Color(192, 255, 192, 255);
+            case "Completed":
+                return Color.GREEN;
+            case "In progress":
+                return Color.YELLOW;
+            case "Not started":
+                return Color.WHITE;
+            default:
                 return Color.WHITE;
         }
     }
