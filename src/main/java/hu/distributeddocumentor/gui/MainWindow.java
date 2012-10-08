@@ -14,6 +14,8 @@ import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.HTMLExporter;
 import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadPageException;
+import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -23,6 +25,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -34,10 +37,13 @@ import org.noos.xing.mydoggy.*;
 import org.noos.xing.mydoggy.event.ContentManagerEvent;
 import org.noos.xing.mydoggy.plaf.MyDoggyToolWindowManager;
 import org.noos.xing.mydoggy.plaf.ui.content.MyDoggyTabbedContentManagerUI;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class MainWindow extends javax.swing.JFrame implements PageEditorHost, ContentManagerListener {
 
+    private static final Logger log = LoggerFactory.getLogger(MainWindow.class.getName());
+    
     private final DocumentorPreferences prefs;
     private final Documentation doc;
     private final MyDoggyToolWindowManager toolWindowManager;
@@ -101,8 +107,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                     
         final StartupDialog startup = new StartupDialog(this, prefs);
         
-        if (prefs.getInitialRoot() == null)
+        if (prefs.getInitialRoot() == null) {
             startup.setVisible(true);
+        }
         
         boolean loaded = false;
         if (startup.getFinalAction() != StartupDialog.Action.Cancel) {
@@ -468,15 +475,13 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }
     
     private void saveLayout() {
-        PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();
-        try {
-            // TODO: better location for this file
-            FileOutputStream output = new FileOutputStream(getWorkspaceFile());
+        PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();        
+        try (FileOutputStream output = new FileOutputStream(getWorkspaceFile())) {
             delegate.save(output);
-            output.close();        
-        } catch (Exception e) {
-            // TODO
-        }        
+         }        
+         catch (Exception e) {
+            log.warn("Failed to save layout: " + e.getMessage());
+         }        
     }//GEN-LAST:event_formWindowClosing
 
     private void btCommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCommitActionPerformed
@@ -491,73 +496,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         dlg.setVisible(true);                
     }//GEN-LAST:event_btRevertActionPerformed
 
-    private void exportToCHMMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToCHMMenuItemActionPerformed
-       
-        FolderChooser chooser = new FolderChooser();
-        chooser.setDialogTitle("Select the target folder");
-        
-        java.util.List<String> recent = prefs.getRecentTargets();
-        chooser.setRecentList(recent);
-        chooser.setRecentListVisible(true);
-                
-        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
-            
-            File targetDir = chooser.getSelectedFile();
-            String path = targetDir.getAbsolutePath();
-         
-            Exporter exporter = new CHMExporter(prefs, doc, targetDir);
-            
-            try {
-                exporter.export();
-            }
-            catch (Exception ex) {
-                org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-                
-                ErrorDialog.show(this, "Export failed", ex);
-            }
-            
-            if (!recent.contains(path)) {               
-                recent.add(path);
-                prefs.setRecentTargets(recent);
-            }            
-        }
-    }//GEN-LAST:event_exportToCHMMenuItemActionPerformed
-
     private void preferencesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMenuItemActionPerformed
         showPreferences();        
     }//GEN-LAST:event_preferencesMenuItemActionPerformed
-
-    private void exportToHTMLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToHTMLMenuItemActionPerformed
-        
-        FolderChooser chooser = new FolderChooser();
-        chooser.setDialogTitle("Select the target folder");
-        
-        java.util.List<String> recent = prefs.getRecentTargets();
-        chooser.setRecentList(recent);
-        chooser.setRecentListVisible(true);
-                
-        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
-            
-            File targetDir = chooser.getSelectedFile();
-            String path = targetDir.getAbsolutePath();
-         
-            Exporter exporter = new HTMLExporter(doc, targetDir);
-            
-            try {
-                exporter.export();
-            }
-            catch (Exception ex) {
-                org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-                
-                ErrorDialog.show(this, "Export failed", ex);
-            }
-            
-            if (!recent.contains(path)) {               
-                recent.add(path);
-                prefs.setRecentTargets(recent);
-            }            
-        }                                
-    }//GEN-LAST:event_exportToHTMLMenuItemActionPerformed
 
     private void pullMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullMenuItemActionPerformed
         
@@ -569,7 +510,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             SyncController controller = createSyncConrtoller();
             controller.pull();
         }
-        catch (Exception ex) {
+        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException ex) {
             ErrorDialog.show(this, "Failed to download changes", ex);
         }
         finally {
@@ -589,7 +530,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             SyncController controller = createSyncConrtoller();
             controller.push();        
         }
-        catch (Exception ex) {
+        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException ex) {
             ErrorDialog.show(this, "Failed to upload changes", ex);
         }
         finally {
@@ -603,8 +544,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
        
         try {
             Desktop.getDesktop().browse(new URI("http://freezingmoon.dyndns.org/"));
-        } catch (Exception ex) {
-            LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
+        } catch (URISyntaxException | IOException ex) {
+            log.error(null, ex);
         }                    
     }//GEN-LAST:event_userManualItemActionPerformed
 
@@ -639,7 +580,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private void imageManagerItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageManagerItemActionPerformed
         
         if (imageManagerItem.getState()) {
-            twImages.setAvailable(true);;
+            twImages.setAvailable(true);
             twImages.setVisible(true);
             twImages.setActive(true);
         }
@@ -651,7 +592,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private void snippetManagerItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_snippetManagerItemActionPerformed
         
         if (snippetManagerItem.getState()) {
-            twSnippets.setAvailable(true);;
+            twSnippets.setAvailable(true);
             twSnippets.setVisible(true);
             twSnippets.setActive(true);        
         }
@@ -688,6 +629,70 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         
     }//GEN-LAST:event_spellCheckingMenuItemActionPerformed
 
+    private void exportToHTMLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToHTMLMenuItemActionPerformed
+
+        FolderChooser chooser = new FolderChooser();
+        chooser.setDialogTitle("Select the target folder");
+
+        java.util.List<String> recent = prefs.getRecentTargets();
+        chooser.setRecentList(recent);
+        chooser.setRecentListVisible(true);
+
+        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
+
+            File targetDir = chooser.getSelectedFile();
+            String path = targetDir.getAbsolutePath();
+
+            Exporter exporter = new HTMLExporter(doc, targetDir);
+
+            try {
+                exporter.export();
+            }
+            catch (Exception ex) {
+                log.error(null, ex);
+
+                ErrorDialog.show(this, "Export failed", ex);
+            }
+
+            if (!recent.contains(path)) {
+                recent.add(path);
+                prefs.setRecentTargets(recent);
+            }
+        }
+    }//GEN-LAST:event_exportToHTMLMenuItemActionPerformed
+
+    private void exportToCHMMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToCHMMenuItemActionPerformed
+
+        FolderChooser chooser = new FolderChooser();
+        chooser.setDialogTitle("Select the target folder");
+
+        java.util.List<String> recent = prefs.getRecentTargets();
+        chooser.setRecentList(recent);
+        chooser.setRecentListVisible(true);
+
+        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
+
+            File targetDir = chooser.getSelectedFile();
+            String path = targetDir.getAbsolutePath();
+
+            Exporter exporter = new CHMExporter(prefs, doc, targetDir);
+
+            try {
+                exporter.export();
+            }
+            catch (Exception ex) {
+                log.error(null, ex);
+
+                ErrorDialog.show(this, "Export failed", ex);
+            }
+
+            if (!recent.contains(path)) {
+                recent.add(path);
+                prefs.setRecentTargets(recent);
+            }
+        }
+    }//GEN-LAST:event_exportToCHMMenuItemActionPerformed
+
     private void showPreferencesIfNecessary() {
         
         if (!prefs.hasValidMercurialPath()) {
@@ -705,19 +710,18 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         File workspaceFile = new File(System.getProperty("user.home"), "documentor.workspace.xml");
         
         if (workspaceFile.exists()) {        
-            PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();
-            try {
-                // TODO: better location for this file
-                FileInputStream input = new FileInputStream(workspaceFile);
+            PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();            
+            
+            try (FileInputStream input = new FileInputStream(workspaceFile)) {
+                   
                 delegate.merge(input, PersistenceDelegate.MergePolicy.RESET);
-                input.close();   
                 
                 tocItem.setState(twTOC.isVisible());
                 imageManagerItem.setState(twImages.isVisible());
                 snippetManagerItem.setState(twSnippets.isVisible());
-                
-            } catch (Exception e) {
-                // TODO
+            }                                                   
+            catch (Exception e) {
+                log.warn("Failed to load layout: " + e.getMessage());
             }  
         }
     }
@@ -739,27 +743,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         System.setProperty("apple.laf.useScreenMenuBar", "true");        
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Distributed Documentor");
                 
-        /*
-         * Set the Nimbus look and feel
-         */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /*
-         * If Nimbus (introduced in Java SE 6) is not available, stay with the
-         * default look and feel. For details see
-         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException ex) {
-            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-        } catch (InstantiationException ex) {
-            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-        } catch (IllegalAccessException ex) {
-            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            log.error(null, ex);
         }
-        //</editor-fold>
 
         LookAndFeelFactory.installJideExtension( LookAndFeelFactory.VSNET_STYLE_WITHOUT_MENU);  
         
@@ -874,7 +862,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             doc.saveAll();
         }
         catch (CouldNotSaveDocumentationException ex) {
-            // TODO
+            log.error("Failed to save documentation: ", ex);            
         }
     }
     
@@ -928,7 +916,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     @Override
     public void contentSelected(ContentManagerEvent cme) {
         
-        Component comp = cme.getContent().getComponent();;
+        Component comp = cme.getContent().getComponent();
         if (comp instanceof SplittedPageView) {
             SplittedPageView view = (SplittedPageView)comp;
             

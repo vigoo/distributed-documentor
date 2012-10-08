@@ -37,12 +37,14 @@ public class SettingsDialog extends javax.swing.JDialog {
         String initialHhcPath = prefs.getCHMCompilerPath();
         
         if (initialHgPath == null ||
-            initialHgPath.length() == 0)
+            initialHgPath.length() == 0) {
             initialHgPath = guessInitialHgPath();
+        }
         
         if (initialHhcPath == null ||
-            initialHhcPath.length() == 0)
+            initialHhcPath.length() == 0) {
             initialHhcPath = guessInitialHhcPath();
+        }
         
         tbHGPath.setText(initialHgPath);
         tbHHCPath.setText(initialHhcPath);                
@@ -332,10 +334,12 @@ public class SettingsDialog extends javax.swing.JDialog {
 
                     @Override
                     public String getDescription() {
-                        if (prefs.isWindows()) 
+                        if (prefs.isWindows()) { 
                             return "Mercurial binary (hg.exe)";
-                        else
+                        }
+                        else {
                             return "Mercurial binary (hg)";
+                        }
                     }
                     
                 });
@@ -430,21 +434,25 @@ public class SettingsDialog extends javax.swing.JDialog {
         File hg;
         if (prefs.isWindows()) {
             hg = new File("C:/Program Files/TortoiseHg/hg.exe"); // TODO: use environment variables
-            if (hg.exists() && hg.canExecute())
+            if (hg.exists() && hg.canExecute()) {
                 return hg.getAbsolutePath();
+            }
             else {
                 hg = new File("C:/Program Files (x86)/TortoiseHg/hg.exe"); 
-                if (hg.exists() && hg.canExecute())
-                    return hg.getAbsolutePath();   
+                if (hg.exists() && hg.canExecute()) {
+                    return hg.getAbsolutePath();
+                }   
             }                    
         } else {
             hg = new File("/usr/bin/hg");
-            if (hg.exists() && hg.canExecute())
+            if (hg.exists() && hg.canExecute()) {
                 return hg.getAbsolutePath();
+            }
             
             hg = new File("/usr/local/bin/hg");
-            if (hg.exists() && hg.canExecute())
+            if (hg.exists() && hg.canExecute()) {
                 return hg.getAbsolutePath();
+            }
         }
         
         return "";

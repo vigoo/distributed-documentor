@@ -10,9 +10,28 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 public class CommitDialog extends javax.swing.JDialog {
+        
+    /**
+     * A return status code - returned if Cancel button has been pressed
+     */
+    public static final int RET_CANCEL = 0;
+    /**
+     * A return status code - returned if OK button has been pressed
+     */
+    public static final int RET_OK = 1;
+    
+    private final CommittableItemsModel committableItems;
+    private final Documentation doc;
+    private int returnStatus = RET_CANCEL;
 
-    final CommittableItemsModel committableItems;
-    final Documentation doc;
+    /**
+     * Gets the dialog's return status 
+     * @return RET_OK or RET_CANCEL
+     */
+    public int getReturnStatus() {
+        return returnStatus;
+    }
+        
     
     /**
      * Creates new form CommitDialog
@@ -155,12 +174,14 @@ public class CommitDialog extends javax.swing.JDialog {
         
         doc.commitChanges(message.getText(), selectedItems);
         
+        returnStatus = RET_OK;
         setVisible(false);
         dispose();                
     }//GEN-LAST:event_btOkActionPerformed
 
     private void btCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCancelActionPerformed
 
+        returnStatus = RET_CANCEL;
         setVisible(false);
         dispose();        
     }//GEN-LAST:event_btCancelActionPerformed

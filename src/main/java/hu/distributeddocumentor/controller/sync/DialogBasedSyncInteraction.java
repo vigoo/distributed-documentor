@@ -52,8 +52,8 @@ public class DialogBasedSyncInteraction implements SyncInteraction {
 
         CommitDialog dlg = new CommitDialog(host.getMainFrame(), doc);
         dlg.setVisible(true);
-
-        return true; // TODO: cancel support
+        
+        return dlg.getReturnStatus() == CommitDialog.RET_OK;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class DialogBasedSyncInteraction implements SyncInteraction {
         RevertDialog dlg = new RevertDialog(host.getMainFrame(), doc, host);
         dlg.setVisible(true);
 
-        return true; // TODO: cancel support
+        return dlg.getReturnStatus() == RevertDialog.RET_OK;
     }
 
     @Override

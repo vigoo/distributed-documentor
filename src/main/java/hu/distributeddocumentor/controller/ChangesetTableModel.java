@@ -1,6 +1,6 @@
 package hu.distributeddocumentor.controller;
 
-import com.aragost.javahg.Changeset;
+import hu.distributeddocumentor.controller.sync.RepoChangeSet;
 import java.util.List;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -8,9 +8,9 @@ import javax.swing.table.TableModel;
 
 public class ChangesetTableModel implements TableModel {
     
-    private final List<Changeset> changesets;
+    private final List<RepoChangeSet> changesets;
 
-    public ChangesetTableModel(final List<Changeset> changesets) {
+    public ChangesetTableModel(final List<RepoChangeSet> changesets) {
         this.changesets = changesets;
     }
         
@@ -54,15 +54,15 @@ public class ChangesetTableModel implements TableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         
-        Changeset cs = changesets.get(rowIndex);
+        RepoChangeSet cs = changesets.get(rowIndex);
         
         switch (columnIndex) {
             case 0:
-                return Integer.toString(cs.getRevision());
+                return cs.getRevision();
             case 1:
                 return cs.getUser();
             case 2:
-                return cs.getTimestamp().getDate().toLocaleString();
+                return cs.getTimestamp();
             case 3:
                 return cs.getMessage();
             default:
