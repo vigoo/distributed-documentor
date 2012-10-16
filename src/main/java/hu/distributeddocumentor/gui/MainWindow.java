@@ -528,10 +528,6 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
     }//GEN-LAST:event_exportToCHMMenuItemActionPerformed
 
-    private void preferencesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMenuItemActionPerformed
-        showPreferences();        
-    }//GEN-LAST:event_preferencesMenuItemActionPerformed
-
     private void exportToHTMLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToHTMLMenuItemActionPerformed
         
         FolderChooser chooser = new FolderChooser();
