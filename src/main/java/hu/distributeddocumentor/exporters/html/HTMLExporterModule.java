@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.exporters.html;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.multibindings.Multibinder;
 import hu.distributeddocumentor.exporters.Exporter;
 
 /**
@@ -11,7 +12,8 @@ public class HTMLExporterModule extends AbstractModule {
 
     @Override
     protected void configure() {        
-        bind(Exporter.class).to(HTMLExporter.class);
+        Multibinder<Exporter> binder = Multibinder.newSetBinder(binder(), Exporter.class);
+        binder.addBinding().to(HTMLExporter.class);
     }
 
 }

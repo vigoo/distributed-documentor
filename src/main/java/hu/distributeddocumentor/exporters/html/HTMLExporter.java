@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.exporters.html;
 
 import com.google.common.io.Files;
+import com.google.inject.Inject;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.HTMLBasedExporter;
 import hu.distributeddocumentor.model.Documentation;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class HTMLExporter extends HTMLBasedExporter implements Exporter {
 
+    @Inject
     public HTMLExporter() {        
     }
     
@@ -181,5 +183,10 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
 
     private String fixTitle(String title) {
         return StringUtils.replace(title, "'", "\\'");
+    }
+
+    @Override
+    public String getTargetName() {
+        return "HTML";
     }
 }

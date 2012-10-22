@@ -1,7 +1,6 @@
 package hu.distributeddocumentor.gui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
-import com.jidesoft.swing.FolderChooser;
 import com.swabunga.spell.engine.SpellDictionary;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
 import com.swabunga.spell.event.SpellChecker;
@@ -9,9 +8,6 @@ import hu.distributeddocumentor.controller.CommandLineExporter;
 import hu.distributeddocumentor.controller.sync.DialogBasedSyncInteraction;
 import hu.distributeddocumentor.controller.sync.MercurialSync;
 import hu.distributeddocumentor.controller.sync.SyncController;
-import hu.distributeddocumentor.exporters.Exporter;
-import hu.distributeddocumentor.exporters.chm.CHMExporter;
-import hu.distributeddocumentor.exporters.html.HTMLExporter;
 import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
@@ -72,8 +68,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
      * Creates new form MainWindow
      */
     public MainWindow(DocumentorPreferences prefs) {
+        this.prefs = prefs;        
+
         initComponents();
-        setSize(1024, 768);
+        setSize(1024, 768);                
         
         try {
             SpellDictionary dictionary = new SpellDictionaryHashMap(
@@ -85,12 +83,13 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             spellChecker = null;
             ErrorDialog.show(this, "Failed to initialize spell checker", ex);            
         }
-        
-        this.prefs = prefs;
-        
+                
         spellCheckingMenuItem.setSelected(prefs.isSpellCheckingEnabled());
         
         doc = new Documentation(prefs);
+        
+        ExportMenu exportMenuHandler = prefs.getInjector().getInstance(ExportMenu.class);
+        exportMenuHandler.buildMenu(this, exportMenu, doc);
         
         toolWindowManager = new MyDoggyToolWindowManager();        
         
@@ -241,8 +240,6 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         exportMenu = new javax.swing.JMenu();
-        exportToCHMMenuItem = new javax.swing.JMenuItem();
-        exportToHTMLMenuItem = new javax.swing.JMenuItem();
         preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
@@ -313,23 +310,6 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         fileMenu.setText("File");
 
         exportMenu.setText("Export");
-
-        exportToCHMMenuItem.setText("Export to CHM...");
-        exportToCHMMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportToCHMMenuItemActionPerformed(evt);
-            }
-        });
-        exportMenu.add(exportToCHMMenuItem);
-
-        exportToHTMLMenuItem.setText("Export to HTML...");
-        exportToHTMLMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportToHTMLMenuItemActionPerformed(evt);
-            }
-        });
-        exportMenu.add(exportToHTMLMenuItem);
-
         fileMenu.add(exportMenu);
 
         preferencesMenuItem.setText("Preferences...");
@@ -495,70 +475,6 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         final RevertDialog dlg = new RevertDialog(this, doc, this);
         dlg.setVisible(true);                
     }//GEN-LAST:event_btRevertActionPerformed
-
-    private void exportToCHMMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToCHMMenuItemActionPerformed
-       
-        FolderChooser chooser = new FolderChooser();
-        chooser.setDialogTitle("Select the target folder");
-        
-        java.util.List<String> recent = prefs.getRecentTargets();
-        chooser.setRecentList(recent);
-        chooser.setRecentListVisible(true);
-                
-        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
-            
-            File targetDir = chooser.getSelectedFile();
-            String path = targetDir.getAbsolutePath();
-         
-            Exporter exporter = prefs.getInjector().getInstance(CHMExporter.class);
-            
-            try {
-                exporter.export(doc, targetDir);
-            }
-            catch (Exception ex) {
-                org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-                
-                ErrorDialog.show(this, "Export failed", ex);
-            }
-            
-            if (!recent.contains(path)) {               
-                recent.add(path);
-                prefs.setRecentTargets(recent);
-            }            
-        }
-    }//GEN-LAST:event_exportToCHMMenuItemActionPerformed
-
-    private void exportToHTMLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportToHTMLMenuItemActionPerformed
-        
-        FolderChooser chooser = new FolderChooser();
-        chooser.setDialogTitle("Select the target folder");
-        
-        java.util.List<String> recent = prefs.getRecentTargets();
-        chooser.setRecentList(recent);
-        chooser.setRecentListVisible(true);
-                
-        if (chooser.showOpenDialog(this) == FolderChooser.APPROVE_OPTION) {
-            
-            File targetDir = chooser.getSelectedFile();
-            String path = targetDir.getAbsolutePath();
-         
-            Exporter exporter = prefs.getInjector().getInstance(HTMLExporter.class);
-            
-            try {
-                exporter.export(doc, targetDir);
-            }
-            catch (Exception ex) {
-                org.slf4j.LoggerFactory.getLogger(MainWindow.class.getName()).error(null, ex);
-                
-                ErrorDialog.show(this, "Export failed", ex);
-            }
-            
-            if (!recent.contains(path)) {               
-                recent.add(path);
-                prefs.setRecentTargets(recent);
-            }            
-        }                                
-    }//GEN-LAST:event_exportToHTMLMenuItemActionPerformed
 
     private void preferencesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMenuItemActionPerformed
         showPreferences();        
@@ -780,8 +696,6 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu exportMenu;
-    private javax.swing.JMenuItem exportToCHMMenuItem;
-    private javax.swing.JMenuItem exportToHTMLMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.Box.Filler filler1;
     private javax.swing.JMenu helpMenu;
@@ -944,5 +858,4 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         SyncController controller = new SyncController(hg, hg, hg, dlgui, doc, this);
         return controller;
     }
-
 }

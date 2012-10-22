@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.exporters.chm;
 
 import com.google.common.io.Files;
+import com.google.inject.Inject;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.HTMLBasedExporter;
 import hu.distributeddocumentor.model.Documentation;
@@ -22,6 +23,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
     private final DocumentorPreferences prefs;
     private final Set<String> contentFiles = new HashSet<>();
 
+    @Inject
     public CHMExporter(DocumentorPreferences prefs) {
         this.prefs = prefs;   
     }
@@ -175,6 +177,11 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             
             out.println(i + "</UL>");
         }
+    }
+
+    @Override
+    public String getTargetName() {
+        return "CHM";
     }
     
 }
