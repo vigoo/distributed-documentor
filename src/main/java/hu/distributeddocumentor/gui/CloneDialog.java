@@ -258,10 +258,9 @@ public class CloneDialog extends javax.swing.JDialog {
             String path = chooser.getSelectedFile().getAbsolutePath();
             tbTarget.setText(path);
             
-            if (!recent.contains(path)) {               
-                recent.add(path);
-                prefs.setRecentRepositories(recent);
-            }            
+            recent.remove(path);        
+            recent.add(0, path);
+            prefs.setRecentRepositories(recent);                        
         }
     }//GEN-LAST:event_btBrowseActionPerformed
     

@@ -3,11 +3,15 @@ package hu.distributeddocumentor.prefs;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.chm.CHMExporterModule;
 import hu.distributeddocumentor.exporters.html.HTMLExporterModule;
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.apache.commons.cli.*;
@@ -94,25 +98,18 @@ public class DocumentorPreferences {
         prefs.put("hhcpath", path);
     }
     
+    public Exporter getDefaultExporter() {
+        String exporterTargetName = prefs.get("defaultexporter", null);        
+        ExporterLookup lookup = injector.getInstance(ExporterLookup.class);
+        return lookup.getByTargetName(exporterTargetName);
+    }
+    
+    public void setDefaultExporter(Exporter exporter) {
+        prefs.put("defaultexporter", exporter.getTargetName());
+    }
+    
     public List<String> getRecentRepositories() {        
-        
-        try {
-            List<String> result = new LinkedList<>();
-            Preferences reposNode = prefs.node("recentRepositories");
-
-            for (String key : reposNode.keys()) {
-                String item = reposNode.get(key, null);
-                if (item != null) {
-                    result.add(item);
-                }
-            }
-
-            return result;
-        }
-        catch (BackingStoreException ex) {
-            logger.error(null, ex);
-            return new LinkedList<>();
-        }
+        return getRecentPaths("recentRepositories");
     }
     
     public void setRecentRepositories(List<String> list) {
@@ -136,24 +133,8 @@ public class DocumentorPreferences {
     }
     
      public List<String> getRecentTargets() {        
-        
-        try {
-            List<String> result = new LinkedList<>();
-            Preferences reposNode = prefs.node("recentTargets");
-
-            for (String key : reposNode.keys()) {
-                String item = reposNode.get(key, null);
-                if (item != null) {
-                    result.add(item);
-                }
-            }
-
-            return result;
-        }
-        catch (BackingStoreException ex) {
-            logger.error(null, ex);
-            return new LinkedList<>();
-        }
+               
+         return getRecentPaths("recentTargets");        
     }
     
     public void setRecentTargets(List<String> list) {
@@ -261,4 +242,32 @@ public class DocumentorPreferences {
     public void toggleSpellChecking() {
         setSpellChecking(!isSpellCheckingEnabled());
     }
+    
+    private List<String> getRecentPaths(String optionName) {                
+        try {            
+            Preferences reposNode = prefs.node(optionName);
+            Map<String, String> map = new HashMap<>();
+
+            for (String key : reposNode.keys()) {
+                String item = reposNode.get(key, null);
+                if (item != null) {
+                    map.put(key, item);
+                }
+            }
+            
+            List<String> result = new LinkedList<>();
+            List<String> keys = new LinkedList<>(map.keySet());
+            Collections.sort(keys);
+            
+            for (String key : keys) {
+                result.add(map.get(key));
+            }
+
+            return result;
+        }
+        catch (BackingStoreException ex) {
+            logger.error(null, ex);
+            return new LinkedList<>();
+        }
+    }    
 }

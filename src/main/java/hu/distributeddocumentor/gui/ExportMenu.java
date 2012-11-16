@@ -8,10 +8,12 @@ import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.Set;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,11 @@ public class ExportMenu {
         for (final Exporter exporter : exporters) {
             
             JMenuItem item = new JMenuItem("Export to " + exporter.getTargetName() + "...");
+            
+            if (prefs.getDefaultExporter().getTargetName().equals(exporter.getTargetName())) {
+                item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            }
+            
             item.addActionListener(
                     new ActionListener() {
                         @Override
@@ -78,10 +85,9 @@ public class ExportMenu {
                 ErrorDialog.show(parent, "Export failed", ex);
             }
             
-            if (!recent.contains(path)) {               
-                recent.add(path);
-                prefs.setRecentTargets(recent);
-            }            
+            recent.remove(path);     
+            recent.add(0, path);
+            prefs.setRecentTargets(recent);                        
         }
     }
 
