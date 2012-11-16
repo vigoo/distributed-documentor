@@ -136,10 +136,18 @@ public class StartupDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_btnOpenLocalActionPerformed
 
     private void browseForFolderAndClose(String title, Action action) {
-        FolderChooser chooser = new FolderChooser();
-        chooser.setDialogTitle(title);
-        
+                
         List<String> recent = prefs.getRecentRepositories();
+        
+        FolderChooser chooser;
+        if (recent.size() > 0) {
+            chooser = new FolderChooser(recent.get(0));
+        }
+        else {
+            chooser = new FolderChooser();
+        }
+        
+        chooser.setDialogTitle(title);
         chooser.setRecentList(recent);
         chooser.setRecentListVisible(true);
         

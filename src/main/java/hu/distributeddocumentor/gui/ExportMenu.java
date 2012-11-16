@@ -48,11 +48,19 @@ public class ExportMenu {
     }
     
     private void exportDocumentation(Frame parent, Documentation doc, Exporter exporter) {
-         
-        FolderChooser chooser = new FolderChooser();
-        chooser.setDialogTitle("Select the target folder");
-        
+                 
         java.util.List<String> recent = prefs.getRecentTargets();
+        
+        FolderChooser chooser;
+        
+        if (recent.size() > 0) {
+            chooser = new FolderChooser(recent.get(0));
+        }
+        else {
+            chooser = new FolderChooser();
+        }        
+        chooser.setDialogTitle("Select the target folder");
+
         chooser.setRecentList(recent);
         chooser.setRecentListVisible(true);
                 

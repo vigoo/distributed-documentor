@@ -240,10 +240,16 @@ public class CloneDialog extends javax.swing.JDialog {
 
     private void btBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBrowseActionPerformed
         
-        FolderChooser chooser = new FolderChooser();
-        chooser.setDialogTitle("Select the root folder");
-        
         List<String> recent = prefs.getRecentRepositories();
+        
+        FolderChooser chooser;
+        if (recent.size() > 0) {
+            chooser = new FolderChooser(recent.get(0));
+        }
+        else {
+            chooser = new FolderChooser();
+        }
+        chooser.setDialogTitle("Select the root folder");                
         chooser.setRecentList(recent);
         chooser.setRecentListVisible(true);
                 
