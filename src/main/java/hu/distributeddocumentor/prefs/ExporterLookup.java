@@ -14,6 +14,10 @@ public class ExporterLookup {
         this.exporters = exporters;
     }
     
+    public Set<Exporter> getAll() {
+        return exporters;
+    }
+    
     public Exporter getByTargetName(String targetName) {
         for (Exporter exporter : exporters) {
             if (targetName == null || exporter.getTargetName().equals(targetName)) {

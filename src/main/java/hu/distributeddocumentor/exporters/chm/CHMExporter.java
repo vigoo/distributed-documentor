@@ -184,4 +184,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         return "CHM";
     }
     
+    @Override
+    public String toString() {
+        return getTargetName();
+    }
 }

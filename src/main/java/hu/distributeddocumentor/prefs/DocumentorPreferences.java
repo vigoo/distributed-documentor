@@ -99,9 +99,13 @@ public class DocumentorPreferences {
     }
     
     public Exporter getDefaultExporter() {
-        String exporterTargetName = prefs.get("defaultexporter", null);        
+        String exporterTargetName = getDefaultExporterName();
         ExporterLookup lookup = injector.getInstance(ExporterLookup.class);
         return lookup.getByTargetName(exporterTargetName);
+    }
+    
+    public String getDefaultExporterName() {
+        return prefs.get("defaultexporter", null);        
     }
     
     public void setDefaultExporter(Exporter exporter) {

@@ -189,4 +189,9 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     public String getTargetName() {
         return "HTML";
     }
+    
+    @Override
+    public String toString() {
+        return getTargetName();
+    }
 }

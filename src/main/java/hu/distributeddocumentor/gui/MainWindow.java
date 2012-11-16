@@ -88,9 +88,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         
         doc = new Documentation(prefs);
         
-        ExportMenu exportMenuHandler = prefs.getInjector().getInstance(ExportMenu.class);
-        exportMenuHandler.buildMenu(this, exportMenu, doc);
-        
+        rebuildExportMenu();
+                
         toolWindowManager = new MyDoggyToolWindowManager();        
         
         ContentManager contentManager = toolWindowManager.getContentManager();
@@ -619,6 +618,15 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private void showPreferences() {
         SettingsDialog dlg = new SettingsDialog(this, true, prefs);
         dlg.setVisible(true);        
+        
+        rebuildExportMenu();
+    }
+    
+    private void rebuildExportMenu() {
+        exportMenu.removeAll();
+        
+        ExportMenu exportMenuHandler = prefs.getInjector().getInstance(ExportMenu.class);
+        exportMenuHandler.buildMenu(this, exportMenu, doc);
     }
     
     private void loadLayout() {
