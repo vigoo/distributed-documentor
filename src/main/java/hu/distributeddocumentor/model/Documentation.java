@@ -574,22 +574,27 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             
             Page page = pages.get(pageId);
             
-            toc.remove(page);
-            
             // If the page does not equals the default template
             if (!page.equalsTemplate()) {                      
-                
-                log.info(" -> putting it to recycle bin");
-                
                 // ..then we don't delete it, but put into the recycle bin
                 // node instead of the unorganized pages node
-                toc.addToEnd(toc.getRecycleBin(), new TOCNode(page));
+                
+                // Checking if it is already in the recycle bin
+                if (toc.getRecycleBin().findReferenceTo(page) == null) {
+                
+                    // ..if not, we remove it from wherever it is and put it there
+                    log.info(" -> putting it to recycle bin");                               
+
+                    toc.remove(page);
+                    toc.addToEnd(toc.getRecycleBin(), new TOCNode(page));
+                }
             } else {
                 
                 log.info(" -> was not modified, removing it");
                 
                 // ..otherwise we don't keep reference to it in the TOC and
-                // delete it from the repository as well                                           
+                // delete it from the repository as well                  
+                toc.remove(page);
                 pages.remove(pageId);
                 
                 RemoveCommand remove = new RemoveCommand(repository).force();
@@ -783,23 +788,28 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     /**
      * Gets the color associated with given status values
      * 
-     * @param status te status string queried
+     * @param status the status string queried
      * @return returns a color which can be used as background color representing
      *         the queried status. The default is white.
      */
     public Color getStatusColor(String status) {
         // TODO: make it user configurable
-        switch (status) {
-            case "Reviewed":
-                return new Color(192, 255, 192, 255);
-            case "Completed":
-                return Color.GREEN;
-            case "In progress":
-                return Color.YELLOW;
-            case "Not started":
-                return Color.WHITE;
-            default:
-                return Color.WHITE;
+        if (status != null) {
+            switch (status) {
+                case "Reviewed":
+                    return new Color(192, 255, 192, 255);
+                case "Completed":
+                    return Color.GREEN;
+                case "In progress":
+                    return Color.YELLOW;
+                case "Not started":
+                    return Color.WHITE;
+                default:
+                    return Color.WHITE;
+            }
+        }
+        else {
+            return Color.WHITE;
         }
     }
 }
