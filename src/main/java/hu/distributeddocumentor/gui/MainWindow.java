@@ -741,7 +741,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 id,
                 "Page: " + id,
                 null,
-                new SplittedPageView(doc.getPage(id), new File(doc.getRepositoryRoot()), this));   
+                new SplittedPageView(doc.getPage(id), new File(doc.getRepositoryRoot()), this, prefs));   
         }
          
         content.setSelected(true);        
@@ -773,7 +773,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 contentId,
                 "Snippet: " + id,
                 null,
-                new SplittedPageView(doc.getSnippet(id), new File(doc.getRepositoryRoot()), this));   
+                new SplittedPageView(doc.getSnippet(id), new File(doc.getRepositoryRoot()), this, prefs));   
         }
          
         content.setSelected(true); 

@@ -4,7 +4,11 @@ import java.awt.event.KeyEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-
+/**
+ * Panel which docks to the bottom of the text editor window and provides
+ * find in text functionality
+ * @author Daniel Vigovszky
+ */
 public class FindInTextPanel extends javax.swing.JPanel {
 
     private FindInTextListener listener;
@@ -36,7 +40,7 @@ public class FindInTextPanel extends javax.swing.JPanel {
             private void updateButtons() {
                 btFind.setEnabled(tbInput.getText().length() > 0);
             }
-                });
+        });
     }
 
     public FindInTextListener getListener() {

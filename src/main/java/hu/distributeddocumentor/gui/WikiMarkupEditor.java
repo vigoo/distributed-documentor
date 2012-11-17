@@ -10,8 +10,10 @@ import hu.distributeddocumentor.controller.MediaWikiEditor;
 import hu.distributeddocumentor.controller.WikiEditor;
 import hu.distributeddocumentor.model.IntRange;
 import hu.distributeddocumentor.model.Page;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Event;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -48,6 +50,7 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     private final DropTarget dropTarget;
     private final UndoManager undoManager = new UndoManager();
     private final PageEditorHost host;        
+    private final DocumentorPreferences prefs;
     private WikiEditor editor;
     
     private final Timer spellCheckTimer;
@@ -64,10 +67,11 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
     /**
      * Creates new form WikiMarkupEditor
      */
-    public WikiMarkupEditor(final Page page, final PageEditorHost host, PreviewSync previewSync) {
+    public WikiMarkupEditor(final Page page, final PageEditorHost host, PreviewSync previewSync, DocumentorPreferences prefs) {
         initComponents();
         
         this.page = page;
+        this.prefs = prefs;
         
         suggestions = new HashMap<>();
         
@@ -179,19 +183,16 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
                                     int pos = editorPane.viewToModel(dtde.getLocation());
                                     editorPane.getDocument().insertString(pos, str, null);
                                     
-                                } catch (UnsupportedFlavorException ex) {
-                                    log.error(null, ex);
-                                } catch (IOException ex) {
-                                    log.error(null, ex);
-                                } catch (BadLocationException ex) {
+                                } catch (UnsupportedFlavorException | IOException | BadLocationException ex) {
                                     log.error(null, ex);
                                 }                            
                     }                    
                 });
         this.host = host;                
         
-        if ("MediaWiki".equals(page.getMarkupLanguage()))
+        if ("MediaWiki".equals(page.getMarkupLanguage())) {
             editor = new MediaWikiEditor(page);
+        }
         this.previewSync = previewSync;
     }
 
@@ -809,10 +810,52 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        JOptionPane.showMessageDialog(null, "Replace!");
+                        final ReplaceInTextPanel replacePanel = new ReplaceInTextPanel();
+                        
+                        replacePanel.setListener(
+                                new ReplaceInTextListener() {
+
+                            @Override
+                            public void findNext(String text) {
+                                performFindNext(text);                                
+                            }
+
+                            @Override
+                            public void finish() {
+                                remove(replacePanel);                                
+                                revalidate();
+                                repaint();
+                                editorPane.requestFocus();
+                            }
+
+                            @Override
+                            public boolean hasSelection(String text) {
+                                return isSelected(text);
+                            }
+
+                            @Override
+                            public void replaceCurrent(String text) {
+                                performReplace(text);
+                            }
+
+                            @Override
+                            public void replaceAll(String input, String output) {
+                                performReplaceAll(input, output);
+                            }
+                        });
+                        
+                        add(replacePanel, BorderLayout.SOUTH);                             
+                        revalidate();
+                        repaint();
+                        replacePanel.requestFocus();
                     }
                 });
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Replace");
+        
+        if (prefs.isWindows()) {
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Replace");
+        } else {
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, Event.CTRL_MASK), "Replace");
+        }
     }
     
     private void performFindNext(String text) {
@@ -837,4 +880,20 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
             }
         }
     }    
+    
+    private boolean isSelected(String text) {
+        return text.equals(editorPane.getSelectedText());
+    }
+    
+    private void performReplace(String newText) {
+        String selection = editorPane.getSelectedText();
+        editorPane.replaceSelection(newText);
+        performFindNext(selection);
+    }
+    
+    private void performReplaceAll(String oldText, String newText) {
+        String markup = page.getMarkup();
+        page.setMarkup(markup.replaceAll(oldText, newText));
+        syncToPage();
+    }
 }
