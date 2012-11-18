@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckListener {
+public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckListener {
 
     private static final Logger log = LoggerFactory.getLogger(WikiMarkupEditor.class.getName());
     
@@ -194,6 +194,15 @@ public class WikiMarkupEditor extends javax.swing.JPanel implements SpellCheckLi
             editor = new MediaWikiEditor(page);
         }
         this.previewSync = previewSync;
+        
+        updateFont();
+    }
+    
+    /**
+     * Updates the editor control's font to match the one coming from preferences
+     */
+    public void updateFont() {
+        editorPane.setFont(prefs.getEditorFont());
     }
 
     /*

@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.chm.CHMExporterModule;
 import hu.distributeddocumentor.exporters.html.HTMLExporterModule;
+import java.awt.Font;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
@@ -161,6 +162,27 @@ public class DocumentorPreferences {
         }
     }
  
+    public Font getEditorFont() {
+        return Font.decode(prefs.get("editorfont", "Monaco 13"));
+    }
+    
+    public void setEditorFont(Font font) {
+        StringBuilder encoded = new StringBuilder(font.getFamily());
+        if (font.isBold() && font.isItalic()) {
+            encoded.append("-BOLDITALIC");
+        }
+        else if (font.isBold()) {
+            encoded.append("-BOLD");
+        }
+        else if (font.isItalic()) {
+            encoded.append("-ITALIC");
+        }
+        encoded.append("-");
+        encoded.append(font.getSize());
+        
+        prefs.put("editorfont", encoded.toString());
+    }
+    
     public boolean isWindows() {
         return System.getProperty("os.name").startsWith("Windows");
     }

@@ -5,13 +5,16 @@ import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.prefs.ExporterLookup;
 import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.slf4j.LoggerFactory;
+import say.swing.JFontChooser;
 
 public class SettingsDialog extends javax.swing.JDialog {
 
@@ -87,6 +90,8 @@ public class SettingsDialog extends javax.swing.JDialog {
                 updateButtonStates();
             }
         });
+        
+        updateFontLabel();
     }
 
     /**
@@ -124,6 +129,9 @@ public class SettingsDialog extends javax.swing.JDialog {
         jPanel3 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         cbExporters = new javax.swing.JComboBox();
+        btChangeFont = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        lbFont = new javax.swing.JLabel();
 
         setTitle("DistributedDocumentor Preferences");
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -275,25 +283,47 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         cbExporters.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        btChangeFont.setText("Change...");
+        btChangeFont.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btChangeFontActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("Editor font:");
+
+        lbFont.setText("-");
+
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel4)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel4)
+                    .add(jLabel7))
                 .add(18, 18, 18)
-                .add(cbExporters, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel3Layout.createSequentialGroup()
+                        .add(lbFont, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btChangeFont))
+                    .add(cbExporters, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
                     .add(cbExporters, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(btChangeFont)
+                    .add(jLabel7)
+                    .add(lbFont))
+                .addContainerGap())
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -322,8 +352,8 @@ public class SettingsDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(18, 18, 18)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -436,10 +466,24 @@ public class SettingsDialog extends javax.swing.JDialog {
         
         try {
             Desktop.getDesktop().browse(new URI("http://mercurial.selenic.com/downloads/"));
-        } catch (Exception ex) {
+        } catch (URISyntaxException | IOException ex) {
             LoggerFactory.getLogger(SettingsDialog.class.getName()).error(null, ex);
         }                    
     }//GEN-LAST:event_lbMercurialURLMouseClicked
+
+    private void btChangeFontActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btChangeFontActionPerformed
+                
+        JFontChooser chooser = new JFontChooser();
+        chooser.setSelectedFont(prefs.getEditorFont());
+        if (chooser.showDialog(this) == JFontChooser.OK_OPTION) {
+            prefs.setEditorFont(chooser.getSelectedFont());
+            updateFontLabel();
+        }        
+    }//GEN-LAST:event_btChangeFontActionPerformed
+    
+    private void updateFontLabel() {
+        lbFont.setText(prefs.getEditorFont().getFontName() + ", " + prefs.getEditorFont().getSize());
+    }
     
     private void doClose(int retStatus) {
         returnStatus = retStatus;
@@ -450,6 +494,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btBrowseForHG;
     private javax.swing.JButton btBrowseForHHC;
+    private javax.swing.JButton btChangeFont;
     private javax.swing.JButton cancelButton;
     private javax.swing.JComboBox cbExporters;
     private javax.swing.JLabel jLabel1;
@@ -458,10 +503,12 @@ public class SettingsDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JLabel lbFont;
     private javax.swing.JLabel lbHHCURL;
     private javax.swing.JLabel lbMercurialURL;
     private javax.swing.JButton okButton;

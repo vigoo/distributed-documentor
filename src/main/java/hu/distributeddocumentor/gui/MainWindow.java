@@ -619,6 +619,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         SettingsDialog dlg = new SettingsDialog(this, true, prefs);
         dlg.setVisible(true);        
         
+        for (Content content : toolWindowManager.getContentManager().getContents()) {
+            if (content.getComponent() instanceof SplittedPageView) {
+                ((SplittedPageView)content.getComponent()).updateFont();
+            }
+        }
+        
         rebuildExportMenu();
     }
     

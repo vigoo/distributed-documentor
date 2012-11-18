@@ -166,6 +166,10 @@
             <id>swt-repo</id>
             <url>https://swt-repo.googlecode.com/svn/repo/</url>
         </repository>
+        <repository>
+            <id>jfontchooser</id>
+            <url>http://jfontchooser.sourceforge.jp/repository/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -287,6 +291,11 @@
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-multibindings</artifactId>
             <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>say.swing</groupId>
+            <artifactId>jfontchooser</artifactId>
+            <version>1.0.5</version>
         </dependency>
     </dependencies> 
   
