@@ -1,16 +1,28 @@
 package hu.distributeddocumentor.gui;
 
+import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadPageException;
+import hu.distributeddocumentor.model.FailedToLoadTOCException;
+import hu.distributeddocumentor.model.Page;
+import hu.distributeddocumentor.model.TOCNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class CreateNewPageDialog extends javax.swing.JDialog {
+/**
+ *
+ * @author Daniel Vigovszky
+ */
+public class PagePropertiesDialog extends javax.swing.JDialog {
 
-    private Documentation doc;
-    
     /**
      * A return status code - returned if Cancel button has been pressed
      */
@@ -19,17 +31,21 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
      * A return status code - returned if OK button has been pressed
      */
     public static final int RET_OK = 1;
+    
+    private final Documentation doc;
+    private final Page page;
+    private final PageEditorHost host;
 
     /**
-     * Creates new form CreateNewPageDialog
+     * Creates new form PagePropertiesDialog
      */
-    public CreateNewPageDialog(java.awt.Frame parent, boolean modal, Documentation doc, String initialId) {
+    public PagePropertiesDialog(java.awt.Frame parent, boolean modal, Documentation doc, Page page, PageEditorHost host) {
         super(parent, modal);
         initComponents();
         
-        this.doc = doc;
-        
         setLocationRelativeTo(parent);
+        
+        this.doc = doc;
 
         // Close the dialog when Esc is pressed
         String cancelName = "cancel";
@@ -37,7 +53,7 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), cancelName);
         ActionMap actionMap = getRootPane().getActionMap();
         actionMap.put(cancelName, new AbstractAction() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doClose(RET_CANCEL);
             }
@@ -62,15 +78,17 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
             }        
         });
         
-        tbID.setText(initialId);
-    }
-
-    public String getID() {
-        return tbID.getText();
-    }
-    
-    public String getMarkupLanguage() {
-        return cbMarkupLanguage.getSelectedItem().toString();
+        this.page = page;
+        
+        tbID.setText(page.getId());
+        
+        TOCNode node = doc.getTOC().getRoot().findReferenceTo(page);
+        if (node != null) {
+            tbTitle.setText(node.getTitle());
+        } else {
+            tbTitle.setEnabled(false);
+        }
+        this.host = host;
     }
     
     private void checkIDValidity() {
@@ -82,7 +100,9 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
             valid = false;
         }
         
-        if (doc.getPage(id) != null) {
+        Page referredPage = doc.getPage(id);
+        if (referredPage != null && 
+            referredPage != page) {
             valid = false;
         }
         
@@ -107,14 +127,16 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
 
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
         tbID = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
         cbMarkupLanguage = new javax.swing.JComboBox();
+        jLabel7 = new javax.swing.JLabel();
+        tbTitle = new javax.swing.JTextField();
 
-        setTitle("Create new page");
+        setTitle("Page properties");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
@@ -122,7 +144,6 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
         });
 
         okButton.setText("OK");
-        okButton.setEnabled(false);
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -136,54 +157,58 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText("Please enter the new page's ID:");
+        jLabel4.setText("Page identifier:");
 
-        jPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("ToolTip.background"));
+        jPanel2.setBackground(javax.swing.UIManager.getDefaults().getColor("ToolTip.background"));
 
-        jLabel2.setText("<html>ID must be a single word without spaces, to be used in wiki syntax!</html>");
+        jLabel5.setText("<html>ID must be a single word without spaces, to be used in wiki syntax!</html>");
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel3.setText("Choose markup type:");
+        jLabel6.setText("Markup type:");
 
         cbMarkupLanguage.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MediaWiki" }));
+
+        jLabel7.setText("Title in TOC:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(0, 172, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(0, 146, Short.MAX_VALUE)
                         .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelButton))
+                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
-                            .add(jLabel3))
+                            .add(jLabel4)
+                            .add(jLabel6)
+                            .add(jLabel7))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(tbTitle)
                             .add(tbID)
-                            .add(cbMarkupLanguage, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .add(cbMarkupLanguage, 0, 224, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -192,15 +217,20 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(jLabel4)
                     .add(tbID, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
+                    .add(jLabel6)
                     .add(cbMarkupLanguage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel7)
+                    .add(tbTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
@@ -214,6 +244,35 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+              
+        // Checking whether the page ID has been modified
+        String newId = tbID.getText();
+        if (!page.getId().equals(newId)) {
+            int response = JOptionPane.showConfirmDialog(
+                    this, 
+                    "Modifying the page ID will also modify every page which refers to it. Are you sure you want to change it?",
+                    "Modifying page ID",
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            
+            if (response == JOptionPane.YES_OPTION) {
+                try {
+                    doc.renamePage(page, newId);
+                    host.documentationReloaded();
+                } catch (CouldNotSaveDocumentationException | FailedToLoadPageException | FailedToLoadTOCException ex) {
+                    ErrorDialog.show(null, "Failed to rename page", ex);
+                }
+            }
+            else if (response == JOptionPane.CANCEL_OPTION) {
+                return; // OK button press cancelled
+            } 
+        }
+        
+        // Changing the TOC node title
+        TOCNode node = doc.getTOC().getRoot().findReferenceTo(page);
+        if (node != null) {
+            node.setTitle(tbTitle.getText());
+        }
+        
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
     
@@ -233,16 +292,18 @@ public class CreateNewPageDialog extends javax.swing.JDialog {
         setVisible(false);
         dispose();
     }
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JComboBox cbMarkupLanguage;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JButton okButton;
     private javax.swing.JTextField tbID;
+    private javax.swing.JTextField tbTitle;
     // End of variables declaration//GEN-END:variables
     private int returnStatus = RET_CANCEL;
 }

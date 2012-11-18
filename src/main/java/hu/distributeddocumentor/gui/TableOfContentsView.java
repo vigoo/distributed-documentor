@@ -6,6 +6,7 @@ import hu.distributeddocumentor.controller.TOCNodeCellEditor;
 import hu.distributeddocumentor.controller.TOCTreeModel;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
+import hu.distributeddocumentor.model.PageAlreadyExistsException;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
 import hu.distributeddocumentor.model.virtual.builders.docxml.DocXmlHierarchyBuilder;
@@ -13,6 +14,7 @@ import java.awt.Component;
 import java.awt.HeadlessException;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
@@ -83,7 +85,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
 
             try {                            
                 doc.addNewPage(page);
-            } catch (Exception ex) {                        
+            } catch (PageAlreadyExistsException | IOException ex) {                        
                 LoggerFactory.getLogger(TableOfContentsView.class.getName()).error(null, ex);
 
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Failed to add new page", JOptionPane.ERROR_MESSAGE);
@@ -104,6 +106,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
 
         popupMenu = new javax.swing.JPopupMenu();
         miOpen = new javax.swing.JMenuItem();
+        miProperties = new javax.swing.JMenuItem();
         miCreateNewPage = new javax.swing.JMenuItem();
         miAssignUnorganizedPage = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
@@ -129,6 +132,14 @@ public class TableOfContentsView extends javax.swing.JPanel {
             }
         });
         popupMenu.add(miOpen);
+
+        miProperties.setText("Properties");
+        miProperties.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miPropertiesActionPerformed(evt);
+            }
+        });
+        popupMenu.add(miProperties);
 
         miCreateNewPage.setText("Create new page...");
         miCreateNewPage.addActionListener(new java.awt.event.ActionListener() {
@@ -173,11 +184,11 @@ public class TableOfContentsView extends javax.swing.JPanel {
         tree.setShowsRootHandles(true);
         tree.setToggleClickCount(0);
         tree.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                treeMouseReleased(evt);
-            }
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 treeMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                treeMouseReleased(evt);
             }
         });
         jScrollPane1.setViewportView(tree);
@@ -314,8 +325,9 @@ public class TableOfContentsView extends javax.swing.JPanel {
         if (node != null) {
             if (node != toc.getRoot() &&
                 node != toc.getUnorganized() &&
-                node != toc.getRecycleBin())
+                node != toc.getRecycleBin()) {
                 toc.remove(node);
+            }
         }
     }//GEN-LAST:event_btRemoveActionPerformed
 
@@ -433,6 +445,16 @@ public class TableOfContentsView extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_miSetAsDocXmlRootActionPerformed
 
+    private void miPropertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miPropertiesActionPerformed
+        
+        if (contextMenuTarget.hasTarget()) {
+            
+            PagePropertiesDialog dlg = new PagePropertiesDialog(pageEditorHost.getMainFrame(), true, doc, contextMenuTarget.getTarget(), pageEditorHost);
+            dlg.setVisible(true);            
+        }
+        
+    }//GEN-LAST:event_miPropertiesActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAdd;
     private javax.swing.JButton btDown;
@@ -448,6 +470,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
     private javax.swing.JMenuItem miAssignUnorganizedPage;
     private javax.swing.JMenuItem miCreateNewPage;
     private javax.swing.JMenuItem miOpen;
+    private javax.swing.JMenuItem miProperties;
     private javax.swing.JMenuItem miRemove;
     private javax.swing.JMenuItem miSetAsDocXmlRoot;
     private javax.swing.JPopupMenu popupMenu;
@@ -465,12 +488,14 @@ public class TableOfContentsView extends javax.swing.JPanel {
                 if (node.hasTarget()) {
                     miOpen.setEnabled(true);
                     miOpen.setFont(miRemove.getFont().deriveFont(miRemove.getFont().getStyle() | java.awt.Font.BOLD));
+                    miProperties.setEnabled(true);
                     miCreateNewPage.setEnabled(false);
                     miCreateNewPage.setFont(miRemove.getFont());
                     miAssignUnorganizedPage.setEnabled(false);
                 } else {
                     miOpen.setEnabled(false);
                     miOpen.setFont(miRemove.getFont());
+                    miProperties.setEnabled(false);
                     miCreateNewPage.setEnabled(true);  
                     miCreateNewPage.setFont(miRemove.getFont().deriveFont(miRemove.getFont().getStyle() | java.awt.Font.BOLD));
                     miAssignUnorganizedPage.setEnabled(true);

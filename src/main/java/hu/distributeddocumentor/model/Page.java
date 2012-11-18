@@ -375,6 +375,13 @@ public class Page extends Observable {
             return false;
         }
     }    
+    
+    public void modifyPageReferences(String oldId, String newId) {
+        // TODO: this should belong to a markup language specific location        
+        setMarkup(
+            markup.replaceAll("(?i)\\[\\["+oldId+"\\]\\]", "[["+newId+"]]")
+                  .replaceAll("(?i)\\[\\["+oldId+"\\|([a-zA-Z0-9,\\. ]+)", "[["+newId+"|$1"));
+    }
 
     private void initializeParser() {
         ServiceLocator serviceLocator = ServiceLocator.getInstance();              
@@ -386,7 +393,7 @@ public class Page extends Observable {
         isParserInitialized = true;
     }
 
-    boolean equalsTemplate() {
+    public boolean equalsTemplate() {
         return markup.equals(TEMPLATE);
     }
 

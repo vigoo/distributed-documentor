@@ -812,4 +812,37 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             return Color.WHITE;
         }
     }
+
+    /**
+     * Changes the given page's identifier and modifies every other page that
+     * refers to it.
+     * @param page Page to be changed
+     * @param newId New identifier of the page
+     */
+    public void renamePage(Page page, String newId) throws CouldNotSaveDocumentationException, FailedToLoadPageException, FailedToLoadTOCException {                
+        
+        if (!page.getId().equals(newId)) {
+            
+            // Modify related pages
+            for (Page otherPage : pages.values()) {
+                if (otherPage != page) {
+                    otherPage.modifyPageReferences(page.getId(), newId);
+                }
+            }
+            
+            saveAll();
+            
+            // Rename the page            
+            for (File pageFile : page.getFiles(getDocumentationDirectory())) {
+                RenameCommand rename = new RenameCommand(repository);
+                rename.force();                
+                rename.execute(pageFile, new File(pageFile.toString().replace(page.getId(), newId)));                
+                
+                log.debug("Rename return code " + rename.getReturnCode() + ", error message: " + rename.getErrorString());
+            }
+            
+            // Reload everything
+            reload();                   
+        }
+    }
 }
