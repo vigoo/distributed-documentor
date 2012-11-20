@@ -30,7 +30,7 @@ public class TOCTest {
     @Test
     public void testAddToEnd() {
         
-        TOC toc = new TOC();
+        TOC toc = new TOC(null);
         
         assertEquals(2, toc.getRoot().getChildren().size());
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(0));
@@ -67,7 +67,7 @@ public class TOCTest {
     @Test
     public void testAddBefore() {
         
-        TOC toc = new TOC();
+        TOC toc = new TOC(null);
         
         TOCNode child1 = new TOCNode();
         toc.addBefore(toc.getUnorganized(), child1);
@@ -102,7 +102,7 @@ public class TOCTest {
      */
     @Test
     public void testAddAfter() {
-        TOC toc = new TOC();
+        TOC toc = new TOC(null);
         
         TOCNode child1 = new TOCNode();
         toc.addAfter(toc.getUnorganized(), child1);
@@ -149,7 +149,7 @@ public class TOCTest {
     @Test
     public void testMoveUp() {
         
-        TOC toc = new TOC();
+        TOC toc = new TOC(null);
         
         // Initial structure:
         // node1
@@ -327,7 +327,7 @@ public class TOCTest {
     @Test
     public void testMoveDown() {
             
-        TOC toc = new TOC();
+        TOC toc = new TOC(null);
         
         // Initial structure:
         // node1
@@ -480,7 +480,7 @@ public class TOCTest {
     @Test
     public void testMoveLeft() {
         
-        TOC toc = new TOC();
+        TOC toc = new TOC(null);
         
         // Initial structure:
         // node1
@@ -561,7 +561,7 @@ public class TOCTest {
     
     @Test
     public void testMoveRight() {
-        TOC toc = new TOC();
+        TOC toc = new TOC(null);
         
         // Initial structure:
         // node1

@@ -40,6 +40,7 @@ public class TOC {
     private final TOCNode root;
     private final TOCNode unorganized;
     private final TOCNode recycleBin;    
+    private final Documentation documentation;
     
     private final List<TreeModelListener> listeners = new LinkedList<>();
     
@@ -49,7 +50,9 @@ public class TOC {
      * Creates a new, empty TOC
      * 
      */
-    public TOC() {
+    public TOC(Documentation documentation) {
+        this.documentation = documentation;
+        
         root = new TOCNode("Root");
         
         unorganized = new TOCNode("Unorganized pages");
@@ -282,6 +285,15 @@ public class TOC {
         // as a modification to be saved
         if (parent != recycleBin) {
             modified = true;
+        } else {
+            // but removing a node from the recycle bin means permanent deletion
+            // of the referred page
+            
+            if (node.hasTarget()) {
+                
+                Page page = node.getTarget();                
+                documentation.deletePage(page);
+            }
         }
     }
     

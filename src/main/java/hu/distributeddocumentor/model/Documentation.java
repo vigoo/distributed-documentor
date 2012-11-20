@@ -92,7 +92,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      */
     public Documentation(DocumentorPreferences prefs) {
         
-        toc = new TOC();
+        toc = new TOC(this);
         pages = new CaseInsensitiveMap<>();
         snippets = new CaseInsensitiveMap<>();
         
@@ -594,20 +594,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 
                 // ..otherwise we don't keep reference to it in the TOC and
                 // delete it from the repository as well                  
-                toc.remove(page);
-                pages.remove(pageId);
-                
-                RemoveCommand remove = new RemoveCommand(repository).force();
-                
-                File[] files = page.getFiles(getDocumentationDirectory());
-                remove.execute(files);
-                
-                for (File f : files) {
-                    boolean deleteSucceeded = f.delete();
-                    if (!deleteSucceeded) {
-                        log.error("Failed to delete file " + f.getName());
-                    }
-                }
+
+                deletePage(page);
             }                   
         }
         
@@ -843,6 +831,30 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             
             // Reload everything
             reload();                   
+        }
+    }
+
+    /**
+     * Deletes a page permanently from the documentation
+     * 
+     * This method does not use the TOC's recycle bin to keep the deleted page,
+     * it will be deleted from the repository immediately.
+     * @param page Page to be deleted
+     */
+    public void deletePage(Page page) {
+        toc.remove(page);
+        pages.remove(page.getId());
+        
+        RemoveCommand remove = new RemoveCommand(repository).force();
+        
+        File[] files = page.getFiles(getDocumentationDirectory());
+        remove.execute(files);
+        
+        for (File f : files) {
+            boolean deleteSucceeded = f.delete();
+            if (!deleteSucceeded) {
+                log.error("Failed to delete file " + f.getName());
+            }
         }
     }
 }
