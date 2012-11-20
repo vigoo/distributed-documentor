@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import com.google.common.base.Supplier;
 import com.jidesoft.popup.JidePopup;
 import com.swabunga.spell.engine.Word;
 import com.swabunga.spell.event.DocumentWordTokenizer;
@@ -55,7 +56,8 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
     
     private final Timer spellCheckTimer;
     private boolean isSpellChecking;
-    private Map<IntRange, List<String>> suggestions;
+    private String lastCheckedMarkup;
+    private Map<IntRange, Supplier<List<String>>> suggestions;
     
     private final Style defaultStyle;
     private final Style spellingErrorStyle;
@@ -596,8 +598,8 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
             if (range.contains(pos)) {
                 
                 JPopupMenu popup = new JPopupMenu();
-                
-                List<String> sgs = suggestions.get(range);
+                                                
+                List<String> sgs = suggestions.get(range).get();
                 for (final String suggestion : sgs) {
                     JMenuItem item = new JMenuItem(suggestion);                        
                     item.addActionListener(
@@ -676,42 +678,45 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
     
     private void performSpellCheck() {
 
-        suggestions.clear();
-                
-        
-        editorPane.getStyledDocument()
-                .setCharacterAttributes(0, 
-                                        editorPane.getStyledDocument().getLength(), 
-                                        defaultStyle, true);
-        
-        SpellChecker spellChecker = host.getSpellChecker();
-        if (spellChecker != null) {
-                                           
-            log.debug("Starting spell check for " + page.getId());
+        if (!page.getMarkup().equals(lastCheckedMarkup)) {
+            
+            lastCheckedMarkup = page.getMarkup();
+            suggestions.clear();
 
-            synchronized (spellChecker) {
+            editorPane.getStyledDocument()
+                    .setCharacterAttributes(0, 
+                                            editorPane.getStyledDocument().getLength(), 
+                                            defaultStyle, true);
 
-                isSpellChecking = true;
-                
-                spellChecker.reset();
-                spellChecker.addSpellCheckListener(this);                                 
+            SpellChecker spellChecker = host.getSpellChecker();
+            if (spellChecker != null) {
 
-                try {
-                    spellChecker.checkSpelling(
-                            new DocumentWordTokenizer(editorPane.getDocument()));
+                log.debug("Starting spell check for " + page.getId());
+
+                synchronized (spellChecker) {
+
+                    isSpellChecking = true;
+
+                    spellChecker.reset();
+                    spellChecker.addSpellCheckListener(this);                                 
+
+                    try {
+                        spellChecker.checkSpelling(
+                                new DocumentWordTokenizer(editorPane.getDocument()));
+                    }
+                    finally {
+                        spellChecker.removeSpellCheckListener(this);
+                        isSpellChecking = false;
+                    }
+                    
+                    log.debug("Finished spell check for " + page.getId());
                 }
-                finally {
-                    spellChecker.removeSpellCheckListener(this);
-                    isSpellChecking = false;
-                }
-
-                log.debug("Finished spell check for " + page.getId());
             }
         }
     }
 
     @Override
-    public void spellingError(SpellCheckEvent event) {
+    public void spellingError(final SpellCheckEvent event) {
         log.info("Spelling error: ''" + event.getInvalidWord() + "''");
         
         int start = event.getWordContextPosition();
@@ -723,20 +728,32 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
                 length, 
                 spellingErrorStyle, true);
         
-        SpellChecker spellChecker = host.getSpellChecker();
+        final SpellChecker spellChecker = host.getSpellChecker();
         
         if (spellChecker != null) {
-            List wordSuggestions = spellChecker.getSuggestions(event.getInvalidWord(), 0);
-            List<String> sgs = new LinkedList<>();                
+            
+            final Supplier<List<String>> suggestionSupplier = new Supplier<List<String>>() {            
 
-            if (wordSuggestions != null && !wordSuggestions.isEmpty()) {
-                for (Object suggestion : wordSuggestions) {
-                    Word word = (Word)suggestion;
-                    sgs.add(word.getWord());
+                @Override
+                public List<String> get() {
+                    List wordSuggestions = spellChecker.getSuggestions(event.getInvalidWord(), 0);
+                    List<String> sgs = new LinkedList<>();                
+
+                    if (wordSuggestions != null && !wordSuggestions.isEmpty()) {
+                        for (Object suggestion : wordSuggestions) {
+                            Word word = (Word)suggestion;
+                            sgs.add(word.getWord());
+                        }
+                        
+                        return sgs;
+                    }
+                    else {
+                        return new LinkedList<>();
+                    }
                 }
+            };            
 
-                suggestions.put(new IntRange(start, end), sgs);
-            }
+            suggestions.put(new IntRange(start, end), suggestionSupplier);
         }
     }
 
