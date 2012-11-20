@@ -107,6 +107,8 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
     @Override
     public void scrollToId(String id) {
        
+        log.debug("Trying to scroll to " + id);
+        
         Box rootBox = htmlPanel.getRootBox();
         if (rootBox != null) {
             Box lineAnnotation = findId(rootBox, id);
@@ -154,6 +156,7 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
         byte[] htmlBytes = html.getBytes(Charset.forName("utf-8"));
         
         try {
+            log.debug("Setting HTML renderer's document");
             htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            
             
         } catch (Exception ex) {

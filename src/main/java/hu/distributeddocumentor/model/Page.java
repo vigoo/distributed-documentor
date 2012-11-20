@@ -38,7 +38,7 @@ public class Page extends Observable {
     private String markup;
     
     private List<String> refs;
-    private Set<String> snippetRefs = new HashSet<String>();
+    private Set<String> snippetRefs = new HashSet<>();
     
     private boolean isParserInitialized;
     private MarkupParser parser;
@@ -191,18 +191,20 @@ public class Page extends Observable {
      * @param markup the page's source in its selected markup language
      */
     public void setMarkup(String markup) {
-        this.markup = markup;
+        if (!this.markup.equals(markup)) {
+            this.markup = markup;        
               
-        if (!isParserInitialized) {
-            initializeParser();
+            if (!isParserInitialized) {
+                initializeParser();
+            }
+
+            refs = refExtractor.getReferencedPages(preprocessMarkup(markup));
+
+            setChanged();
+            notifyObservers();       
+
+            hasChanged = true;
         }
-        
-        refs = refExtractor.getReferencedPages(preprocessMarkup(markup));
-        
-        setChanged();
-        notifyObservers();       
-        
-        hasChanged = true;
     }
 
     /**
