@@ -7,6 +7,7 @@ import com.aragost.javahg.commands.*;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.CaseInsensitiveMap;
 import hu.distributeddocumentor.utils.RepositoryUriGenerator;
+import hu.distributeddocumentor.utils.ResourceUtils;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileFilter;
@@ -153,7 +154,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     public void initFromExisting(File repositoryRoot) throws FailedToLoadPageException, FailedToLoadTOCException {
         
         File realRepositoryRoot = findRealRepositoryRoot(repositoryRoot);
-        relativeRoot = realRepositoryRoot.toURI().relativize(repositoryRoot.toURI()).getPath();
+        relativeRoot = ResourceUtils.getRelativePath(repositoryRoot.getAbsolutePath(), realRepositoryRoot.getAbsolutePath());
         
         log.info("Specified root: " + repositoryRoot.toString());
         log.info("Real root:      " + realRepositoryRoot.toString());

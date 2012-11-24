@@ -1,6 +1,8 @@
 package hu.distributeddocumentor.model.virtual;
 
 import hu.distributeddocumentor.model.TOCNode;
+import java.io.File;
+import java.util.Collection;
 
 /**
  * Represents a virtual documentation hierarchy builder
@@ -24,4 +26,20 @@ public interface VirtualHierarchyBuilder {
      * @return the root node of the generated subtree
      */
     TOCNode build();
+
+    /**
+     * Returns the scope name to be used during export.
+     * 
+     * If used (not null), the virtual hierarchy will be generated into a 
+     * subdirectory with the scope name instead of the main documentation.
+     * 
+     * @return the scope name or null if not used
+     */
+    public String getScope();
+
+    /**
+     * Returns the extra images to be included in the documentation
+     * @return a collection of image files
+     */
+    public Collection<File> getExtraImages();
 }

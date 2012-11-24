@@ -5,10 +5,12 @@ import hu.distributeddocumentor.model.*;
 import hu.distributeddocumentor.model.virtual.MediaWikiWriter;
 import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -54,6 +56,16 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
             }
         };
     }
+
+    @Override
+    public String getScope() {
+        return null;
+    }
+
+    @Override
+    public Collection<File> getExtraImages() {
+        return new HashSet<>();
+    }        
 
     /**
      * Creates a new node referring to a generated page
@@ -136,4 +148,5 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
         }
 
     }
+       
 }

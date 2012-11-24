@@ -60,6 +60,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSetAsDocXmlRootActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="miSetAsMergeRoot">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Merged documentation root node"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSetAsMergeRootActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator1">

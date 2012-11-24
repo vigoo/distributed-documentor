@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import com.jidesoft.swing.FolderChooser;
 import com.jidesoft.swing.SearchableUtils;
 import hu.distributeddocumentor.controller.PageIdGenerator;
 import hu.distributeddocumentor.controller.TOCNodeCellEditor;
@@ -10,11 +11,15 @@ import hu.distributeddocumentor.model.PageAlreadyExistsException;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
 import hu.distributeddocumentor.model.virtual.builders.docxml.DocXmlHierarchyBuilder;
+import hu.distributeddocumentor.model.virtual.builders.merge.DocumentationMerger;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
+import hu.distributeddocumentor.utils.ResourceUtils;
 import java.awt.Component;
 import java.awt.HeadlessException;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
@@ -30,16 +35,18 @@ public class TableOfContentsView extends javax.swing.JPanel {
     private final Documentation doc;
     private final TOC toc;
     private final PageEditorHost pageEditorHost;
+    private final DocumentorPreferences prefs;
     
-    private TOCNode contextMenuTarget;
+    private TOCNode contextMenuTarget;    
     
     /**
      * Creates new form TableOfContentsView
      */
-    public TableOfContentsView(final Documentation doc, PageEditorHost pageEditorHost) {
+    public TableOfContentsView(final Documentation doc, PageEditorHost pageEditorHost, DocumentorPreferences prefs) {
         this.doc = doc;
         toc = doc.getTOC();
         this.pageEditorHost = pageEditorHost;
+        this.prefs = prefs;
         
         initComponents();   
         
@@ -112,6 +119,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         jMenu1 = new javax.swing.JMenu();
         miSetAsDocXmlRoot = new javax.swing.JMenuItem();
+        miSetAsMergeRoot = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         miRemove = new javax.swing.JMenuItem();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -167,6 +175,14 @@ public class TableOfContentsView extends javax.swing.JPanel {
             }
         });
         jMenu1.add(miSetAsDocXmlRoot);
+
+        miSetAsMergeRoot.setText("Merged documentation root node");
+        miSetAsMergeRoot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSetAsMergeRootActionPerformed(evt);
+            }
+        });
+        jMenu1.add(miSetAsMergeRoot);
 
         popupMenu.add(jMenu1);
         popupMenu.add(jSeparator1);
@@ -435,8 +451,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
             File xmlFile = chooser.getSelectedFile(); 
             
             try {
-                String relativePath = new File(doc.getRepositoryRoot()).toURI().relativize(xmlFile.toURI()).getPath();
-            
+                String relativePath = ResourceUtils.getRelativePath(xmlFile.getAbsolutePath(), doc.getRepositoryRoot());                                    
                 toc.convertToVirtualRoot(contextMenuTarget, DocXmlHierarchyBuilder.class, relativePath);
             }
             catch (Exception ex) {
@@ -454,6 +469,35 @@ public class TableOfContentsView extends javax.swing.JPanel {
         }
         
     }//GEN-LAST:event_miPropertiesActionPerformed
+
+    private void miSetAsMergeRootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSetAsMergeRootActionPerformed
+        
+        List<String> recent = prefs.getRecentRepositories();
+        
+        FolderChooser chooser;
+        if (recent.size() > 0) {
+            chooser = new FolderChooser(recent.get(0));
+        }
+        else {
+            chooser = new FolderChooser();
+        }
+        
+        chooser.setDialogTitle("Documentation to be merged");
+        chooser.setRecentList(recent);
+        chooser.setRecentListVisible(true);        
+                
+        if (chooser.showOpenDialog(pageEditorHost.getMainFrame()) == FolderChooser.APPROVE_OPTION) {
+            File repositoryRoot = chooser.getSelectedFolder();
+            
+            try {
+                String relativePath = ResourceUtils.getRelativePath(repositoryRoot.getAbsolutePath(), doc.getRepositoryRoot());                                                                
+                toc.convertToVirtualRoot(contextMenuTarget, DocumentationMerger.class, relativePath);
+            }
+            catch (Exception ex) {
+                ErrorDialog.show(pageEditorHost.getMainFrame(), "Failed to create documentation merger root node", ex);
+            }
+        }        
+    }//GEN-LAST:event_miSetAsMergeRootActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAdd;
@@ -473,6 +517,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
     private javax.swing.JMenuItem miProperties;
     private javax.swing.JMenuItem miRemove;
     private javax.swing.JMenuItem miSetAsDocXmlRoot;
+    private javax.swing.JMenuItem miSetAsMergeRoot;
     private javax.swing.JPopupMenu popupMenu;
     private javax.swing.JTree tree;
     // End of variables declaration//GEN-END:variables

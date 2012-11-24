@@ -1,39 +1,60 @@
 package hu.distributeddocumentor.exporters;
 
+import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
+import hu.distributeddocumentor.utils.ResourceUtils;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 
-public class HTMLBasedExporter {
+public abstract class HTMLBasedExporter {
     
-    protected final Map<TOCNode, TOCNode> realNodes;                    
+    protected final Map<TOCNode, ExportableNode> realNodes;                    
+    protected final DocumentorPreferences prefs;
 
-    public HTMLBasedExporter() {       
+    public HTMLBasedExporter(DocumentorPreferences prefs) {       
+        this.prefs = prefs;
         realNodes = new HashMap<>();
     }        
 
     protected void exportReferencedPages(File repositoryRoot, File targetDir, TOCNode node) throws FileNotFoundException {
         
-        TOCNode realNode = node.getRealNode(repositoryRoot);        
-        realNodes.put(node, realNode);
+        final ExportableNode exportable = node.getRealNode(repositoryRoot, prefs);        
+        final TOCNode realNode = exportable.getNode();
         
-        Page page = realNode.getTarget();
+        realNodes.put(node, exportable);
+        
+        final Page page = realNode.getTarget();
+        final File newTargetDir;        
+        if (exportable.getScope() != null) {
+            newTargetDir = new File(targetDir, exportable.getScope());
+            
+            if (!newTargetDir.exists()) {
+                if (!newTargetDir.mkdirs()) {
+                    throw new RuntimeException("Failed to create target subdirectory!");
+                }
+            }
+        }
+        else {
+            newTargetDir = targetDir;
+        }
+        
         if (page != null) {
-            exportPage(page, targetDir);
+            exportPage(page, newTargetDir);
         }
         
         for (TOCNode childNode : realNode.getChildren()) {
-            exportReferencedPages(repositoryRoot, targetDir, childNode);
+            exportReferencedPages(repositoryRoot, newTargetDir, childNode);
         }
     }
 
     protected File exportPage(Page page, File targetDir) throws FileNotFoundException {        
         
         File target = new File(targetDir, page.getId()+".html");
-        String html = page.asHTML();
+        String html = page.asHTML(ResourceUtils.getRelativePath(getTargetRootDir().getAbsolutePath(), targetDir.getAbsolutePath())+"/");
         
         try (PrintWriter out = new PrintWriter(target)) {
             out.print(html);
@@ -66,4 +87,6 @@ public class HTMLBasedExporter {
             }        
         }
     }
+
+    protected abstract File getTargetRootDir();        
 }

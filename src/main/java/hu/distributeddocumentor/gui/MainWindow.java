@@ -114,7 +114,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             if (startup.initialize(doc)) {
                 twTOC = toolWindowManager.registerToolWindow(
                         "TOC", "Table of contents", null, 
-                        new TableOfContentsView(doc, this), 
+                        new TableOfContentsView(doc, this, prefs), 
                         ToolWindowAnchor.LEFT);
 
                 twTOC.setType(ToolWindowType.DOCKED);

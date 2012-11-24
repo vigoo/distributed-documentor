@@ -1,6 +1,8 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.builders.UsesPreferences;
 import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -28,6 +30,7 @@ public class TOCNode {
     //       by introducing a public TOCNode interface which only has some getters
     
     private static final Logger log = LoggerFactory.getLogger(Documentation.class.getName());
+    private static final Collection<File> noExtraImages = new HashSet<>();
     
     private String title;
     private Page target;   
@@ -463,23 +466,35 @@ public class TOCNode {
      * with the hierarchy builder. Otherwise it just returns itself.
      * 
      * @param repositoryRoot the repository's root directory
+     * @param prefs the application's preferences, the builder may need it
      * @return returns the node to be used when generating the documentation
      */
-    public TOCNode getRealNode(File repositoryRoot) {
+    public ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs) {
         
         if (virtualHierarchyBuilder == null) {
-            return this;
+            return new ExportableNode(this, null, noExtraImages);
         }
         else {
             try{
                 VirtualHierarchyBuilder builder = (VirtualHierarchyBuilder) ConstructorUtils.invokeConstructor(virtualHierarchyBuilder, new File(repositoryRoot, sourcePath), title, "MediaWiki");
                 
-                return builder.build();
+                if (builder instanceof UsesPreferences) {
+                    UsesPreferences up = (UsesPreferences)builder;
+                    up.setPreferences(prefs);
+                }                    
+                
+                TOCNode result = builder.build();
+                if (result != null) {
+                    return new ExportableNode(result, builder.getScope(), builder.getExtraImages());
+                }
+                else {
+                    return new ExportableNode(this, null, noExtraImages);
+                }
             }
             catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException ex) {
                 log.error("Failed to create virtual hierarcby builder", ex);
                
-                return this;
+                return new ExportableNode(this, null, noExtraImages);
             }
         }
     }

@@ -245,11 +245,13 @@ public class Page extends Observable {
      * The HTML will contain external references to the documentation's CSS 
      * file. Use asHTMLembeddingCSS method to make the stylesheet inline.
      * 
+     * @param pathToRoot relative path to the root where scripts and stylesheets lie
+     * 
      * @return returns the page markup converted to HTML
      */
-    public String asHTML() {
+    public String asHTML(String pathToRoot) {
         
-        return asHTML(false, null, false);
+        return asHTML(false, null, false, pathToRoot);
     }
     
     /**
@@ -266,7 +268,7 @@ public class Page extends Observable {
      */
     public String asHTMLembeddingCSS() {
         
-        return asHTML(true, null, false);
+        return asHTML(true, null, false, "");
     }
     
     /**
@@ -277,7 +279,7 @@ public class Page extends Observable {
      * @return returns the page markup converted to HTML
      */
     public String asAnnotatedHTMLembeddingCSS() {
-        return asHTML(true, null, true);
+        return asHTML(true, null, true, "");
     }
     
     /**
@@ -296,17 +298,17 @@ public class Page extends Observable {
      */
     public String asHTMLembeddingCSS(File root) {
         
-        return asHTML(true, root, false);
+        return asHTML(true, root, false, "");
     }
     
-    private String asHTML(boolean embedCSS, File root, boolean annotated) {
+    private String asHTML(boolean embedCSS, File root, boolean annotated, String pathToRoot) {
        if (!isParserInitialized) {
             initializeParser();
         }
        
        StringWriter writer = new StringWriter();
        
-       ExtendedHtmlDocumentBuilder builder = new ExtendedHtmlDocumentBuilder(writer, root);
+       ExtendedHtmlDocumentBuilder builder = new ExtendedHtmlDocumentBuilder(writer, root, pathToRoot);
        
        HtmlDocumentBuilder.Stylesheet stylesheet;
        if (embedCSS) {
@@ -314,7 +316,7 @@ public class Page extends Observable {
                    new InputStreamReader(
                     getClass().getResourceAsStream("/documentation.css")));
        } else {
-           stylesheet = new HtmlDocumentBuilder.Stylesheet("documentation.css");
+           stylesheet = new HtmlDocumentBuilder.Stylesheet(pathToRoot+"documentation.css");
        }
        builder.addCssStylesheet(stylesheet);
        

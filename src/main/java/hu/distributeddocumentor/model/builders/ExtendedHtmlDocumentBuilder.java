@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.model.builders;
 
+import hu.distributeddocumentor.utils.ResourceUtils;
 import java.io.File;
 import java.io.Writer;
 import java.util.HashMap;
@@ -20,7 +21,8 @@ import org.eclipse.mylyn.wikitext.core.parser.Attributes;
  */
 public class ExtendedHtmlDocumentBuilder extends LinkFixingBuilder {
 
-    private Set<String> usedSyntaxes = new HashSet<>();
+    private final Set<String> usedSyntaxes = new HashSet<>();
+    private final String pathToRoot;
     
     private static Map<String, String> syntaxMap;
     
@@ -92,12 +94,13 @@ public class ExtendedHtmlDocumentBuilder extends LinkFixingBuilder {
      * Constructs the HTML builder
      * 
      * @param out the writer to be used to generate the HTML output
-     * @param root root directory for the documentation's html output, 
-     *             used to refer to scripts and stylesheets of the
-     *             syntax highlighter
+     * @param root root directory for the documentation's html output
+     * @param pathToRoot relative path to the root where scripts and stylesheets lie
      */
-    public ExtendedHtmlDocumentBuilder(Writer out, File root) {
+    public ExtendedHtmlDocumentBuilder(Writer out, File root, String pathToRoot) {
         super(out, root);
+        
+        this.pathToRoot = pathToRoot;
     }
 
 
@@ -108,8 +111,9 @@ public class ExtendedHtmlDocumentBuilder extends LinkFixingBuilder {
                         
             emitScript("syntaxhighlighter/shCore.js");
             
-            for (String syntax : usedSyntaxes)
+            for (String syntax : usedSyntaxes) {
                 emitScript("syntaxhighlighter/shBrush" + syntax + ".js");
+            }
             
             emitStylesheet("syntaxhighlighter/shCore.css");
             emitStylesheet("syntaxhighlighter/shThemeDefault.css");                                
@@ -134,8 +138,9 @@ public class ExtendedHtmlDocumentBuilder extends LinkFixingBuilder {
                 String syntaxRef = cls.substring("brush: ".length());
                 String syntax = syntaxMap.get(syntaxRef);
                 
-                if (syntax != null)
+                if (syntax != null) {
                     usedSyntaxes.add(syntax);
+                }
             }
         }
     }        
@@ -145,13 +150,13 @@ public class ExtendedHtmlDocumentBuilder extends LinkFixingBuilder {
         writer.writeEmptyElement("link");
         writer.writeAttribute("type", "text/css");
         writer.writeAttribute("rel", "stylesheet");
-        writer.writeAttribute("href", css);
+        writer.writeAttribute("href", pathToRoot+css);
     }
     
     private void emitScript(String js) {
         writer.writeStartElement("script");
         writer.writeAttribute("type", "text/javascript");
-        writer.writeAttribute("src", js);        
+        writer.writeAttribute("src", pathToRoot+js);        
         writer.writeEndElement();
     }
     

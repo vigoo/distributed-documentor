@@ -19,17 +19,18 @@ import javax.swing.JOptionPane;
 import org.apache.commons.lang3.StringUtils;
 
 public class CHMExporter extends HTMLBasedExporter implements Exporter {
-    
-    private final DocumentorPreferences prefs;
     private final Set<String> contentFiles = new HashSet<>();
+    private File targetDir;
 
     @Inject
     public CHMExporter(DocumentorPreferences prefs) {
-        this.prefs = prefs;   
+        super(prefs);
     }
 
     @Override
     public void export(Documentation doc, File targetDir) throws FileNotFoundException, IOException {
+        
+        this.targetDir = targetDir;
         
         // Creating the target directory if necessary
         if (!targetDir.exists()) {
@@ -187,5 +188,10 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
     @Override
     public String toString() {
         return getTargetName();
+    }
+
+    @Override
+    protected File getTargetRootDir() {
+        return targetDir;
     }
 }

@@ -5,8 +5,10 @@ import com.google.inject.Inject;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.HTMLBasedExporter;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,15 +17,18 @@ import org.apache.commons.lang3.StringUtils;
 
 
 public class HTMLExporter extends HTMLBasedExporter implements Exporter {
+    private File targetDir;
 
     @Inject
-    public HTMLExporter() {        
+    public HTMLExporter(DocumentorPreferences prefs) {        
+        super(prefs);
     }
     
     
     @Override
     public void export(Documentation doc, File targetDir) throws FileNotFoundException, IOException {
         
+        this.targetDir = targetDir;
         File repositoryRoot = new File(doc.getRepositoryRoot());
         
         if (!targetDir.exists()) {
@@ -135,7 +140,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
                 if (node != toc.getRecycleBin() &&
                     ((node != toc.getUnorganized()) ||
                      (node == toc.getUnorganized() && node.getChildren().size() > 0))) {
-                    exportTOCNode(node, out, 6, node == toc.getRoot().getChildren().get(0));
+                    exportTOCNode(node, out, 6, "", node == toc.getRoot().getChildren().get(0));
                 }
             }
             
@@ -144,10 +149,15 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         }
     }
 
-    private void exportTOCNode(TOCNode node, PrintWriter out, int indent, boolean isFirst) {
+    private void exportTOCNode(TOCNode node, PrintWriter out, int indent, String scope, boolean isFirst) {
         
-        final TOCNode realNode = realNodes.get(node);
+        final ExportableNode exportable = realNodes.get(node);
+        final TOCNode realNode = exportable.getNode();
         
+        if (exportable.getScope() != null) {
+            scope = scope + exportable.getScope() + "/";
+        }
+                       
         String i = StringUtils.repeat(" ", indent);
         
         if (isFirst) {
@@ -159,7 +169,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
 
         out.print(i+"['"+fixTitle(realNode.getTitle())+"'");
         if (realNode.hasTarget()) {            
-            out.print(", '"+realNode.getTarget().getId()+".html'");
+            out.print(", '"+scope+realNode.getTarget().getId()+".html'");
         } else {
             out.print(", null");
         }
@@ -171,7 +181,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
             for (int j = 0; j < realNode.getChildren().size(); j++) {
                 
                 TOCNode child = realNode.getChildren().get(j);
-                exportTOCNode(child, out, indent + 4, j == 0);
+                exportTOCNode(child, out, indent + 4, scope, j == 0);
             }
             
             out.println();
@@ -193,5 +203,10 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     @Override
     public String toString() {
         return getTargetName();
+    }
+
+    @Override
+    protected File getTargetRootDir() {
+        return targetDir;
     }
 }
