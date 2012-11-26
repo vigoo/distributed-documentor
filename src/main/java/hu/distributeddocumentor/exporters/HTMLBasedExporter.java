@@ -8,6 +8,7 @@ import hu.distributeddocumentor.utils.ResourceUtils;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 public abstract class HTMLBasedExporter {
@@ -20,7 +21,7 @@ public abstract class HTMLBasedExporter {
         realNodes = new HashMap<>();
     }        
 
-    protected void exportReferencedPages(File repositoryRoot, File targetDir, TOCNode node) throws FileNotFoundException {
+    protected void exportReferencedPages(File repositoryRoot, File targetDir, TOCNode node) throws FileNotFoundException, IOException {
         
         final ExportableNode exportable = node.getRealNode(repositoryRoot, prefs);        
         final TOCNode realNode = exportable.getNode();
@@ -40,6 +41,11 @@ public abstract class HTMLBasedExporter {
         }
         else {
             newTargetDir = targetDir;
+        }
+        
+        Set<File> extraImages = exportable.getExtraImages();
+        if (extraImages.size() > 0) {
+            exportExtraImages(extraImages, newTargetDir);
         }
         
         if (page != null) {
@@ -88,5 +94,15 @@ public abstract class HTMLBasedExporter {
         }
     }
 
+    /** 
+     * Gets the root directory where pages will be exported
+     */
     protected abstract File getTargetRootDir();        
+
+    /**
+     * Exports a set of extra images
+     * @param extraImages set of extra image files to be exported
+     * @param targetDir current target directory where the pages are being exported
+     */
+    protected abstract void exportExtraImages(Set<File> extraImages, File targetDir) throws IOException;
 }

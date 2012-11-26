@@ -5,10 +5,12 @@ import com.google.inject.Inject;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.HTMLBasedExporter;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.TOC;
 import hu.distributeddocumentor.model.TOCNode;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
+import hu.distributeddocumentor.utils.ResourceUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -86,8 +88,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
     @Override
     protected File exportPage(Page page, File targetDir) throws FileNotFoundException {
         File target = super.exportPage(page, targetDir);
-        
-        contentFiles.add(target.getName());
+                        
+        contentFiles.add(ResourceUtils.getRelativePath(target.getAbsolutePath(), this.targetDir.getAbsolutePath()));
         
         return target;
     }
@@ -148,7 +150,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
                 if (node != toc.getRecycleBin() &&
                     ((node != toc.getUnorganized()) ||
                      (node == toc.getUnorganized() && node.getChildren().size() > 0))) {
-                    exportTOCNode(node, out, 6);
+                    exportTOCNode(node, out, 6, "");
                 }
             }
             
@@ -157,23 +159,30 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         }
     }
 
-    private void exportTOCNode(TOCNode node, PrintWriter out, int indent) {        
+    private void exportTOCNode(TOCNode node, PrintWriter out, int indent, String scope) {        
+        final ExportableNode exportable = realNodes.get(node);
+        final TOCNode realNode = exportable.getNode();
+                
+        if (exportable.getScope() != null) {
+            scope = scope + exportable.getScope() + "/";
+        }
+        
         String i = StringUtils.repeat(" ", indent);
         
         out.println(i + "<LI><OBJECT type=\"text/sitemap\">");
-        out.println(i + "    <param name=\"Name\" value=\"" + node.getTitle() + "\">");
+        out.println(i + "    <param name=\"Name\" value=\"" + realNode.getTitle() + "\">");
         
-        if (node.getTarget() != null) {
-            out.println(i + "    <param name=\"Local\" value=\"" + node.getTarget().getId() + ".html\">");
+        if (realNode.getTarget() != null) {
+            out.println(i + "    <param name=\"Local\" value=\"" + scope + realNode.getTarget().getId() + ".html\">");
         }
         out.println(i + "</OBJECT>");                
         
-        if (node.getChildren().size() > 0) {
+        if (realNode.getChildren().size() > 0) {
             
             out.println(i + "<UL>");
             
-            for (TOCNode child : node.getChildren()) {
-                exportTOCNode(child, out, indent+2);
+            for (TOCNode child : realNode.getChildren()) {
+                exportTOCNode(child, out, indent+2, scope);
             }
             
             out.println(i + "</UL>");
@@ -193,5 +202,22 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
     @Override
     protected File getTargetRootDir() {
         return targetDir;
+    }
+
+    @Override
+    protected void exportExtraImages(Set<File> extraImages, File targetDir) throws IOException {
+        // Exporting the images
+        File mediaDir = new File(targetDir, "media");
+        if (!mediaDir.exists()) {
+            if (!mediaDir.mkdir()) {
+                throw new RuntimeException("Failed to create media directory!");
+            }
+        }
+        
+        for (File image : extraImages) {            
+            final File targetFile = new File(mediaDir, image.getName());            
+            Files.copy(image, targetFile);            
+            contentFiles.add(ResourceUtils.getRelativePath(targetFile.getAbsolutePath(), this.targetDir.getAbsolutePath()));
+        }
     }
 }

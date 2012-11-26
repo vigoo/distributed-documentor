@@ -13,8 +13,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
-
 
 public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     private File targetDir;
@@ -208,5 +208,20 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     @Override
     protected File getTargetRootDir() {
         return targetDir;
+    }
+
+    @Override
+    protected void exportExtraImages(Set<File> extraImages, File targetDir) throws IOException {
+        // Exporting the images
+        File mediaDir = new File(targetDir, "media");
+        if (!mediaDir.exists()) {
+            if (!mediaDir.mkdir()) {
+                throw new RuntimeException("Failed to create media directory!");
+            }
+        }
+        
+        for (File image : extraImages) {            
+            Files.copy(image, new File(mediaDir, image.getName()));            
+        }
     }
 }
