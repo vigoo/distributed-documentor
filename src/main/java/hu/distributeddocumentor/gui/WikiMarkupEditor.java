@@ -73,7 +73,7 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
         initComponents();
         
         this.page = page;
-        this.prefs = prefs;
+        this.prefs = prefs;        
         
         suggestions = new HashMap<>();
         
@@ -82,6 +82,8 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
         spellingErrorStyle = editorPane.addStyle("spellingError", defaultStyle);
         StyleConstants.setForeground(spellingErrorStyle, Color.red);
         StyleConstants.setUnderline(spellingErrorStyle, true);
+        
+        updateFont();
                      
         spellCheckTimer = new Timer(2000, 
                 new ActionListener() {
@@ -95,6 +97,10 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
         spellCheckTimer.stop();               
         
         syncToPage();
+        editorPane.getStyledDocument()
+                    .setCharacterAttributes(0, 
+                                            editorPane.getStyledDocument().getLength(), 
+                                            defaultStyle, true);
         
         Document document = editorPane.getDocument();
         document.addDocumentListener(
@@ -195,9 +201,7 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
         if ("MediaWiki".equals(page.getMarkupLanguage())) {
             editor = new MediaWikiEditor(page);
         }
-        this.previewSync = previewSync;
-        
-        updateFont();
+        this.previewSync = previewSync;                
     }
     
     /**
@@ -205,6 +209,12 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
      */
     public void updateFont() {
         editorPane.setFont(prefs.getEditorFont());
+        StyleConstants.setFontFamily(defaultStyle, prefs.getEditorFont().getFamily());
+        StyleConstants.setFontSize(defaultStyle, prefs.getEditorFont().getSize());
+        StyleConstants.setFontFamily(spellingErrorStyle, prefs.getEditorFont().getFamily());
+        StyleConstants.setFontSize(spellingErrorStyle, prefs.getEditorFont().getSize());
+                
+        syncToPage();
     }
 
     /*
