@@ -34,9 +34,9 @@ import java.util.Map;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
+import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.slf4j.Logger;
@@ -58,12 +58,10 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
     private boolean isSpellChecking;
     private String lastCheckedMarkup;
     private Map<IntRange, Supplier<List<String>>> suggestions;
-    
-    private final Style defaultStyle;
-    private final Style spellingErrorStyle;
-    
+        
     private int lastCurrentLine;
     private final PreviewSync previewSync;
+    private final HighlightPainter spellCheckHighlightPainter;
     
     
     /**
@@ -75,14 +73,10 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
         this.page = page;
         this.prefs = prefs;        
         
+        spellCheckHighlightPainter = new SquiggleUnderlineHighlightPainter(Color.red);
+        
         suggestions = new HashMap<>();
-        
-        defaultStyle = editorPane.addStyle("default", null);
-        
-        spellingErrorStyle = editorPane.addStyle("spellingError", defaultStyle);
-        StyleConstants.setForeground(spellingErrorStyle, Color.red);
-        StyleConstants.setUnderline(spellingErrorStyle, true);
-        
+                
         updateFont();
                      
         spellCheckTimer = new Timer(2000, 
@@ -97,10 +91,6 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
         spellCheckTimer.stop();               
         
         syncToPage();
-        editorPane.getStyledDocument()
-                    .setCharacterAttributes(0, 
-                                            editorPane.getStyledDocument().getLength(), 
-                                            defaultStyle, true);
         
         Document document = editorPane.getDocument();
         document.addDocumentListener(
@@ -209,10 +199,6 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
      */
     public void updateFont() {
         editorPane.setFont(prefs.getEditorFont());
-        StyleConstants.setFontFamily(defaultStyle, prefs.getEditorFont().getFamily());
-        StyleConstants.setFontSize(defaultStyle, prefs.getEditorFont().getSize());
-        StyleConstants.setFontFamily(spellingErrorStyle, prefs.getEditorFont().getFamily());
-        StyleConstants.setFontSize(spellingErrorStyle, prefs.getEditorFont().getSize());
                 
         syncToPage();
     }
@@ -686,6 +672,20 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
         return undoManager;
     }
     
+    private void removeSpellCheckerHighlights() {
+        
+        editorPane.getHighlighter().removeAllHighlights();
+    }
+    
+    private void addSpellCheckerHighlight(int start, int end) {
+        
+        try {
+            editorPane.getHighlighter().addHighlight(start, end, spellCheckHighlightPainter);
+        } catch (BadLocationException ble) {
+            log.error("addSpellCheckerHighlight called with bad location: " + ble.getMessage());
+        }
+    }
+    
     private void performSpellCheck() {
 
         if (!page.getMarkup().equals(lastCheckedMarkup)) {
@@ -693,10 +693,7 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
             lastCheckedMarkup = page.getMarkup();
             suggestions.clear();
 
-            editorPane.getStyledDocument()
-                    .setCharacterAttributes(0, 
-                                            editorPane.getStyledDocument().getLength(), 
-                                            defaultStyle, true);
+            removeSpellCheckerHighlights();
 
             SpellChecker spellChecker = host.getSpellChecker();
             if (spellChecker != null) {
@@ -733,10 +730,7 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
         int length = event.getInvalidWord().length();
         int end = start + length;
         
-        editorPane.getStyledDocument().setCharacterAttributes(
-                start, 
-                length, 
-                spellingErrorStyle, true);
+        addSpellCheckerHighlight(start, end);        
         
         final SpellChecker spellChecker = host.getSpellChecker();
         
