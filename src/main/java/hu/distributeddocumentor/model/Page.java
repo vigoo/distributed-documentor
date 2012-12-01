@@ -384,7 +384,9 @@ public class Page extends Observable {
         // TODO: this should belong to a markup language specific location        
         setMarkup(
             markup.replaceAll("(?i)\\[\\["+oldId+"\\]\\]", "[["+newId+"]]")
-                  .replaceAll("(?i)\\[\\["+oldId+"\\|([a-zA-Z0-9,\\. ]+)", "[["+newId+"|$1"));
+                  .replaceAll("(?i)\\["+oldId+"\\]", "["+newId+"]")
+                  .replaceAll("(?i)\\[\\["+oldId+"\\|([a-zA-Z0-9,\\. ]+)\\]\\]", "[["+newId+"|$1]]")
+                  .replaceAll("(?i)\\["+oldId+"\\|([a-zA-Z0-9,\\. ]+)\\]", "["+newId+"|$1]"));
     }
 
     private void initializeParser() {
