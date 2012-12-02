@@ -364,4 +364,36 @@ public class DocumentorPreferences extends Observable {
     public void setFloatingPreviewY(int y) {
         prefs.putInt("floatingpreviewy", y);
     }
+    
+    public int getMainWindowWidth() {
+        return prefs.getInt("mainwndwidth", 1024);
+    }
+    
+    public void setMainWindowWidth(int width) {
+        prefs.putInt("mainwndwidth", width);
+    }
+
+    public int getMainWindowHeight() {
+        return prefs.getInt("mainwndheight", 768);
+    }
+    
+    public void setMainWindowHeight(int height) {
+        prefs.putInt("mainwndheight", height);
+    }
+    
+    public int getMainWindowX() {
+        return prefs.getInt("mainwndx", 0);
+    }
+
+    public void setMainWindowX(int x) {
+        prefs.putInt("mainwndx", x);
+    }
+    
+    public int getMainWindowY() {
+        return prefs.getInt("mainwndy", 0);
+    }
+
+    public void setMainWindowY(int y) {
+        prefs.putInt("mainwndy", y);
+    }
 }

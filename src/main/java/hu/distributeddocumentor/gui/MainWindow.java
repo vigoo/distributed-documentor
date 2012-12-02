@@ -18,6 +18,8 @@ import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -71,11 +73,37 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     /**
      * Creates new form MainWindow
      */
-    public MainWindow(DocumentorPreferences prefs) {
+    public MainWindow(final DocumentorPreferences prefs) {
         this.prefs = prefs;        
 
         initComponents();
-        setSize(1024, 768);                
+        
+        setLocation(prefs.getMainWindowX(), prefs.getMainWindowY());
+        setSize(prefs.getMainWindowWidth(), prefs.getMainWindowHeight());
+        
+        addComponentListener(
+                new ComponentListener() {
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                prefs.setMainWindowWidth(getWidth());
+                prefs.setMainWindowHeight(getHeight());
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                prefs.setMainWindowX(getX());
+                prefs.setMainWindowY(getY());
+            }
+
+            @Override
+            public void componentShown(ComponentEvent e) {                
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {                
+            }
+        });
         
         try {
             SpellDictionary dictionary = new SpellDictionaryHashMap(
