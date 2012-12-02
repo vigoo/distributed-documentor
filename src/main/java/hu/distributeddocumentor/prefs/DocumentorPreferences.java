@@ -13,13 +13,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DocumentorPreferences {
+public class DocumentorPreferences extends Observable {
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentorPreferences.class.getName());
     
@@ -89,14 +90,16 @@ public class DocumentorPreferences {
     
     public void setMercurialPath(String path) {
         prefs.put("hgpath", path);
+        fireChanged("hgpath");
     }
     
     public String getCHMCompilerPath() {
-        return prefs.get("hhcpath", null);
+        return prefs.get("hhcpath", null);        
     }
     
     public void setCHMCompilerPath(String path) {
         prefs.put("hhcpath", path);
+        fireChanged("hhcpath");
     }
     
     public Exporter getDefaultExporter() {
@@ -111,6 +114,7 @@ public class DocumentorPreferences {
     
     public void setDefaultExporter(Exporter exporter) {
         prefs.put("defaultexporter", exporter.getTargetName());
+        fireChanged("defaultexporter");
     }
     
     public List<String> getRecentRepositories() {        
@@ -130,7 +134,7 @@ public class DocumentorPreferences {
                 reposNode.put(Integer.toString(i), list.get(i));
             }
             
-            prefs.flush();
+            fireChanged("recentRepositories");
         }
         catch (BackingStoreException ex) {
             logger.error(null, ex);
@@ -155,7 +159,7 @@ public class DocumentorPreferences {
                 reposNode.put(Integer.toString(i), list.get(i));
             }
             
-            prefs.flush();
+            fireChanged("recentTargets");
         }
         catch (BackingStoreException ex) {
             logger.error(null, ex);
@@ -181,6 +185,7 @@ public class DocumentorPreferences {
         encoded.append(font.getSize());
         
         prefs.put("editorfont", encoded.toString());
+        fireChanged("editorfont");
     }
     
     public boolean isWindows() {
@@ -263,6 +268,25 @@ public class DocumentorPreferences {
     
     public void setSpellChecking(boolean enabled) {
         prefs.putBoolean("spellchecking", enabled);
+        fireChanged("spellchecking");
+    }
+    
+    public PreviewMode getPreviewMode() {
+        return PreviewMode.valueOf(PreviewMode.class, prefs.get("previewmode", PreviewMode.VerticalSplit.name()));
+    }
+    
+    public void setPreviewMode(PreviewMode mode) {
+        prefs.put("previewmode", mode.name());
+        fireChanged("previewmode");
+    }
+    
+    public double getPreviewSplitterPos() {
+        return prefs.getDouble("previewsplitterpos", 0.5);
+    }
+    
+    public void setPreviewSplitterPos(double newPos) {
+        prefs.putDouble("previewsplitterpos", newPos);
+        fireChanged("previewsplitterpos");
     }
     
     public void toggleSpellChecking() {
@@ -296,4 +320,48 @@ public class DocumentorPreferences {
             return new LinkedList<>();
         }
     }    
+
+    private void fireChanged(String name) {
+        try {
+            prefs.flush();
+        }
+        catch (BackingStoreException ex) {
+            logger.error(null, ex);
+        }
+        
+        setChanged();
+        notifyObservers(name);
+    }
+
+    public int getFloatingPreviewWidth() {
+        return prefs.getInt("floatingpreviewwidth", 640);
+    }
+    
+    public void setFloatingPreviewWidth(int width) {
+        prefs.putInt("floatingpreviewwidth", width);
+    }
+
+    public int getFloatingPreviewHeight() {
+        return prefs.getInt("floatingpreviewheight", 480);
+    }
+    
+    public void setFloatingPreviewHeight(int height) {
+        prefs.putInt("floatingpreviewheight", height);
+    }
+    
+    public int getFloatingPreviewX() {
+        return prefs.getInt("floatingpreviewx", 0);
+    }
+
+    public void setFloatingPreviewX(int x) {
+        prefs.putInt("floatingpreviewx", x);
+    }
+    
+    public int getFloatingPreviewY() {
+        return prefs.getInt("floatingpreviewy", 0);
+    }
+
+    public void setFloatingPreviewY(int y) {
+        prefs.putInt("floatingpreviewy", y);
+    }
 }

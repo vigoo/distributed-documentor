@@ -6,7 +6,9 @@ import java.awt.Desktop;
 import java.awt.Point;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Observable;
@@ -21,14 +23,14 @@ import org.xhtmlrenderer.swing.FSMouseListener;
 import org.xhtmlrenderer.swing.LinkListener;
 import org.xhtmlrenderer.swing.NaiveUserAgent;
 
-public class HTMLPreview extends javax.swing.JPanel implements Observer, PreviewSync {
+public final class HTMLPreview extends javax.swing.JPanel implements Observer, PreviewSync {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HTMLPreview.class.getName());
-    private final Page page;
+
     private final File root;
     private final FSScrollPane scrollPane;
     private final XHTMLPanel htmlPanel;
-    
+    private Page page;    
     
     /**
      * Creates new form HTMLPreview
@@ -54,9 +56,11 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
         htmlPanel.getSharedContext().setUserAgentCallback(uac);
         //htmlPanel.getSharedContext().setReplacedElementFactory(new SwingReplacedElementFactory());
         
-        for (Object listener : htmlPanel.getMouseTrackingListeners())
-            if (listener instanceof LinkListener)
+        for (Object listener : htmlPanel.getMouseTrackingListeners()) {
+            if (listener instanceof LinkListener) {
                 htmlPanel.removeMouseTrackingListener((FSMouseListener)listener);
+            }
+        }
         
         htmlPanel.addMouseTrackingListener(
                 new LinkListener() {
@@ -84,16 +88,27 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
                             try {
                                 Desktop.getDesktop().browse(new URI(uri));
                             }
-                            catch (Exception ex) {
+                            catch (URISyntaxException | IOException ex) {
                                 log.error(null, ex);
                             }
                         }                        
                     }                    
                 });
         
-        page.addObserver(this);
+        switchPage(page);
+    }
+    
+    public void switchPage(Page newPage) {
+        if (page != null) {
+            page.deleteObserver(this);
+        }
         
-        renderPage();
+        page = newPage;
+        
+        if (page != null) {
+            page.addObserver(this);
+            renderPage();
+        }
     }
 
     @Override
@@ -119,8 +134,9 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
                 int top = scrollPane.getVerticalScrollBar().getValue();
                 int bottom = top + scrollPane.getHeight();
 
-                if (pt.y < top || pt.y > bottom)
+                if (pt.y < top || pt.y > bottom) {
                     htmlPanel.scrollTo(pt);
+                }
             }
         }
     }
@@ -200,16 +216,18 @@ public class HTMLPreview extends javax.swing.JPanel implements Observer, Preview
                 // spans to header elements corrupts their id which is otherwise used
                 // as anchors. This way the method can work with both the line number spans
                 // and the mediawiki style automatic anchors.
-                if (elem.getAttribute("id").endsWith(id)) 
-                    return box;                                    
+                if (elem.getAttribute("id").endsWith(id)) {
+                    return box;
+                }                                    
             }
         }
         
         for (Iterator it = box.getChildIterator(); it.hasNext();) {
             Box child = (Box) it.next();
             Box result = findId(child, id);
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
         }
         
         return null;

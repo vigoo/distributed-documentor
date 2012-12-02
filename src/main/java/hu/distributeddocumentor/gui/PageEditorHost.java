@@ -13,4 +13,6 @@ public interface PageEditorHost {
     public Frame getMainFrame();
 
     public SpellChecker getSpellChecker();
+    
+    public FloatingPreview getFloatingPreview();
 }

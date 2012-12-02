@@ -3,38 +3,49 @@ package hu.distributeddocumentor.gui;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.PageMetadata;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
+import hu.distributeddocumentor.prefs.PreviewMode;
 import java.io.File;
+import java.util.Observable;
+import java.util.Observer;
+import javax.swing.JSplitPane;
 import javax.swing.undo.UndoManager;
 
-public class SplittedPageView extends javax.swing.JPanel {
+public final class SplittedPageView extends javax.swing.JPanel implements Observer {
 
     private final WikiMarkupEditor editor;
     private final HTMLPreview preview;
     private final PageMetadata metadata;
-
-    public HTMLPreview getPreview() {
-        return preview;
-    }
-        
+    private final DocumentorPreferences prefs;
+    private final PageEditorHost host;
+    private final Page page;
+    
+    private boolean isUpdatingPreviewMode;    
     
     /**
      * Creates new form SplittedPageView
      */
     public SplittedPageView(Page page, File root, PageEditorHost host, DocumentorPreferences prefs) {
         initComponents();
+        
+        this.page = page;
+        this.prefs = prefs;
+        this.host = host;
+        
+        prefs.addObserver(this);
                 
         metadata = page.getMetadata();
         preview = new HTMLPreview(page, host, root);
         editor = new WikiMarkupEditor(page, host, preview, prefs);
         
-        jSplitPane1.setLeftComponent(editor);
-        jSplitPane1.setRightComponent(preview);
+        splitPane.setLeftComponent(editor);
+        splitPane.setRightComponent(preview);
         
-        jSplitPane1.setDividerLocation(0.5);
+        splitPane.setDividerLocation(0.5);
         
         String currentStatus = (String)metadata.get("Status");
-        if (currentStatus == null)
+        if (currentStatus == null) {
             currentStatus = "Not started";
+        }
         cbStatus.setSelectedItem(currentStatus);
     }
 
@@ -43,6 +54,17 @@ public class SplittedPageView extends javax.swing.JPanel {
      */
     public void updateFont() {
         editor.updateFont();
+    }
+    
+    public void scrollToId(String id) {
+        
+        if (prefs.getPreviewMode() == PreviewMode.Floating) {
+            host.getFloatingPreview().switchPage(page);
+            host.getFloatingPreview().getSync().scrollToId(id);
+        }
+        else if (prefs.getPreviewMode() != PreviewMode.Hidden) {
+            preview.scrollToId(id);
+        }
     }
     
     /**
@@ -54,13 +76,22 @@ public class SplittedPageView extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jSplitPane1 = new javax.swing.JSplitPane();
+        splitPane = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         cbStatus = new javax.swing.JComboBox();
+        tbtVerticalSplit = new javax.swing.JToggleButton();
+        tbtHorizontalSplit = new javax.swing.JToggleButton();
+        tbtFloatingPreview = new javax.swing.JToggleButton();
+        tbtHiddenPreview = new javax.swing.JToggleButton();
 
-        jSplitPane1.setDividerLocation(200);
-        jSplitPane1.setResizeWeight(0.5);
+        splitPane.setDividerLocation(200);
+        splitPane.setResizeWeight(0.5);
+        splitPane.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                splitPanePropertyChange(evt);
+            }
+        });
 
         jPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("ToolTip.background"));
 
@@ -74,36 +105,83 @@ public class SplittedPageView extends javax.swing.JPanel {
             }
         });
 
+        tbtVerticalSplit.setText("|");
+        tbtVerticalSplit.setToolTipText("Vertically splitted preview");
+        tbtVerticalSplit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbtVerticalSplitActionPerformed(evt);
+            }
+        });
+
+        tbtHorizontalSplit.setText("-");
+        tbtHorizontalSplit.setToolTipText("Horizontally splitted preview");
+        tbtHorizontalSplit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbtHorizontalSplitActionPerformed(evt);
+            }
+        });
+
+        tbtFloatingPreview.setText("F");
+        tbtFloatingPreview.setToolTipText("Floating preview");
+        tbtFloatingPreview.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbtFloatingPreviewActionPerformed(evt);
+            }
+        });
+
+        tbtHiddenPreview.setText("H");
+        tbtHiddenPreview.setToolTipText("Hidden preview");
+        tbtHiddenPreview.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbtHiddenPreviewActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(tbtVerticalSplit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tbtHorizontalSplit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tbtFloatingPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tbtHiddenPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 165, Short.MAX_VALUE)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(0, 6, Short.MAX_VALUE)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1)))
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(cbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(jLabel1))
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(tbtVerticalSplit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, Short.MAX_VALUE)
+                            .add(tbtHiddenPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .add(tbtFloatingPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .add(tbtHorizontalSplit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                        .addContainerGap())))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -114,17 +192,104 @@ public class SplittedPageView extends javax.swing.JPanel {
         metadata.put("Status", cbStatus.getSelectedItem().toString());
     }//GEN-LAST:event_cbStatusActionPerformed
 
+    private void tbtVerticalSplitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbtVerticalSplitActionPerformed
+        prefs.setPreviewMode(PreviewMode.VerticalSplit);
+    }//GEN-LAST:event_tbtVerticalSplitActionPerformed
+
+    private void tbtHorizontalSplitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbtHorizontalSplitActionPerformed
+        prefs.setPreviewMode(PreviewMode.HorizontalSplit);
+    }//GEN-LAST:event_tbtHorizontalSplitActionPerformed
+
+    private void tbtFloatingPreviewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbtFloatingPreviewActionPerformed
+        prefs.setPreviewMode(PreviewMode.Floating);
+    }//GEN-LAST:event_tbtFloatingPreviewActionPerformed
+
+    private void tbtHiddenPreviewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbtHiddenPreviewActionPerformed
+        prefs.setPreviewMode(PreviewMode.Hidden);
+    }//GEN-LAST:event_tbtHiddenPreviewActionPerformed
+
+    private void splitPanePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_splitPanePropertyChange
+        
+        if ("dividerLocation".equals(evt.getPropertyName())) {
+            if (!isUpdatingPreviewMode) {
+                if (splitPane.getWidth() > 0 && splitPane.getHeight() > 0) {
+                    if (splitPane.getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
+                        prefs.setPreviewSplitterPos((double)splitPane.getDividerLocation()/(double)splitPane.getWidth());
+                    }
+                    else {
+                        prefs.setPreviewSplitterPos((double)splitPane.getDividerLocation()/(double)splitPane.getHeight());
+                    }
+                }
+            }
+        }
+    }//GEN-LAST:event_splitPanePropertyChange
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbStatus;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane splitPane;
+    private javax.swing.JToggleButton tbtFloatingPreview;
+    private javax.swing.JToggleButton tbtHiddenPreview;
+    private javax.swing.JToggleButton tbtHorizontalSplit;
+    private javax.swing.JToggleButton tbtVerticalSplit;
     // End of variables declaration//GEN-END:variables
 
     public UndoManager getEditorUndoManager() {
         return editor.getUndoManager();
     }
     
-    public void dispose() {        
+    public void dispose() {      
+        prefs.deleteObserver(this);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o == prefs) {
+            if ("previewmode".equals(arg) ||
+                "previewsplitterpos".equals(arg)) {
+                updatePreviewMode();
+            }            
+        }
+    }
+    
+    private void updatePreviewMode() {
+        isUpdatingPreviewMode = true;
+        try {
+            PreviewMode mode = prefs.getPreviewMode();
+
+            tbtVerticalSplit.setSelected(mode == PreviewMode.VerticalSplit);
+            tbtHorizontalSplit.setSelected(mode == PreviewMode.HorizontalSplit);
+            tbtFloatingPreview.setSelected(mode == PreviewMode.Floating);
+            tbtHiddenPreview.setSelected(mode == PreviewMode.Hidden);        
+
+            double location = prefs.getPreviewSplitterPos();
+            switch (mode) {
+                case VerticalSplit:
+                    splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+                    host.getFloatingPreview().hide();
+                    break;
+                case HorizontalSplit:
+                    splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+                    host.getFloatingPreview().hide();
+                    break;
+                case Floating:
+                    location = 1.0; // overriding divider location
+                    host.getFloatingPreview().show();                    
+                    host.getFloatingPreview().switchPage(page);
+                    break;
+                case Hidden:                
+                    location = 1.0; // overriding divider location
+                    host.getFloatingPreview().hide();
+                    break;
+                default:
+                    throw new AssertionError(mode.name());            
+            }
+
+            splitPane.setDividerLocation(location);
+        }
+        finally {
+            isUpdatingPreviewMode = false;
+        }
     }
 }

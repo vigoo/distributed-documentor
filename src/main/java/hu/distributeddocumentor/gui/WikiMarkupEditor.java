@@ -34,7 +34,6 @@ import java.util.Map;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.undo.CannotUndoException;
@@ -573,6 +572,7 @@ public final class WikiMarkupEditor extends javax.swing.JPanel implements SpellC
 
     private void editorPaneFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_editorPaneFocusGained
         spellCheckTimer.start();
+        host.getFloatingPreview().switchPage(page);
     }//GEN-LAST:event_editorPaneFocusGained
 
     private void editorPaneFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_editorPaneFocusLost

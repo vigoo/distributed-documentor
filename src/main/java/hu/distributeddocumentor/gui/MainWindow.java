@@ -12,6 +12,8 @@ import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
 import hu.distributeddocumentor.model.FailedToLoadTOCException;
+import hu.distributeddocumentor.model.Page;
+import hu.distributeddocumentor.model.Snippet;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -46,12 +48,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private final Timer saveTimer;
     private final Timer statusCheckTimer;
     private final Timer removeOrphanedPagesTimer;
+    private final FloatingPreview floatingPreview;
+    
     private UndoManager currentUndoManager;
     private SpellChecker spellChecker;
 
     private ToolWindow twImages;
     private ToolWindow twSnippets;
-    private ToolWindow twTOC;
+    private ToolWindow twTOC;    
 
     @Override
     public SpellChecker getSpellChecker() {
@@ -110,7 +114,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
         
         boolean loaded = false;
-        if (startup.getFinalAction() != StartupDialog.Action.Cancel) {
+        if (startup.getFinalAction() != StartupDialog.Action.Cancel) {            
+            
             if (startup.initialize(doc)) {
                 twTOC = toolWindowManager.registerToolWindow(
                         "TOC", "Table of contents", null, 
@@ -170,6 +175,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 
                 labelRoot.setText(doc.getRepositoryRoot());
 
+                floatingPreview = new FloatingPreviewWindow(new File(doc.getRepositoryRoot()), this, prefs);
                 openOrFocusPage("start", "");
 
                 setVisible(true);        
@@ -209,9 +215,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 loaded = true;
             } else{            
                 saveTimer = statusCheckTimer = removeOrphanedPagesTimer = null;
+                floatingPreview = null;
             }
         } else {            
                 saveTimer = statusCheckTimer = removeOrphanedPagesTimer = null;
+                floatingPreview = null;
         }
         
         if (!loaded)
@@ -742,26 +750,28 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         ContentManager contentManager = toolWindowManager.getContentManager();
                 
         Content content = contentManager.getContent(id);
+        Page page = doc.getPage(id);
         if (content == null) {            
             content = contentManager.addContent(
                 id,
                 "Page: " + id,
                 null,
-                new SplittedPageView(doc.getPage(id), new File(doc.getRepositoryRoot()), this, prefs));   
+                new SplittedPageView(page, new File(doc.getRepositoryRoot()), this, prefs));   
         }
          
         content.setSelected(true);        
+        floatingPreview.switchPage(page);
         
         if (!anchor.isEmpty()) {
             
-            final HTMLPreview preview = ((SplittedPageView)content.getComponent()).getPreview();
+            final SplittedPageView pageView = ((SplittedPageView)content.getComponent());
             
             EventQueue.invokeLater(
                     new Runnable() {
 
                         @Override
                         public void run() {                            
-                            preview.scrollToId(anchor);
+                            pageView.scrollToId(anchor);
                         }                        
                     });            
         }
@@ -772,6 +782,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         
         ContentManager contentManager = toolWindowManager.getContentManager();
         String contentId = "Snippet:"+id;
+        Snippet snippet = doc.getSnippet(id);
         
         Content content = contentManager.getContent(contentId);
         if (content == null) {            
@@ -779,10 +790,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 contentId,
                 "Snippet: " + id,
                 null,
-                new SplittedPageView(doc.getSnippet(id), new File(doc.getRepositoryRoot()), this, prefs));   
+                new SplittedPageView(snippet, new File(doc.getRepositoryRoot()), this, prefs));   
         }
          
         content.setSelected(true); 
+        floatingPreview.switchPage(snippet);
     }    
     
     private void onSaveTimerTick() {
@@ -871,5 +883,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         DialogBasedSyncInteraction dlgui = new DialogBasedSyncInteraction(this, doc);
         SyncController controller = new SyncController(hg, hg, hg, dlgui, doc, this);
         return controller;
+    }
+
+    @Override
+    public FloatingPreview getFloatingPreview() {
+        return floatingPreview;
     }
 }
