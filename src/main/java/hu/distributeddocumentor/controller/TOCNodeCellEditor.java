@@ -1,6 +1,6 @@
 package hu.distributeddocumentor.controller;
 
-import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import java.awt.Component;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellEditor;

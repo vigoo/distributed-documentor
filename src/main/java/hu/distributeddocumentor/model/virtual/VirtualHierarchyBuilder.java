@@ -1,6 +1,6 @@
 package hu.distributeddocumentor.model.virtual;
 
-import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import java.io.File;
 import java.util.Collection;
 

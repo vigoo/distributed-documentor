@@ -1,7 +1,7 @@
 package hu.distributeddocumentor.controller;
 
-import hu.distributeddocumentor.model.TOC;
-import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.toc.TOC;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;

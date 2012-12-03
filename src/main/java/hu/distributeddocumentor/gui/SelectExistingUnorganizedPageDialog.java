@@ -1,7 +1,7 @@
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.controller.UnorganizedPagesModel;
-import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.*;

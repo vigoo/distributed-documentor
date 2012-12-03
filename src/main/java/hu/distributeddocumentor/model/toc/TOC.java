@@ -1,5 +1,7 @@
-package hu.distributeddocumentor.model;
+package hu.distributeddocumentor.model.toc;
 
+import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.Page;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -170,7 +172,7 @@ public class TOC {
         
         doc.getDocumentElement().normalize();
         
-        root.fromXML(doc.getDocumentElement().getFirstChild(), documentation);
+        root.fromXML(doc.getDocumentElement().getFirstChild(), documentation, new DefaultTOCNodeFactory());
         root.addToEnd(unorganized);
         root.addToEnd(recycleBin);
         
@@ -405,15 +407,18 @@ public class TOC {
             node != unorganized &&
             node != recycleBin) {
             
-            node.setTarget(null);
-            node.setVirtualHierarchyBuilder(hierarchyBuilder);
-            node.setSourcePath(relativeSource);
+            VirtualTOCNode vnode = new VirtualTOCNode();
+            vnode.setTitle(node.getTitle());
+            vnode.setVirtualHierarchyBuilder(hierarchyBuilder);
+            vnode.setSourcePath(relativeSource);
             
-            TOCNode parent = node.getParent();
+            node.replace(vnode);
+            
+            TOCNode parent = vnode.getParent();
             int[] indices = new int[1];
-            indices[0] = parent.getChildren().indexOf(node);
+            indices[0] = parent.getChildren().indexOf(vnode);
             Object[] objs = new Object[1];
-            objs[0] = node;
+            objs[0] = vnode;
             
             TreeModelEvent evt = new TreeModelEvent(this, 
                                                     parent.toPath(),

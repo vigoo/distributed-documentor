@@ -2,7 +2,7 @@ package hu.distributeddocumentor.model.virtual.builders.docxml;
 
 import com.google.common.base.Function;
 import hu.distributeddocumentor.model.Page;
-import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
 import hu.distributeddocumentor.model.virtual.builders.VirtualHierarchyBuilderBase;
 import java.io.File;

@@ -1,5 +1,7 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.toc.TOC;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import com.aragost.javahg.Changeset;
 import com.aragost.javahg.Repository;
 import com.aragost.javahg.RepositoryConfiguration;

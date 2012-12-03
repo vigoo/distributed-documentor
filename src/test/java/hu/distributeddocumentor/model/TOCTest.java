@@ -1,5 +1,7 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.toc.TOC;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import static org.junit.Assert.assertEquals;
 import org.junit.*;
 

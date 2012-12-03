@@ -8,8 +8,9 @@ import hu.distributeddocumentor.controller.TOCTreeModel;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.PageAlreadyExistsException;
-import hu.distributeddocumentor.model.TOC;
-import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.toc.TOC;
+import hu.distributeddocumentor.model.toc.TOCNode;
+import hu.distributeddocumentor.model.toc.VirtualTOCNode;
 import hu.distributeddocumentor.model.virtual.builders.docxml.DocXmlHierarchyBuilder;
 import hu.distributeddocumentor.model.virtual.builders.merge.DocumentationMerger;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
@@ -20,6 +21,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
@@ -37,7 +39,9 @@ public class TableOfContentsView extends javax.swing.JPanel {
     private final PageEditorHost pageEditorHost;
     private final DocumentorPreferences prefs;
     
-    private TOCNode contextMenuTarget;    
+    private final ImageIcon virtualNodeIcon;
+    
+    private TOCNode contextMenuTarget;        
     
     /**
      * Creates new form TableOfContentsView
@@ -49,6 +53,8 @@ public class TableOfContentsView extends javax.swing.JPanel {
         this.prefs = prefs;
         
         initComponents();   
+        
+        virtualNodeIcon = new ImageIcon(TableOfContentsView.class.getResource("gears.png"));
         
         SearchableUtils.installSearchable(tree);
         
@@ -65,8 +71,14 @@ public class TableOfContentsView extends javax.swing.JPanel {
                     setBackgroundNonSelectionColor(
                             getBackground());
                 }
+                                                                
+                super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
                 
-                return super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+                if (node instanceof VirtualTOCNode) {
+                    setIcon(virtualNodeIcon);
+                }
+                
+                return this;
             }  
         });
         

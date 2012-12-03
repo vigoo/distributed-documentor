@@ -3,7 +3,7 @@ package hu.distributeddocumentor.model.virtual.builders.merge;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
 import hu.distributeddocumentor.model.FailedToLoadTOCException;
-import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import hu.distributeddocumentor.model.builders.UsesPreferences;
 import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;

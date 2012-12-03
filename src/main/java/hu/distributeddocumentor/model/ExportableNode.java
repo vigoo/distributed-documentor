@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.toc.TOCNode;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;

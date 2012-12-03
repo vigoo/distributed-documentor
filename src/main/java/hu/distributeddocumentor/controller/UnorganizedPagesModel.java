@@ -1,6 +1,6 @@
 package hu.distributeddocumentor.controller;
 
-import hu.distributeddocumentor.model.TOCNode;
+import hu.distributeddocumentor.model.toc.TOCNode;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 

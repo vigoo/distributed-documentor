@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.model.virtual.builders;
 
+import hu.distributeddocumentor.model.toc.TOCNode;
 import com.google.common.base.Function;
 import hu.distributeddocumentor.model.*;
 import hu.distributeddocumentor.model.virtual.MediaWikiWriter;
