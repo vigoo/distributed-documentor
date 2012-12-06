@@ -3,6 +3,7 @@ package hu.distributeddocumentor.model.virtual.builders.docxml;
 import com.google.common.base.Function;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.toc.TOCNode;
+import hu.distributeddocumentor.model.toc.TOCNodeFactory;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
 import hu.distributeddocumentor.model.virtual.builders.VirtualHierarchyBuilderBase;
 import java.io.File;
@@ -51,8 +52,8 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     private final Pattern propertyPattern;
     private final Pattern methodPattern;
 
-    public DocXmlHierarchyBuilder(File xmlFile, String title, String markupLanguage) {
-        super(markupLanguage);
+    public DocXmlHierarchyBuilder(File xmlFile, String title, String markupLanguage, TOCNodeFactory factory) {
+        super(markupLanguage, factory);
         
         this.xmlFile = xmlFile;
         this.title = title;
@@ -91,7 +92,7 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
         
         for (NamespaceDoc ns : flatNamespaces) {
             if (ns != rootNS) {                
-                root.addToEnd(buildNamespaceNode(ns));
+                root.getOperations().addToEnd(buildNamespaceNode(ns));
             }
         }
         
@@ -258,7 +259,7 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
         TOCNode node = createNode(ns.getFullName(), page);        
         
         for (ClassDoc cl : ns.getSortedClasses()) {                    
-            node.addToEnd(buildClassNode(cl));           
+            node.getOperations().addToEnd(buildClassNode(cl));           
         }        
         
         return node;

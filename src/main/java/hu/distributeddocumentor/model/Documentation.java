@@ -1,11 +1,11 @@
 package hu.distributeddocumentor.model;
 
-import hu.distributeddocumentor.model.toc.TOC;
-import hu.distributeddocumentor.model.toc.TOCNode;
 import com.aragost.javahg.Changeset;
 import com.aragost.javahg.Repository;
 import com.aragost.javahg.RepositoryConfiguration;
 import com.aragost.javahg.commands.*;
+import hu.distributeddocumentor.model.toc.DefaultTOCNodeFactory;
+import hu.distributeddocumentor.model.toc.TOC;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.CaseInsensitiveMap;
 import hu.distributeddocumentor.utils.RepositoryUriGenerator;
@@ -41,7 +41,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     
     private static final Logger log = LoggerFactory.getLogger(Documentation.class.getName());
     
-    private final TOC toc;
+    private final TOC toc;    
     private final Map<String, Page> pages;    
     private final Map<String, Snippet> snippets;
     private Images images;
@@ -95,7 +95,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      */
     public Documentation(DocumentorPreferences prefs) {
         
-        toc = new TOC(this);
+        toc = new TOC(this, new DefaultTOCNodeFactory());
         pages = new CaseInsensitiveMap<>();
         snippets = new CaseInsensitiveMap<>();
         
@@ -262,9 +262,9 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         // Adding unreferenced pages to the unorganized node
         for (Page page : pages.values()) {
             
-            if (!toc.getRoot().isReferenced(page)) { 
-                toc.getUnorganized().addToEnd(
-                        new TOCNode(page));
+            if (!toc.getRoot().getOperations().isReferenced(page)) { 
+                toc.getUnorganized().getOperations().addToEnd(
+                        toc.getFactory().createNode(page));
             }
         }                                
     }
@@ -311,7 +311,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         }
         
         if (!toc.getReferencedPages().contains(id)) {
-            toc.addToEnd(toc.getUnorganized(), new TOCNode(page));
+            toc.addToEnd(toc.getUnorganized(), toc.getFactory().createNode(page));
         }                
         
         File[] pageFiles = page.save(getDocumentationDirectory());
@@ -529,12 +529,12 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 } else {
                 
                     Page existingPage = pages.get(pageId);
-                    if (toc.getRecycleBin().isReferenced(existingPage)) {
+                    if (toc.getRecycleBin().getOperations().isReferenced(existingPage)) {
                         
                         // If a reference has been created to a page which is in the 
                         // recycle bin, we move it to the unorganized pages node
-                        toc.getRecycleBin().removeReferenceTo(existingPage);
-                        toc.addToEnd(toc.getUnorganized(), new TOCNode(existingPage));
+                        toc.getRecycleBin().getOperations().removeReferenceTo(existingPage);
+                        toc.addToEnd(toc.getUnorganized(), toc.getFactory().createNode(existingPage));
                         
                     }
                 }
@@ -583,13 +583,13 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 // node instead of the unorganized pages node
                 
                 // Checking if it is already in the recycle bin
-                if (toc.getRecycleBin().findReferenceTo(page) == null) {
+                if (toc.getRecycleBin().getOperations().findReferenceTo(page) == null) {
                 
                     // ..if not, we remove it from wherever it is and put it there
                     log.info(" -> putting it to recycle bin");                               
 
                     toc.remove(page);
-                    toc.addToEnd(toc.getRecycleBin(), new TOCNode(page));
+                    toc.addToEnd(toc.getRecycleBin(), toc.getFactory().createNode(page));
                 }
             } else {
                 

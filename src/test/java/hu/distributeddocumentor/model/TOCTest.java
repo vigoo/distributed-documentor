@@ -1,9 +1,10 @@
 package hu.distributeddocumentor.model;
 
+import hu.distributeddocumentor.model.toc.DefaultTOCNode;
+import hu.distributeddocumentor.model.toc.DefaultTOCNodeFactory;
 import hu.distributeddocumentor.model.toc.TOC;
-import hu.distributeddocumentor.model.toc.TOCNode;
-import static org.junit.Assert.assertEquals;
 import org.junit.*;
+import static org.junit.Assert.assertEquals;
 
 public class TOCTest {
     
@@ -32,13 +33,13 @@ public class TOCTest {
     @Test
     public void testAddToEnd() {
         
-        TOC toc = new TOC(null);
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
         assertEquals(2, toc.getRoot().getChildren().size());
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(0));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(1));
      
-        TOCNode child1 = new TOCNode();
+        DefaultTOCNode child1 = new DefaultTOCNode();
         toc.addToEnd(toc.getRoot(), child1);
         
         assertEquals(3, toc.getRoot().getChildren().size());
@@ -46,7 +47,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(1));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(2));
      
-        TOCNode child2 = new TOCNode();
+        DefaultTOCNode child2 = new DefaultTOCNode();
         toc.addToEnd(toc.getRoot(), child2);
         
         assertEquals(4, toc.getRoot().getChildren().size());
@@ -55,7 +56,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(2));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(3));
         
-        TOCNode child3 = new TOCNode();
+        DefaultTOCNode child3 = new DefaultTOCNode();
         toc.addToEnd(child1, child3);
         
         assertEquals(4, toc.getRoot().getChildren().size());
@@ -69,9 +70,9 @@ public class TOCTest {
     @Test
     public void testAddBefore() {
         
-        TOC toc = new TOC(null);
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
-        TOCNode child1 = new TOCNode();
+        DefaultTOCNode child1 = new DefaultTOCNode();
         toc.addBefore(toc.getUnorganized(), child1);
         
         assertEquals(3, toc.getRoot().getChildren().size());
@@ -79,7 +80,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(1));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(2));
      
-        TOCNode child2 = new TOCNode();
+        DefaultTOCNode child2 = new DefaultTOCNode();
         toc.addBefore(toc.getRecycleBin(), child2);
         
         assertEquals(4, toc.getRoot().getChildren().size());
@@ -88,7 +89,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(2));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(3));
         
-        TOCNode child3 = new TOCNode();
+        DefaultTOCNode child3 = new DefaultTOCNode();
         toc.addBefore(child1, child3);
         
         assertEquals(5, toc.getRoot().getChildren().size());
@@ -104,9 +105,9 @@ public class TOCTest {
      */
     @Test
     public void testAddAfter() {
-        TOC toc = new TOC(null);
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
-        TOCNode child1 = new TOCNode();
+        DefaultTOCNode child1 = new DefaultTOCNode();
         toc.addAfter(toc.getUnorganized(), child1);
         
         assertEquals(3, toc.getRoot().getChildren().size());
@@ -114,7 +115,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(1));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(2));
      
-        TOCNode child2 = new TOCNode();
+        DefaultTOCNode child2 = new DefaultTOCNode();
         toc.addAfter(toc.getRecycleBin(), child2);
         
         assertEquals(4, toc.getRoot().getChildren().size());
@@ -123,7 +124,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(2));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(3));
         
-        TOCNode child3 = new TOCNode();
+        DefaultTOCNode child3 = new DefaultTOCNode();
         toc.addAfter(child1, child3);
         
         assertEquals(5, toc.getRoot().getChildren().size());
@@ -133,7 +134,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(3));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(4));
         
-        TOCNode child4 = new TOCNode();
+        DefaultTOCNode child4 = new DefaultTOCNode();
         toc.addAfter(child2, child4);
         
         assertEquals(6, toc.getRoot().getChildren().size());
@@ -151,7 +152,7 @@ public class TOCTest {
     @Test
     public void testMoveUp() {
         
-        TOC toc = new TOC(null);
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
         // Initial structure:
         // node1
@@ -162,13 +163,13 @@ public class TOCTest {
         //   node23
         //     node231
         
-        TOCNode node1 = new TOCNode("1");
-        TOCNode node11 = new TOCNode("1.1");
-        TOCNode node2 = new TOCNode("2");
-        TOCNode node21 = new TOCNode("2.1");
-        TOCNode node22 = new TOCNode("2.2");
-        TOCNode node23 = new TOCNode("2.3");
-        TOCNode node231 = new TOCNode("2.3.1");
+        DefaultTOCNode node1 = new DefaultTOCNode("1");
+        DefaultTOCNode node11 = new DefaultTOCNode("1.1");
+        DefaultTOCNode node2 = new DefaultTOCNode("2");
+        DefaultTOCNode node21 = new DefaultTOCNode("2.1");
+        DefaultTOCNode node22 = new DefaultTOCNode("2.2");
+        DefaultTOCNode node23 = new DefaultTOCNode("2.3");
+        DefaultTOCNode node231 = new DefaultTOCNode("2.3.1");
         
         toc.addToEnd(toc.getRoot(), node1);
         toc.addToEnd(toc.getRoot(), node2);
@@ -329,7 +330,7 @@ public class TOCTest {
     @Test
     public void testMoveDown() {
             
-        TOC toc = new TOC(null);
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
         // Initial structure:
         // node1
@@ -339,12 +340,12 @@ public class TOCTest {
         // node2
         //   node21        
         
-        TOCNode node1 = new TOCNode("1");
-        TOCNode node11 = new TOCNode("1.1");
-        TOCNode node111 = new TOCNode("1.1.1");
-        TOCNode node112 = new TOCNode("1.1.2");
-        TOCNode node2 = new TOCNode("2");
-        TOCNode node21 = new TOCNode("2.1");
+        DefaultTOCNode node1 = new DefaultTOCNode("1");
+        DefaultTOCNode node11 = new DefaultTOCNode("1.1");
+        DefaultTOCNode node111 = new DefaultTOCNode("1.1.1");
+        DefaultTOCNode node112 = new DefaultTOCNode("1.1.2");
+        DefaultTOCNode node2 = new DefaultTOCNode("2");
+        DefaultTOCNode node21 = new DefaultTOCNode("2.1");
         
         toc.addToEnd(toc.getRoot(), node1);
         toc.addToEnd(toc.getRoot(), node2);
@@ -482,7 +483,7 @@ public class TOCTest {
     @Test
     public void testMoveLeft() {
         
-        TOC toc = new TOC(null);
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
         // Initial structure:
         // node1
@@ -492,12 +493,12 @@ public class TOCTest {
         // node2
         //   node21        
         
-        TOCNode node1 = new TOCNode("1");
-        TOCNode node11 = new TOCNode("1.1");
-        TOCNode node111 = new TOCNode("1.1.1");
-        TOCNode node112 = new TOCNode("1.1.2");
-        TOCNode node2 = new TOCNode("2");
-        TOCNode node21 = new TOCNode("2.1");
+        DefaultTOCNode node1 = new DefaultTOCNode("1");
+        DefaultTOCNode node11 = new DefaultTOCNode("1.1");
+        DefaultTOCNode node111 = new DefaultTOCNode("1.1.1");
+        DefaultTOCNode node112 = new DefaultTOCNode("1.1.2");
+        DefaultTOCNode node2 = new DefaultTOCNode("2");
+        DefaultTOCNode node21 = new DefaultTOCNode("2.1");
         
         toc.addToEnd(toc.getRoot(), node1);
         toc.addToEnd(toc.getRoot(), node2);
@@ -563,7 +564,7 @@ public class TOCTest {
     
     @Test
     public void testMoveRight() {
-        TOC toc = new TOC(null);
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
         // Initial structure:
         // node1
@@ -573,12 +574,12 @@ public class TOCTest {
         // node2
         //   node21        
         
-        TOCNode node1 = new TOCNode("1");
-        TOCNode node11 = new TOCNode("1.1");
-        TOCNode node111 = new TOCNode("1.1.1");
-        TOCNode node112 = new TOCNode("1.1.2");
-        TOCNode node2 = new TOCNode("2");
-        TOCNode node21 = new TOCNode("2.1");
+        DefaultTOCNode node1 = new DefaultTOCNode("1");
+        DefaultTOCNode node11 = new DefaultTOCNode("1.1");
+        DefaultTOCNode node111 = new DefaultTOCNode("1.1.1");
+        DefaultTOCNode node112 = new DefaultTOCNode("1.1.2");
+        DefaultTOCNode node2 = new DefaultTOCNode("2");
+        DefaultTOCNode node21 = new DefaultTOCNode("2.1");
         
         toc.addToEnd(toc.getRoot(), node1);
         toc.addToEnd(toc.getRoot(), node2);

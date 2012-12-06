@@ -10,7 +10,7 @@ import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.PageAlreadyExistsException;
 import hu.distributeddocumentor.model.toc.TOC;
 import hu.distributeddocumentor.model.toc.TOCNode;
-import hu.distributeddocumentor.model.toc.VirtualTOCNode;
+import hu.distributeddocumentor.model.toc.DefaultVirtualTOCNode;
 import hu.distributeddocumentor.model.virtual.builders.docxml.DocXmlHierarchyBuilder;
 import hu.distributeddocumentor.model.virtual.builders.merge.DocumentationMerger;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
@@ -74,7 +74,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
                                                                 
                 super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
                 
-                if (node instanceof VirtualTOCNode) {
+                if (node instanceof DefaultVirtualTOCNode) {
                     setIcon(virtualNodeIcon);
                 }
                 
@@ -342,7 +342,7 @@ public class TableOfContentsView extends javax.swing.JPanel {
         
         Object selection = tree.getSelectionPath() == null ? null : tree.getSelectionPath().getLastPathComponent();
         TOCNode node = selection == null ? toc.getRoot() : (TOCNode)selection;
-        toc.addToEnd(node, new TOCNode("New node"));
+        toc.addToEnd(node, toc.getFactory().createNode("New node"));
         
     }//GEN-LAST:event_btAddActionPerformed
 

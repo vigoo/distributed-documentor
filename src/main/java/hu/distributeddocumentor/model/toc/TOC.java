@@ -43,6 +43,7 @@ public class TOC {
     private final TOCNode unorganized;
     private final TOCNode recycleBin;    
     private final Documentation documentation;
+    private final TOCNodeFactory factory;
     
     private final List<TreeModelListener> listeners = new LinkedList<>();
     
@@ -52,18 +53,27 @@ public class TOC {
      * Creates a new, empty TOC
      * 
      */
-    public TOC(Documentation documentation) {
+    public TOC(Documentation documentation, TOCNodeFactory factory) {
         this.documentation = documentation;
+        this.factory = factory;
+                
+        root = factory.createNode("Root");        
         
-        root = new TOCNode("Root");
+        unorganized = factory.createNode("Unorganized pages");
+        recycleBin = factory.createNode("Recycle bin");
         
-        unorganized = new TOCNode("Unorganized pages");
-        recycleBin = new TOCNode("Recycle bin");
-        
-        root.addToEnd(unorganized);
-        root.addToEnd(recycleBin);
+        root.getOperations().addToEnd(unorganized);
+        root.getOperations().addToEnd(recycleBin);
     }
 
+    /**
+     * Gets the TOCNode factory associated with this TOC
+     * @return the TOCNode factory
+     */
+    public TOCNodeFactory getFactory() {
+        return factory;
+    }   
+    
     /**
      * Gets the root node
      * 
@@ -125,14 +135,14 @@ public class TOC {
         Document doc = new DocumentImpl();
         Element docRoot = doc.createElement("TOC");
         
-        root.remove(unorganized);
-        root.remove(recycleBin);
+        root.getOperations().remove(unorganized);
+        root.getOperations().remove(recycleBin);
         try {                                            
-            docRoot.appendChild(root.toXML(doc));        
+            docRoot.appendChild(root.getSerialization().toXML(doc));        
         }
         finally {
-            root.addToEnd(unorganized);
-            root.addToEnd(recycleBin);
+            root.getOperations().addToEnd(unorganized);
+            root.getOperations().addToEnd(recycleBin);
         }
         
         doc.appendChild(docRoot);
@@ -140,10 +150,10 @@ public class TOC {
         Source source = new DOMSource(doc);
         Result result = new StreamResult(target);
         
-        TransformerFactory factory = TransformerFactory.newInstance();
-        factory.setAttribute("indent-number", Integer.valueOf(4));
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setAttribute("indent-number", Integer.valueOf(4));
         
-        Transformer xformer = factory.newTransformer();
+        Transformer xformer = transformerFactory.newTransformer();
         xformer.setOutputProperty(OutputKeys.INDENT, "yes");        
         xformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");        
         
@@ -172,9 +182,9 @@ public class TOC {
         
         doc.getDocumentElement().normalize();
         
-        root.fromXML(doc.getDocumentElement().getFirstChild(), documentation, new DefaultTOCNodeFactory());
-        root.addToEnd(unorganized);
-        root.addToEnd(recycleBin);
+        root.getSerialization().fromXML(doc.getDocumentElement().getFirstChild(), documentation, factory);
+        root.getOperations().addToEnd(unorganized);
+        root.getOperations().addToEnd(recycleBin);
         
         for (TreeModelListener listener : listeners) {
             listener.treeStructureChanged(new TreeModelEvent(this, new TreePath(root)));
@@ -192,10 +202,10 @@ public class TOC {
     public void addToEnd(TOCNode parent, TOCNode child) {
         
         if (parent == root) {
-            parent.addBefore(unorganized, child);
+            parent.getOperations().addBefore(unorganized, child);
             
         } else {            
-            parent.addToEnd(child);
+            parent.getOperations().addToEnd(child);
         }
         
         notifyInsert(parent, child);
@@ -230,10 +240,10 @@ public class TOC {
         TOCNode parent = existingNode.getParent();
         
         if (existingNode == recycleBin) {
-            parent.addBefore(unorganized, newChild);
+            parent.getOperations().addBefore(unorganized, newChild);
         } // keeping the two special nodes at the end
         else {
-            parent.addBefore(existingNode, newChild);
+            parent.getOperations().addBefore(existingNode, newChild);
         }
         
         notifyInsert(parent, newChild);        
@@ -255,7 +265,7 @@ public class TOC {
         } else {                    
             TOCNode parent = existingNode.getParent();
 
-            parent.addAfter(existingNode, newChild);
+            parent.getOperations().addAfter(existingNode, newChild);
 
             notifyInsert(parent, newChild);        
         }
@@ -271,7 +281,7 @@ public class TOC {
         
         TOCNode parent = node.getParent();
         int idx = parent.getChildren().indexOf(node);
-        parent.remove(node);
+        parent.getOperations().remove(node);
         
         Object[] arr = new Object[1];
         arr[0] = node;
@@ -305,7 +315,7 @@ public class TOC {
      * @param page the page to look for
      */
     public void remove(Page page) {
-        TOCNode node = root.findReferenceTo(page);
+        TOCNode node = root.getOperations().findReferenceTo(page);
         
         if (node != null) {
             remove(node);
@@ -407,12 +417,12 @@ public class TOC {
             node != unorganized &&
             node != recycleBin) {
             
-            VirtualTOCNode vnode = new VirtualTOCNode();
+            VirtualTOCNode vnode = factory.createVirtualNode();
             vnode.setTitle(node.getTitle());
             vnode.setVirtualHierarchyBuilder(hierarchyBuilder);
             vnode.setSourcePath(relativeSource);
             
-            node.replace(vnode);
+            node.getOperations().replace(vnode);
             
             TOCNode parent = vnode.getParent();
             int[] indices = new int[1];
@@ -569,8 +579,8 @@ public class TOC {
         unorganized.clearChildren();
         recycleBin.clearChildren();
                 
-        root.addToEnd(unorganized);
-        root.addToEnd(recycleBin);
+        root.getOperations().addToEnd(unorganized);
+        root.getOperations().addToEnd(recycleBin);
         
         modified = false;
     }
@@ -591,5 +601,14 @@ public class TOC {
         }
         
         return pages;
+    }
+
+    /**
+     * Finds the TOCNode that refers to the given page
+     * @param page page to look for
+     * @return returns the node that refers to the page, or null
+     */
+    public TOCNode findReferenceTo(Page page) {
+        return root.getOperations().findReferenceTo(page);
     }
 }

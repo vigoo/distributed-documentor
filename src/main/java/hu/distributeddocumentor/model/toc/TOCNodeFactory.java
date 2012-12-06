@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.model.toc;
 
+import hu.distributeddocumentor.model.Page;
 import org.w3c.dom.Node;
 
 /**
@@ -7,5 +8,10 @@ import org.w3c.dom.Node;
  * @author Daniel Vigovszky
  */
 public interface TOCNodeFactory {
-     TOCNode fromXML(Node node);
+    
+    TOCNode createNode(String title);
+    TOCNode createNode(Page target);    
+    VirtualTOCNode createVirtualNode();
+    
+    TOCNode fromXML(Node node);
 }

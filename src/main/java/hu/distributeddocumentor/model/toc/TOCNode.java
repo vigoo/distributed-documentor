@@ -1,397 +1,67 @@
 package hu.distributeddocumentor.model.toc;
 
-import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
-import java.util.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.util.Collection;
+import java.util.List;
 
-/**
- * A node of the TOC tree
- *
- * <p> To modify TOC nodes use methods in the {@link TOC} class itself, so it
- * can notify its listeners about the change and maintain consistency.
- *
- * @author Daniel Vigovszky
- * @see TOC
- */
-public class TOCNode {
-    // TODO: hide the implementation details (methods which should be only called from TOC class) from the outside world
-    //       by introducing a public TOCNode interface which only has some getters
-    
-    protected static final Collection<File> noExtraImages = new HashSet<>();
-    
-    private String title;
-    private Page target;
-    private TOCNode parent;
-    private final List<TOCNode> children;
-
-    /**
-     * Creates a new empty node
-     */
-    public TOCNode() {
-        children = new LinkedList<>();
-    }
-
-    /**
-     * Creates a new empty node with a title
-     *
-     * @param title the title of the node
-     */
-    public TOCNode(String title) {
-        this();
-
-        this.title = title;
-    }
-
-    /**
-     * Creates a new empty node with title 'Unitled', referring to a page
-     *
-     * @param target the page the node refers to
-     */
-    public TOCNode(Page target) {
-        this();
-
-        this.title = "Untitled";
-        this.target = target;
-    }
-
-    /**
-     * Creates a new node with title and target page
-     *
-     * @param title the title of the node
-     * @param target the page this node refers to
-     */
-    public TOCNode(String title, Page target) {
-        this();
-
-        this.title = title;
-        this.target = target;
-    }
+public interface TOCNode {
 
     /**
      * Gets all the child nodes belonging to this node
      *
      * @return an unmodifiable list of nodes
      */
-    public List<TOCNode> getChildren() {
-        return Collections.unmodifiableList(children);
-    }
-
+    List<TOCNode> getChildren();
+        
     /**
-     * Checks if the node has a target page set
-     *
-     * @return true if there is a target page the node refers to
+     * Removes every children from this node
      */
-    public boolean hasTarget() {
-        return target != null;
-    }
-
-    /**
-     * Gets the page this node refers to
-     *
-     * @return the page the node refers to or null
-     */
-    public Page getTarget() {
-        return target;
-    }
-
-    /**
-     * Sets the page this node refers to
-     *
-     * @param target the target page (can be null to remove reference)
-     */
-    public void setTarget(Page target) {
-        this.target = target;
-    }
-
-    /**
-     * Gets the title of this node (as it is shown in the TOC)
-     *
-     * @return the title of the node
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Sets the title of this node (as it will be shown in the TOC)
-     *
-     * @param title the title of the node
-     */
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    /**
-     * Adds a new child node to the end of the child node list
-     *
-     * @param child the node to be added
-     */
-    public void addToEnd(TOCNode child) {
-        children.add(child);
-        child.setParent(this);
-    }
-
-    /**
-     * Adds a new child node before one of the existing child nodes
-     *
-     * @param existingChild the existing child node
-     * @param newChild the new node to be added
-     */
-    public void addBefore(TOCNode existingChild, TOCNode newChild) {
-        children.add(children.indexOf(existingChild), newChild);
-        newChild.setParent(this);
-    }
-
-    /**
-     * Adds a new child node after one of the existing child nodes
-     *
-     * @param existingChild the existing child node
-     * @param newChild the new node to be added
-     */
-    public void addAfter(TOCNode existingChild, TOCNode newChild) {
-        children.add(children.indexOf(existingChild) + 1, newChild);
-        newChild.setParent(this);
-    }
+    void clearChildren();
 
     /**
      * Gets the parent node
      *
      * @return the parent node, or null if this is the root node
      */
-    public TOCNode getParent() {
-        return parent;
-    }
+    TOCNode getParent();
 
     /**
-     * Sets the parent node (called when the node is added to the hierarchy)
+     * Gets the page this node refers to
      *
-     * @param parent the new parent node for this node
+     * @return the page the node refers to or null
      */
-    public void setParent(TOCNode parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public String toString() {
-
-        String targetRef = "";
-        if (target != null) {
-            targetRef = " [" + target.getId() + "]";
-        }
-
-        if (title != null) {
-            return title + targetRef;
-        } else {
-            return "Untitled" + targetRef;
-        }
-    }
+    Page getTarget();
 
     /**
-     * Creates the node's XML representation for serialization
+     * Gets the title of this node (as it is shown in the TOC)
      *
-     * @param doc the XML document being constructed
-     * @return returns the XML node representing this TOC node
+     * @return the title of the node
      */
-    public Node toXML(Document doc) {
-
-        Element elem = doc.createElement("Node");
-        fillXMLElement(elem);
-
-        for (TOCNode node : children) {
-            elem.appendChild(node.toXML(doc));
-        }
-
-        return elem;
-    }
+    String getTitle();
 
     /**
-     * Fills an XML Element with the node specific data
+     * Checks if the node has a target page set
      *
-     * @param elem element to fill with information
+     * @return true if there is a target page the node refers to
      */
-    protected void fillXMLElement(Element elem) {
-        elem.setAttribute("title", title);
-
-        if (target != null) {
-            elem.setAttribute("target", target.getId());
-        }
-    }
+    boolean hasTarget();
 
     /**
-     * Loads the node from its XML representation
+     * Sets the page this node refers to
      *
-     * @param node the XML node representing this TOC node
-     * @param doc the XML document being loaded
-     * @param factory the TOCNode class factory
-     * @throws ClassNotFoundException if the referenced virtual hierarchy
-     * builder class does not exist
+     * @param target the target page (can be null to remove reference)
      */
-    public void fromXML(Node node, Documentation doc, TOCNodeFactory factory) throws ClassNotFoundException {
-
-        Node sibling;
-        for (sibling = node; sibling != null; sibling = sibling.getNextSibling()) {
-            if (sibling.getNodeType() == Node.ELEMENT_NODE) {
-                break;
-            }
-        }
-
-        if (sibling != null) {
-            Element elem = (Element) sibling;
-
-            fromXMLElement(elem, doc);
-
-            children.clear();
-
-            NodeList childNodes = elem.getChildNodes();
-            for (int i = 0; i < childNodes.getLength(); i++) {
-                Node childNode = childNodes.item(i);
-
-                if (childNode.getNodeType() == Node.ELEMENT_NODE) {
-
-                    TOCNode child = factory.fromXML(childNode);
-                    child.fromXML(childNode, doc, factory);
-                    child.setParent(this);
-
-                    children.add(child);
-                }
-            }
-        }
-    }
-
-    protected void fromXMLElement(Element elem, Documentation doc) throws ClassNotFoundException {
-        title = elem.getAttribute("title");
-
-        if (elem.hasAttribute("target")) {
-            String targetId = elem.getAttribute("target");
-
-            target = doc.getPage(targetId);
-
-        } else {
-            target = null;
-        }
-    }
+    void setTarget(Page target);
 
     /**
-     * Checks if the page or any of its children refers to the given page
+     * Sets the title of this node (as it will be shown in the TOC)
      *
-     * @param page the page to look for
-     * @return true if this node or any child node (recursively) refers to the
-     * page
+     * @param title the title of the node
      */
-    public boolean isReferenced(Page page) {
-
-        if (target == page) {
-            return true;
-        }
-
-        for (TOCNode childNode : children) {
-            if (childNode.isReferenced(page)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Removes one of the child nodes
-     *
-     * @param child the child node to be removed
-     */
-    public void remove(TOCNode child) {
-        children.remove(child);
-    }
-
-    /**
-     * Removes a node from the whole subtree represented by this node
-     *
-     * @param child the child node to be removed
-     */
-    public void deepRemove(TOCNode child) {
-        children.remove(child);
-
-        for (TOCNode childNode : children) {
-            childNode.deepRemove(child);
-        }
-    }
-
-    /**
-     * Removes the node that refers to the given page from the whole subtree
-     * represented by this node.
-     *
-     * @param page the page to look for
-     */
-    public void removeReferenceTo(Page page) {
-
-        Set<TOCNode> toRemove = new HashSet<>();
-
-        for (TOCNode childNode : children) {
-            if (childNode.getTarget() == page) {
-                toRemove.add(childNode);
-            }
-
-            childNode.removeReferenceTo(page);
-        }
-
-        for (TOCNode childNode : toRemove) {
-            children.remove(childNode);
-        }
-    }
-
-    /**
-     * Find the child node in the subtree represented by this node which refers
-     * to the given page.
-     *
-     * @param page the page to look for
-     * @return returns the node which refers to the page and belongs to the
-     * subtree represented by this node, or null if there is no such node.
-     */
-    public TOCNode findReferenceTo(Page page) {
-
-        if (target == page) {
-            return this;
-        }
-
-        for (TOCNode child : children) {
-            TOCNode result = child.findReferenceTo(page);
-            if (result != null) {
-                return result;
-            }
-        }
-
-        return null;
-    }
-    
-    /**
-     * Replaces this node to a new instance
-     * 
-     * Useful for converting one node to another type
-     * @param newNode The new node
-     */
-    public void replace(TOCNode newNode) {
-        parent.replaceChild(this, newNode);
-    }
-    
-    /**
-     * Replaces one of the direct child nodes to another instance
-     * @param child child to be replaced
-     * @param newChild replacement node
-     */
-    private void replaceChild(TOCNode child, TOCNode newChild) {
-        int idx = children.indexOf(child);
-        if (idx >= 0) {
-            children.remove(idx);
-            children.add(idx, newChild);
-            newChild.setParent(this);
-        }
-    }
+    void setTitle(String title);
 
     /**
      * Converts this node to a node path
@@ -399,44 +69,8 @@ public class TOCNode {
      * @return an array where every array item belongs to one level, first item
      * being the root.
      */
-    public Object[] toPath() {
-
-        Object[] parentPath = parent == null ? new Object[0] : parent.toPath();
-        Object[] result = new Object[parentPath.length + 1];
-
-        System.arraycopy(parentPath, 0, result, 0, parentPath.length);
-        result[parentPath.length] = this;
-
-        return result;
-    }
-
-    /**
-     * Gets the set of page identifiers which are referenced by this node or any
-     * of the child nodes in the whole subtree of this node.
-     *
-     * @return a collection of string page identifiers
-     */
-    public Collection<String> getReferencedPages() {
-        Set<String> pages = new HashSet<>();
-
-        if (target != null) {
-            pages.add(target.getId());
-        }
-
-        for (TOCNode child : children) {
-            pages.addAll(child.getReferencedPages());
-        }
-
-        return pages;
-    }
-
-    /**
-     * Removes every children from this node
-     */
-    public void clearChildren() {
-        children.clear();
-    }
-
+    Object[] toPath();
+    
     /**
      * Gets the node to be used when generating the documentation
      *
@@ -447,8 +81,26 @@ public class TOCNode {
      * @param prefs the application's preferences, the builder may need it
      * @return returns the node to be used when generating the documentation
      */
-    public ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs) {
-
-        return new ExportableNode(this, null, noExtraImages);        
-    }
+    ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs);    
+    
+    /**
+     * Gets the set of page identifiers which are referenced by this node or any
+     * of the child nodes in the whole subtree of this node.
+     *
+     * @return a collection of string page identifiers
+     */
+    Collection<String> getReferencedPages();
+    
+    /**
+     * Gets the interface for TOC operations, to be used by the TOC class
+     * @return TOC node operations interface
+     */
+    TOCNodeOperations getOperations();
+    
+    /**
+     * Gets the serialization interface for the TOC node
+     * @return TOC node serialization interface
+     */
+    TOCNodeSerialization getSerialization();
+    
 }

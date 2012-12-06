@@ -82,7 +82,7 @@ public class PagePropertiesDialog extends javax.swing.JDialog {
         
         tbID.setText(page.getId());
         
-        TOCNode node = doc.getTOC().getRoot().findReferenceTo(page);
+        TOCNode node = doc.getTOC().findReferenceTo(page);
         if (node != null) {
             tbTitle.setText(node.getTitle());
         } else {
@@ -268,7 +268,7 @@ public class PagePropertiesDialog extends javax.swing.JDialog {
         }
         
         // Changing the TOC node title
-        TOCNode node = doc.getTOC().getRoot().findReferenceTo(page);
+        TOCNode node = doc.getTOC().findReferenceTo(page);
         if (node != null) {
             node.setTitle(tbTitle.getText());
         }

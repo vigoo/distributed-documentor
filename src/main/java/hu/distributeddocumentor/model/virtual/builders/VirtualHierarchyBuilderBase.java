@@ -1,8 +1,9 @@
 package hu.distributeddocumentor.model.virtual.builders;
 
-import hu.distributeddocumentor.model.toc.TOCNode;
 import com.google.common.base.Function;
 import hu.distributeddocumentor.model.*;
+import hu.distributeddocumentor.model.toc.TOCNode;
+import hu.distributeddocumentor.model.toc.TOCNodeFactory;
 import hu.distributeddocumentor.model.virtual.MediaWikiWriter;
 import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
 import hu.distributeddocumentor.model.virtual.WikiWriter;
@@ -27,14 +28,16 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
     
     private final String markupLanguage;
     private final SnippetCollection emptySnippets;
+    private final TOCNodeFactory factory;
     
     /**
      * Initializes the builder
      * 
      * @param markupLanguage the markup language to be used for all the generated pages
      */
-    protected VirtualHierarchyBuilderBase(String markupLanguage) {
+    protected VirtualHierarchyBuilderBase(String markupLanguage, TOCNodeFactory factory) {
         this.markupLanguage = markupLanguage;
+        this.factory = factory;
         
         emptySnippets = new SnippetCollection() {
 
@@ -55,7 +58,7 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
             @Override
             public void removeSnippet(String id) {
             }
-        };
+        };       
     }
 
     @Override
@@ -76,7 +79,9 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
      */
     protected TOCNode createNode(String title, Page page) {
         
-        return new TOCNode(title, page);        
+        TOCNode node = factory.createNode(page);        
+        node.setTitle(title);
+        return node;
     }
     
     /**

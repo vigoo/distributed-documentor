@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.model.toc;
 
+import hu.distributeddocumentor.model.Page;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -19,11 +20,21 @@ public class DefaultTOCNodeFactory implements TOCNodeFactory {
             Element elem = (Element)sibling;
             
             if (elem.hasAttribute("virtual-hierarchy-builder")) {
-                return new VirtualTOCNode();
+                return new DefaultVirtualTOCNode(this);
             }
         }
         
-        return new TOCNode();
+        return new DefaultTOCNode();
+    }
+
+    @Override
+    public TOCNode createNode(String title) {
+        return new DefaultTOCNode(title);
+    }
+
+    @Override
+    public TOCNode createNode(Page target) {
+        return new DefaultTOCNode(target);
     }
 
 }
