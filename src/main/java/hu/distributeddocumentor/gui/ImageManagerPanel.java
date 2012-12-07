@@ -126,7 +126,14 @@ public class ImageManagerPanel extends javax.swing.JPanel {
 
     private void btAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddActionPerformed
         
-        final JFileChooser chooser = new JFileChooser();                
+        final JFileChooser chooser;
+        if (lastImageFolder != null) {
+            chooser = new JFileChooser(lastImageFolder);
+        }                
+        else {
+            chooser = new JFileChooser();
+        }
+        
         chooser.setFileFilter(
                 new FileFilter() {
 
@@ -148,16 +155,11 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                     
                 });
         
-        if (lastImageFolder != null)
-            chooser.setCurrentDirectory(lastImageFolder);
-        
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             
             try {
                 images.addImage(chooser.getSelectedFile());
-            } catch (ImageAlreadyExistsException ex) {
-                LoggerFactory.getLogger(ImageManagerPanel.class.getName()).error(null, ex);
-            } catch (IOException ex) {
+            } catch (ImageAlreadyExistsException | IOException ex) {
                 LoggerFactory.getLogger(ImageManagerPanel.class.getName()).error(null, ex);
             }
             
