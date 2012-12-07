@@ -45,7 +45,7 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
             for (final TOCNode child : root.getChildren()) {
                 if ((child != doc.getTOC().getRecycleBin()) &&
                     ((child != doc.getTOC().getUnorganized()) || (doc.getTOC().getUnorganized().getChildren().size() > 0))) {
-                    result.getOperations().addToEnd(child);
+                    factory.getOperations(result).addToEnd(child);
                 }
             }
             

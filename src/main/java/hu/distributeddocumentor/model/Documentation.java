@@ -262,9 +262,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         // Adding unreferenced pages to the unorganized node
         for (Page page : pages.values()) {
             
-            if (!toc.getRoot().getOperations().isReferenced(page)) { 
-                toc.getUnorganized().getOperations().addToEnd(
-                        toc.getFactory().createNode(page));
+            if (!toc.isReferenced(page)) { 
+                toc.addUnorganized(toc.getFactory().createNode(page));
             }
         }                                
     }
@@ -529,11 +528,11 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 } else {
                 
                     Page existingPage = pages.get(pageId);
-                    if (toc.getRecycleBin().getOperations().isReferenced(existingPage)) {
+                    if (toc.isInRecycleBin(existingPage)) {
                         
                         // If a reference has been created to a page which is in the 
                         // recycle bin, we move it to the unorganized pages node
-                        toc.getRecycleBin().getOperations().removeReferenceTo(existingPage);
+                        toc.removeFromRecycleBin(existingPage);
                         toc.addToEnd(toc.getUnorganized(), toc.getFactory().createNode(existingPage));
                         
                     }
@@ -583,7 +582,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 // node instead of the unorganized pages node
                 
                 // Checking if it is already in the recycle bin
-                if (toc.getRecycleBin().getOperations().findReferenceTo(page) == null) {
+                if (!toc.isInRecycleBin(page)) {
                 
                     // ..if not, we remove it from wherever it is and put it there
                     log.info(" -> putting it to recycle bin");                               

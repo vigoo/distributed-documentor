@@ -28,7 +28,7 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
     
     private final String markupLanguage;
     private final SnippetCollection emptySnippets;
-    private final TOCNodeFactory factory;
+    protected final TOCNodeFactory factory;
     
     /**
      * Initializes the builder

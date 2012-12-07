@@ -24,17 +24,32 @@ public class DefaultTOCNodeFactory implements TOCNodeFactory {
             }
         }
         
-        return new DefaultTOCNode();
+        return new DefaultTOCNode(this);
     }
 
     @Override
     public TOCNode createNode(String title) {
-        return new DefaultTOCNode(title);
+        return new DefaultTOCNode(this, title);
     }
 
     @Override
     public TOCNode createNode(Page target) {
-        return new DefaultTOCNode(target);
+        return new DefaultTOCNode(this, target);
+    }
+
+    @Override
+    public VirtualTOCNode createVirtualNode() {
+        return new DefaultVirtualTOCNode(this);
+    }
+
+    @Override
+    public TOCNodeOperations getOperations(TOCNode node) {
+        return (DefaultTOCNode)node;
+    }
+
+    @Override
+    public TOCNodeSerialization getSerialization(TOCNode node) {
+        return (DefaultTOCNode)node;
     }
 
 }

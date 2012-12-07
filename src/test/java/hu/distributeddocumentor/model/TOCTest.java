@@ -7,6 +7,7 @@ import org.junit.*;
 import static org.junit.Assert.assertEquals;
 
 public class TOCTest {
+    private DefaultTOCNodeFactory factory;
     
     public TOCTest() {
     }
@@ -21,6 +22,7 @@ public class TOCTest {
     
     @Before
     public void setUp() {
+        factory = new DefaultTOCNodeFactory();
     }
     
     @After
@@ -33,13 +35,13 @@ public class TOCTest {
     @Test
     public void testAddToEnd() {
         
-        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
+        TOC toc = new TOC(null, factory);
         
         assertEquals(2, toc.getRoot().getChildren().size());
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(0));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(1));
      
-        DefaultTOCNode child1 = new DefaultTOCNode();
+        DefaultTOCNode child1 = new DefaultTOCNode(factory);
         toc.addToEnd(toc.getRoot(), child1);
         
         assertEquals(3, toc.getRoot().getChildren().size());
@@ -47,7 +49,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(1));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(2));
      
-        DefaultTOCNode child2 = new DefaultTOCNode();
+        DefaultTOCNode child2 = new DefaultTOCNode(factory);
         toc.addToEnd(toc.getRoot(), child2);
         
         assertEquals(4, toc.getRoot().getChildren().size());
@@ -56,7 +58,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(2));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(3));
         
-        DefaultTOCNode child3 = new DefaultTOCNode();
+        DefaultTOCNode child3 = new DefaultTOCNode(factory);
         toc.addToEnd(child1, child3);
         
         assertEquals(4, toc.getRoot().getChildren().size());
@@ -72,7 +74,7 @@ public class TOCTest {
         
         TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
-        DefaultTOCNode child1 = new DefaultTOCNode();
+        DefaultTOCNode child1 = new DefaultTOCNode(factory);
         toc.addBefore(toc.getUnorganized(), child1);
         
         assertEquals(3, toc.getRoot().getChildren().size());
@@ -80,7 +82,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(1));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(2));
      
-        DefaultTOCNode child2 = new DefaultTOCNode();
+        DefaultTOCNode child2 = new DefaultTOCNode(factory);
         toc.addBefore(toc.getRecycleBin(), child2);
         
         assertEquals(4, toc.getRoot().getChildren().size());
@@ -89,7 +91,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(2));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(3));
         
-        DefaultTOCNode child3 = new DefaultTOCNode();
+        DefaultTOCNode child3 = new DefaultTOCNode(factory);
         toc.addBefore(child1, child3);
         
         assertEquals(5, toc.getRoot().getChildren().size());
@@ -107,7 +109,7 @@ public class TOCTest {
     public void testAddAfter() {
         TOC toc = new TOC(null, new DefaultTOCNodeFactory());
         
-        DefaultTOCNode child1 = new DefaultTOCNode();
+        DefaultTOCNode child1 = new DefaultTOCNode(factory);
         toc.addAfter(toc.getUnorganized(), child1);
         
         assertEquals(3, toc.getRoot().getChildren().size());
@@ -115,7 +117,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(1));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(2));
      
-        DefaultTOCNode child2 = new DefaultTOCNode();
+        DefaultTOCNode child2 = new DefaultTOCNode(factory);
         toc.addAfter(toc.getRecycleBin(), child2);
         
         assertEquals(4, toc.getRoot().getChildren().size());
@@ -124,7 +126,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(2));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(3));
         
-        DefaultTOCNode child3 = new DefaultTOCNode();
+        DefaultTOCNode child3 = new DefaultTOCNode(factory);
         toc.addAfter(child1, child3);
         
         assertEquals(5, toc.getRoot().getChildren().size());
@@ -134,7 +136,7 @@ public class TOCTest {
         assertEquals(toc.getUnorganized(), toc.getRoot().getChildren().get(3));
         assertEquals(toc.getRecycleBin(), toc.getRoot().getChildren().get(4));
         
-        DefaultTOCNode child4 = new DefaultTOCNode();
+        DefaultTOCNode child4 = new DefaultTOCNode(factory);
         toc.addAfter(child2, child4);
         
         assertEquals(6, toc.getRoot().getChildren().size());
@@ -163,13 +165,13 @@ public class TOCTest {
         //   node23
         //     node231
         
-        DefaultTOCNode node1 = new DefaultTOCNode("1");
-        DefaultTOCNode node11 = new DefaultTOCNode("1.1");
-        DefaultTOCNode node2 = new DefaultTOCNode("2");
-        DefaultTOCNode node21 = new DefaultTOCNode("2.1");
-        DefaultTOCNode node22 = new DefaultTOCNode("2.2");
-        DefaultTOCNode node23 = new DefaultTOCNode("2.3");
-        DefaultTOCNode node231 = new DefaultTOCNode("2.3.1");
+        DefaultTOCNode node1 = new DefaultTOCNode(factory, "1");
+        DefaultTOCNode node11 = new DefaultTOCNode(factory, "1.1");
+        DefaultTOCNode node2 = new DefaultTOCNode(factory, "2");
+        DefaultTOCNode node21 = new DefaultTOCNode(factory, "2.1");
+        DefaultTOCNode node22 = new DefaultTOCNode(factory, "2.2");
+        DefaultTOCNode node23 = new DefaultTOCNode(factory, "2.3");
+        DefaultTOCNode node231 = new DefaultTOCNode(factory, "2.3.1");
         
         toc.addToEnd(toc.getRoot(), node1);
         toc.addToEnd(toc.getRoot(), node2);
@@ -340,12 +342,12 @@ public class TOCTest {
         // node2
         //   node21        
         
-        DefaultTOCNode node1 = new DefaultTOCNode("1");
-        DefaultTOCNode node11 = new DefaultTOCNode("1.1");
-        DefaultTOCNode node111 = new DefaultTOCNode("1.1.1");
-        DefaultTOCNode node112 = new DefaultTOCNode("1.1.2");
-        DefaultTOCNode node2 = new DefaultTOCNode("2");
-        DefaultTOCNode node21 = new DefaultTOCNode("2.1");
+        DefaultTOCNode node1 = new DefaultTOCNode(factory, "1");
+        DefaultTOCNode node11 = new DefaultTOCNode(factory, "1.1");
+        DefaultTOCNode node111 = new DefaultTOCNode(factory, "1.1.1");
+        DefaultTOCNode node112 = new DefaultTOCNode(factory, "1.1.2");
+        DefaultTOCNode node2 = new DefaultTOCNode(factory, "2");
+        DefaultTOCNode node21 = new DefaultTOCNode(factory, "2.1");
         
         toc.addToEnd(toc.getRoot(), node1);
         toc.addToEnd(toc.getRoot(), node2);
@@ -493,12 +495,12 @@ public class TOCTest {
         // node2
         //   node21        
         
-        DefaultTOCNode node1 = new DefaultTOCNode("1");
-        DefaultTOCNode node11 = new DefaultTOCNode("1.1");
-        DefaultTOCNode node111 = new DefaultTOCNode("1.1.1");
-        DefaultTOCNode node112 = new DefaultTOCNode("1.1.2");
-        DefaultTOCNode node2 = new DefaultTOCNode("2");
-        DefaultTOCNode node21 = new DefaultTOCNode("2.1");
+        DefaultTOCNode node1 = new DefaultTOCNode(factory, "1");
+        DefaultTOCNode node11 = new DefaultTOCNode(factory, "1.1");
+        DefaultTOCNode node111 = new DefaultTOCNode(factory, "1.1.1");
+        DefaultTOCNode node112 = new DefaultTOCNode(factory, "1.1.2");
+        DefaultTOCNode node2 = new DefaultTOCNode(factory, "2");
+        DefaultTOCNode node21 = new DefaultTOCNode(factory, "2.1");
         
         toc.addToEnd(toc.getRoot(), node1);
         toc.addToEnd(toc.getRoot(), node2);
@@ -574,12 +576,12 @@ public class TOCTest {
         // node2
         //   node21        
         
-        DefaultTOCNode node1 = new DefaultTOCNode("1");
-        DefaultTOCNode node11 = new DefaultTOCNode("1.1");
-        DefaultTOCNode node111 = new DefaultTOCNode("1.1.1");
-        DefaultTOCNode node112 = new DefaultTOCNode("1.1.2");
-        DefaultTOCNode node2 = new DefaultTOCNode("2");
-        DefaultTOCNode node21 = new DefaultTOCNode("2.1");
+        DefaultTOCNode node1 = new DefaultTOCNode(factory, "1");
+        DefaultTOCNode node11 = new DefaultTOCNode(factory, "1.1");
+        DefaultTOCNode node111 = new DefaultTOCNode(factory, "1.1.1");
+        DefaultTOCNode node112 = new DefaultTOCNode(factory, "1.1.2");
+        DefaultTOCNode node2 = new DefaultTOCNode(factory, "2");
+        DefaultTOCNode node21 = new DefaultTOCNode(factory, "2.1");
         
         toc.addToEnd(toc.getRoot(), node1);
         toc.addToEnd(toc.getRoot(), node2);

@@ -40,6 +40,8 @@ import org.xml.sax.SAXException;
 public class TOC {
     
     private final TOCNode root;
+    private final TOCNodeOperations rootOp;
+    
     private final TOCNode unorganized;
     private final TOCNode recycleBin;    
     private final Documentation documentation;
@@ -58,12 +60,13 @@ public class TOC {
         this.factory = factory;
                 
         root = factory.createNode("Root");        
+        rootOp = factory.getOperations(root);
         
         unorganized = factory.createNode("Unorganized pages");
         recycleBin = factory.createNode("Recycle bin");
         
-        root.getOperations().addToEnd(unorganized);
-        root.getOperations().addToEnd(recycleBin);
+        rootOp.addToEnd(unorganized);
+        rootOp.addToEnd(recycleBin);
     }
 
     /**
@@ -135,14 +138,14 @@ public class TOC {
         Document doc = new DocumentImpl();
         Element docRoot = doc.createElement("TOC");
         
-        root.getOperations().remove(unorganized);
-        root.getOperations().remove(recycleBin);
+        rootOp.remove(unorganized);
+        rootOp.remove(recycleBin);
         try {                                            
-            docRoot.appendChild(root.getSerialization().toXML(doc));        
+            docRoot.appendChild(factory.getSerialization(root).toXML(doc));        
         }
         finally {
-            root.getOperations().addToEnd(unorganized);
-            root.getOperations().addToEnd(recycleBin);
+            rootOp.addToEnd(unorganized);
+            rootOp.addToEnd(recycleBin);
         }
         
         doc.appendChild(docRoot);
@@ -182,9 +185,9 @@ public class TOC {
         
         doc.getDocumentElement().normalize();
         
-        root.getSerialization().fromXML(doc.getDocumentElement().getFirstChild(), documentation, factory);
-        root.getOperations().addToEnd(unorganized);
-        root.getOperations().addToEnd(recycleBin);
+        factory.getSerialization(root).fromXML(doc.getDocumentElement().getFirstChild(), documentation, factory);
+        rootOp.addToEnd(unorganized);
+        rootOp.addToEnd(recycleBin);
         
         for (TreeModelListener listener : listeners) {
             listener.treeStructureChanged(new TreeModelEvent(this, new TreePath(root)));
@@ -202,10 +205,10 @@ public class TOC {
     public void addToEnd(TOCNode parent, TOCNode child) {
         
         if (parent == root) {
-            parent.getOperations().addBefore(unorganized, child);
+            factory.getOperations(parent).addBefore(unorganized, child);
             
         } else {            
-            parent.getOperations().addToEnd(child);
+            factory.getOperations(parent).addToEnd(child);
         }
         
         notifyInsert(parent, child);
@@ -240,10 +243,10 @@ public class TOC {
         TOCNode parent = existingNode.getParent();
         
         if (existingNode == recycleBin) {
-            parent.getOperations().addBefore(unorganized, newChild);
+            factory.getOperations(parent).addBefore(unorganized, newChild);
         } // keeping the two special nodes at the end
         else {
-            parent.getOperations().addBefore(existingNode, newChild);
+            factory.getOperations(parent).addBefore(existingNode, newChild);
         }
         
         notifyInsert(parent, newChild);        
@@ -265,7 +268,7 @@ public class TOC {
         } else {                    
             TOCNode parent = existingNode.getParent();
 
-            parent.getOperations().addAfter(existingNode, newChild);
+            factory.getOperations(parent).addAfter(existingNode, newChild);
 
             notifyInsert(parent, newChild);        
         }
@@ -281,7 +284,7 @@ public class TOC {
         
         TOCNode parent = node.getParent();
         int idx = parent.getChildren().indexOf(node);
-        parent.getOperations().remove(node);
+        factory.getOperations(parent).remove(node);
         
         Object[] arr = new Object[1];
         arr[0] = node;
@@ -315,7 +318,7 @@ public class TOC {
      * @param page the page to look for
      */
     public void remove(Page page) {
-        TOCNode node = root.getOperations().findReferenceTo(page);
+        TOCNode node = rootOp.findReferenceTo(page);
         
         if (node != null) {
             remove(node);
@@ -422,7 +425,7 @@ public class TOC {
             vnode.setVirtualHierarchyBuilder(hierarchyBuilder);
             vnode.setSourcePath(relativeSource);
             
-            node.getOperations().replace(vnode);
+            factory.getOperations(node).replace(vnode);
             
             TOCNode parent = vnode.getParent();
             int[] indices = new int[1];
@@ -579,8 +582,8 @@ public class TOC {
         unorganized.clearChildren();
         recycleBin.clearChildren();
                 
-        root.getOperations().addToEnd(unorganized);
-        root.getOperations().addToEnd(recycleBin);
+        rootOp.addToEnd(unorganized);
+        rootOp.addToEnd(recycleBin);
         
         modified = false;
     }
@@ -609,6 +612,41 @@ public class TOC {
      * @return returns the node that refers to the page, or null
      */
     public TOCNode findReferenceTo(Page page) {
-        return root.getOperations().findReferenceTo(page);
+        return rootOp.findReferenceTo(page);
+    }
+
+    /**
+     * Finds out if there a page is reference by any of the TOC nodes
+     * @param page page to look for
+     * @return returns true if there is a node which refers to the page
+     */
+    public boolean isReferenced(Page page) {
+        return rootOp.isReferenced(page);
+    }
+
+    /**
+     * Adds a new node to the end of the unorganized nodes list
+     * @param newNode node to be added
+     */
+    public void addUnorganized(TOCNode newNode) {
+        factory.getOperations(unorganized).addToEnd(newNode);
+    }
+
+    /**
+     * Checks whether a given page is referenced by a node in the recycle bin
+     * @param existingPage page to look for
+     * @return if true the node that refers to existingPage is currently in the
+     *         recycle bin
+     */
+    public boolean isInRecycleBin(Page existingPage) {
+        return factory.getOperations(recycleBin).isReferenced(existingPage);
+    }
+
+    /**
+     * Removes a node from the recycle bin completely
+     * @param existingPage page to look for
+     */
+    public void removeFromRecycleBin(Page existingPage) {
+        factory.getOperations(recycleBin).removeReferenceTo(existingPage);
     }
 }

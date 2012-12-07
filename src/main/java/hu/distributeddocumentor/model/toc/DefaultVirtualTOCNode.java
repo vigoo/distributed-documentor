@@ -16,13 +16,12 @@ import org.w3c.dom.Element;
 public class DefaultVirtualTOCNode extends DefaultTOCNode implements VirtualTOCNode {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultVirtualTOCNode.class.getName());
-    
-    private final TOCNodeFactory factory;
+        
     private Class virtualHierarchyBuilder;
     private String sourcePath;
 
     public DefaultVirtualTOCNode(TOCNodeFactory factory) {
-        this.factory = factory;
+        super(factory);
     }
        
     

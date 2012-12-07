@@ -23,6 +23,7 @@ import org.w3c.dom.NodeList;
 public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerialization {
     protected static final Collection<File> noExtraImages = new HashSet<>();
     
+    protected final TOCNodeFactory factory;
     private String title;
     private Page target;
     private TOCNode parent;
@@ -30,8 +31,11 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
 
     /**
      * Creates a new empty node
+     * 
+     * @param factory the TOC node factory instance to be used
      */
-    public DefaultTOCNode() {
+    public DefaultTOCNode(TOCNodeFactory factory) {
+        this.factory = factory;
         children = new LinkedList<>();
     }
 
@@ -39,9 +43,10 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
      * Creates a new empty node with a title
      *
      * @param title the title of the node
+     * @param factory the TOC node factory instance to be used
      */
-    public DefaultTOCNode(String title) {
-        this();
+    public DefaultTOCNode(TOCNodeFactory factory, String title) {
+        this(factory);
 
         this.title = title;
     }
@@ -50,9 +55,10 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
      * Creates a new empty node with title 'Unitled', referring to a page
      *
      * @param target the page the node refers to
+     * @param factory the TOC node factory instance to be used
      */
-    public DefaultTOCNode(Page target) {
-        this();
+    public DefaultTOCNode(TOCNodeFactory factory, Page target) {
+        this(factory);
 
         this.title = "Untitled";
         this.target = target;
@@ -61,11 +67,12 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
     /**
      * Creates a new node with title and target page
      *
+     * @param factory the TOC node factory instance to be used
      * @param title the title of the node
      * @param target the page this node refers to
      */
-    public DefaultTOCNode(String title, Page target) {
-        this();
+    public DefaultTOCNode(TOCNodeFactory factory, String title, Page target) {
+        this(factory);
 
         this.title = title;
         this.target = target;
@@ -139,7 +146,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
     @Override
     public void addToEnd(TOCNode child) {
         children.add(child);
-        child.getOperations().setParent(this);
+        factory.getOperations(child).setParent(this);
     }
 
     /**
@@ -151,7 +158,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
     @Override
     public void addBefore(TOCNode existingChild, TOCNode newChild) {
         children.add(children.indexOf(existingChild), newChild);
-        newChild.getOperations().setParent(this);
+        factory.getOperations(newChild).setParent(this);
     }
 
     /**
@@ -163,7 +170,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
     @Override
     public void addAfter(TOCNode existingChild, TOCNode newChild) {
         children.add(children.indexOf(existingChild) + 1, newChild);
-        newChild.getOperations().setParent(this);
+        factory.getOperations(newChild).setParent(this);
     }
 
     /**
@@ -214,7 +221,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
         fillXMLElement(elem);
 
         for (TOCNode node : children) {
-            elem.appendChild(node.getSerialization().toXML(doc));
+            elem.appendChild(factory.getSerialization(node).toXML(doc));
         }
 
         return elem;
@@ -266,8 +273,8 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
                 if (childNode.getNodeType() == Node.ELEMENT_NODE) {
 
                     TOCNode child = factory.fromXML(childNode);
-                    child.getSerialization().fromXML(childNode, doc, factory);
-                    child.getOperations().setParent(this);
+                    factory.getSerialization(child).fromXML(childNode, doc, factory);
+                    factory.getOperations(child).setParent(this);
 
                     children.add(child);
                 }
@@ -303,7 +310,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
         }
 
         for (TOCNode childNode : children) {
-            if (childNode.getOperations().isReferenced(page)) {
+            if (factory.getOperations(childNode).isReferenced(page)) {
                 return true;
             }
         }
@@ -331,7 +338,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
         children.remove(child);
 
         for (TOCNode childNode : children) {
-            childNode.getOperations().deepRemove(child);
+            factory.getOperations(childNode).deepRemove(child);
         }
     }
 
@@ -351,7 +358,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
                 toRemove.add(childNode);
             }
 
-            childNode.getOperations().removeReferenceTo(page);
+            factory.getOperations(childNode).removeReferenceTo(page);
         }
 
         for (TOCNode childNode : toRemove) {
@@ -375,7 +382,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
         }
 
         for (TOCNode child : children) {
-            TOCNode result = child.getOperations().findReferenceTo(page);
+            TOCNode result = factory.getOperations(child).findReferenceTo(page);
             if (result != null) {
                 return result;
             }
@@ -392,7 +399,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
      */
     @Override
     public void replace(TOCNode newNode) {
-        parent.getOperations().replaceChild(this, newNode);
+        factory.getOperations(parent).replaceChild(this, newNode);
     }
     
     /**
@@ -406,7 +413,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
         if (idx >= 0) {
             children.remove(idx);
             children.add(idx, newChild);
-            newChild.getOperations().setParent(this);
+            factory.getOperations(newChild).setParent(this);
         }
     }
 
@@ -471,15 +478,5 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
     public ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs) {
 
         return new ExportableNode(this, null, noExtraImages);        
-    }
-
-    @Override
-    public TOCNodeOperations getOperations() {
-        return this;
-    }
-
-    @Override
-    public TOCNodeSerialization getSerialization() {
-        return this;
     }
 }

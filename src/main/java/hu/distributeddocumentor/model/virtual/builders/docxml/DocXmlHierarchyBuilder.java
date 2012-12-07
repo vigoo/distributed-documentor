@@ -92,7 +92,7 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
         
         for (NamespaceDoc ns : flatNamespaces) {
             if (ns != rootNS) {                
-                root.getOperations().addToEnd(buildNamespaceNode(ns));
+                factory.getOperations(root).addToEnd(buildNamespaceNode(ns));
             }
         }
         
@@ -259,7 +259,7 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
         TOCNode node = createNode(ns.getFullName(), page);        
         
         for (ClassDoc cl : ns.getSortedClasses()) {                    
-            node.getOperations().addToEnd(buildClassNode(cl));           
+            factory.getOperations(node).addToEnd(buildClassNode(cl));           
         }        
         
         return node;

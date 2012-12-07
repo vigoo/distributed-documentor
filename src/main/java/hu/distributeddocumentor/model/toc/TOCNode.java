@@ -89,18 +89,5 @@ public interface TOCNode {
      *
      * @return a collection of string page identifiers
      */
-    Collection<String> getReferencedPages();
-    
-    /**
-     * Gets the interface for TOC operations, to be used by the TOC class
-     * @return TOC node operations interface
-     */
-    TOCNodeOperations getOperations();
-    
-    /**
-     * Gets the serialization interface for the TOC node
-     * @return TOC node serialization interface
-     */
-    TOCNodeSerialization getSerialization();
-    
+    Collection<String> getReferencedPages();      
 }
