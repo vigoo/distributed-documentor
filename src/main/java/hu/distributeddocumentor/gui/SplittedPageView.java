@@ -276,7 +276,6 @@ public final class SplittedPageView extends javax.swing.JPanel implements Observ
                 case Floating:
                     location = 1.0; // overriding divider location
                     host.getFloatingPreview().show();                    
-                    host.getFloatingPreview().switchPage(page);
                     break;
                 case Hidden:                
                     location = 1.0; // overriding divider location
