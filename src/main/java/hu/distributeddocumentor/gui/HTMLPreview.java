@@ -99,15 +99,17 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
     }
     
     public void switchPage(Page newPage) {
-        if (page != null) {
-            page.deleteObserver(this);
-        }
-        
-        page = newPage;
-        
-        if (page != null) {
-            page.addObserver(this);
-            renderPage();
+        if (page != newPage) {
+            if (page != null) {
+                page.deleteObserver(this);
+            }
+
+            page = newPage;
+
+            if (page != null) {
+                page.addObserver(this);
+                renderPage();
+            }
         }
     }
 

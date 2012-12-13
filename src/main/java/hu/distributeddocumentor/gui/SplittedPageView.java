@@ -10,7 +10,7 @@ import java.util.Observer;
 import javax.swing.JSplitPane;
 import javax.swing.undo.UndoManager;
 
-public final class SplittedPageView extends javax.swing.JPanel implements Observer {
+public final class SplittedPageView extends javax.swing.JPanel implements Observer, PreviewSync {
 
     private final WikiMarkupEditor editor;
     private final HTMLPreview preview;
@@ -35,7 +35,7 @@ public final class SplittedPageView extends javax.swing.JPanel implements Observ
                 
         metadata = page.getMetadata();
         preview = new HTMLPreview(page, host, root);
-        editor = new WikiMarkupEditor(page, host, preview, prefs);
+        editor = new WikiMarkupEditor(page, host, this, prefs);
         
         splitPane.setLeftComponent(editor);
         splitPane.setRightComponent(preview);
@@ -56,6 +56,7 @@ public final class SplittedPageView extends javax.swing.JPanel implements Observ
         editor.updateFont();
     }
     
+    @Override
     public void scrollToId(String id) {
         
         if (prefs.getPreviewMode() == PreviewMode.Floating) {
@@ -142,14 +143,14 @@ public final class SplittedPageView extends javax.swing.JPanel implements Observ
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(tbtVerticalSplit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(tbtVerticalSplit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tbtHorizontalSplit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(tbtHorizontalSplit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tbtFloatingPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(tbtFloatingPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tbtHiddenPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 165, Short.MAX_VALUE)
+                .add(tbtHiddenPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -289,6 +290,18 @@ public final class SplittedPageView extends javax.swing.JPanel implements Observ
         }
         finally {
             isUpdatingPreviewMode = false;
+        }
+    }
+
+    @Override
+    public void scrollToLine(int lineIdx) {
+
+        if (prefs.getPreviewMode() == PreviewMode.Floating) {
+            host.getFloatingPreview().switchPage(page);
+            host.getFloatingPreview().getSync().scrollToLine(lineIdx);
+        }
+        else if (prefs.getPreviewMode() != PreviewMode.Hidden) {
+            preview.scrollToLine(lineIdx);
         }
     }
 }
