@@ -33,7 +33,7 @@ public class Page extends Observable {
     private final static String TEMPLATE = "= Title =\n\nBody\n";
     private static final Pattern SNIPPET_PATTERN = Pattern.compile("\\[Snippet\\:(\\w+)\\]");
     
-    private final String id;
+    private String id;
     private String markupLanguage;
     private String markup;
     
@@ -46,7 +46,7 @@ public class Page extends Observable {
     private MarkupLanguage language;
     
     private final SnippetCollection snippets;    
-    private final PageMetadata metadata;
+    private PageMetadata metadata;
     
     private boolean hasChanged;
     
@@ -81,34 +81,9 @@ public class Page extends Observable {
      */
     public Page(File source, SnippetCollection snippets) throws FileNotFoundException, IOException {
         
-        this.snippets = snippets;        
-        
-        final String fileName = source.getName();
-        final int lastDot = fileName.lastIndexOf('.');
-        id = fileName.substring(0, lastDot);
-        markupLanguage = fixMarkupLanguage(fileName.substring(lastDot + 1));
-        
-        metadata = new PageMetadata(id);
-        metadata.load(source.getParentFile());
-        
-        final FileInputStream stream = new FileInputStream(source);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {     
-            
-            String line;
-            StringBuilder builder = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
-                builder.append("\n");
-            }
-
-            markup = builder.toString();
-            
-            initializeParser();
-            refs = refExtractor.getReferencedPages(markup);
-        }
-        finally {            
-            hasChanged = false;
-        }
+        this.snippets = snippets;                            
+                
+        load(source);
     }
     
     private File getFile(File targetDirectory) {
@@ -385,8 +360,8 @@ public class Page extends Observable {
         setMarkup(
             markup.replaceAll("(?i)\\[\\["+oldId+"\\]\\]", "[["+newId+"]]")
                   .replaceAll("(?i)\\["+oldId+"\\]", "["+newId+"]")
-                  .replaceAll("(?i)\\[\\["+oldId+"\\|([a-zA-Z0-9,\\. ]+)\\]\\]", "[["+newId+"|$1]]")
-                  .replaceAll("(?i)\\["+oldId+"\\|([a-zA-Z0-9,\\. ]+)\\]", "["+newId+"|$1]"));
+                  .replaceAll("(?i)\\[\\["+oldId+"\\|([a-zA-Z0-9,!\\?\\. ]+)\\]\\]", "[["+newId+"|$1]]")
+                  .replaceAll("(?i)\\["+oldId+" ([a-zA-Z0-9,!\\?\\. ]+)\\]", "["+newId+" $1]"));
     }
 
     private void initializeParser() {
@@ -503,6 +478,55 @@ public class Page extends Observable {
             return result.toString();
         } else {
             return markup;
+        }
+    }
+
+    /**
+     * Reloads a page from the file system, optionally changing its id 
+     * 
+     * This is useful when a page has been renamed for example.
+     * @param documentationDirectory documentation's root directory where the page files lie
+     * @param newId new id, can be null if the id has not been changed
+     */
+    void reload(File documentationDirectory, String newId) throws IOException, FileNotFoundException {
+        if (newId != null && !id.equals(newId)) {
+            id = newId;
+            metadata.changeId(newId);
+        }
+        
+        load(new File(documentationDirectory, id+"."+markupLanguage));
+        
+        setChanged();            
+        notifyObservers();       
+    }
+
+    private void load(File source) throws IOException, FileNotFoundException {
+        final String fileName = source.getName();
+        final int lastDot = fileName.lastIndexOf('.');
+        
+        id = fileName.substring(0, lastDot);
+        markupLanguage = fixMarkupLanguage(fileName.substring(lastDot + 1));
+        
+        metadata = new PageMetadata(id);
+        metadata.load(source.getParentFile());
+        
+        final FileInputStream stream = new FileInputStream(source);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {     
+            
+            String line;
+            StringBuilder builder = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+                builder.append("\n");
+            }
+
+            markup = builder.toString();
+            
+            initializeParser();
+            refs = refExtractor.getReferencedPages(markup);
+        }
+        finally {            
+            hasChanged = false;
         }
     }
 

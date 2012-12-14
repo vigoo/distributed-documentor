@@ -811,28 +811,37 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      */
     public void renamePage(Page page, String newId) throws CouldNotSaveDocumentationException, FailedToLoadPageException, FailedToLoadTOCException {                
         
-        if (!page.getId().equals(newId)) {
-            
-            // Modify related pages
-            for (Page otherPage : pages.values()) {
-                if (otherPage != page) {
-                    otherPage.modifyPageReferences(page.getId(), newId);
+        try {
+            if (!page.getId().equals(newId)) {
+
+                // Modify related pages
+                for (Page otherPage : pages.values()) {
+                    if (otherPage != page) {
+                        otherPage.modifyPageReferences(page.getId(), newId);
+                    }
                 }
-            }
-            
-            saveAll();
-            
-            // Rename the page            
-            for (File pageFile : page.getFiles(getDocumentationDirectory())) {
-                RenameCommand rename = new RenameCommand(repository);
-                rename.force();                
-                rename.execute(pageFile, new File(pageFile.toString().replace(page.getId(), newId)));                
+
+                saveAll();
+
+                // Rename the page            
+                for (File pageFile : page.getFiles(getDocumentationDirectory())) {
+                    RenameCommand rename = new RenameCommand(repository);
+                    rename.force();                
+                    rename.execute(pageFile, new File(pageFile.toString().replace(page.getId(), newId)));                
+
+                    log.debug("Rename return code " + rename.getReturnCode() + ", error message: " + rename.getErrorString());
+                }
                 
-                log.debug("Rename return code " + rename.getReturnCode() + ", error message: " + rename.getErrorString());
-            }
+                page.reload(getDocumentationDirectory(), newId);                
+                toc.save(getDocumentationDirectory());            
+                
+                reload();
+            }        
+        }
+        catch (IOException | TransformerException ex) {
+            log.error(null, ex);
             
-            // Reload everything
-            reload();                   
+            throw new CouldNotSaveDocumentationException(ex);        
         }
     }
 

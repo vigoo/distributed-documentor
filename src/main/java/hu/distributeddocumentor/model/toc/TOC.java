@@ -649,4 +649,13 @@ public class TOC {
     public void removeFromRecycleBin(Page existingPage) {
         factory.getOperations(recycleBin).removeReferenceTo(existingPage);
     }
+
+    /**
+     * Called when a page as been renamed
+     */
+    public void onPageRenamed() {
+        for (TreeModelListener listener : listeners) {        
+            listener.treeStructureChanged(new TreeModelEvent(this, new TreePath(root)));
+        }
+    }
 }

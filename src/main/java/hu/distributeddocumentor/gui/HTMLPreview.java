@@ -37,8 +37,7 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
      */
     public HTMLPreview(Page page, final PageEditorHost host, File root) {
         initComponents();
-        
-        this.page = page;
+                
         this.root = root;                
         
         htmlPanel = new XHTMLPanel();

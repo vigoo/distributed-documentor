@@ -23,7 +23,7 @@ public class PageMetadata {
     
     private static final Logger log = LoggerFactory.getLogger(Documentation.class.getName());
     
-    private final String pageId;
+    private String pageId;
     private final Properties metadata;
     private boolean hasChanged;
 
@@ -125,5 +125,13 @@ public class PageMetadata {
      */
     public boolean hasChanged() {
         return hasChanged;
+    }
+
+    /**
+     * Changes the page ID when the page has been renamed
+     * @param newId the new ID
+     */
+    public void changeId(String newId) {
+        pageId = newId;
     }
 }
