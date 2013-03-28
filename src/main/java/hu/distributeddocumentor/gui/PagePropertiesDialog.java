@@ -2,6 +2,7 @@ package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadMetadataException;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
 import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import hu.distributeddocumentor.model.Page;
@@ -169,7 +170,7 @@ public class PagePropertiesDialog extends javax.swing.JDialog {
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -194,7 +195,7 @@ public class PagePropertiesDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(0, 146, Short.MAX_VALUE)
+                        .add(0, 154, Short.MAX_VALUE)
                         .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelButton))
@@ -208,7 +209,7 @@ public class PagePropertiesDialog extends javax.swing.JDialog {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(tbTitle)
                             .add(tbID)
-                            .add(cbMarkupLanguage, 0, 224, Short.MAX_VALUE))))
+                            .add(cbMarkupLanguage, 0, 232, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -258,7 +259,7 @@ public class PagePropertiesDialog extends javax.swing.JDialog {
                 try {
                     doc.renamePage(page, newId);
                     host.documentationReloaded();
-                } catch (CouldNotSaveDocumentationException | FailedToLoadPageException | FailedToLoadTOCException ex) {
+                } catch (CouldNotSaveDocumentationException | FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
                     ErrorDialog.show(null, "Failed to rename page", ex);
                 }
             }

@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.model.virtual.builders.merge;
 
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadMetadataException;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
 import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import hu.distributeddocumentor.model.builders.UsesPreferences;
@@ -50,7 +51,7 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
             }
             
             return result;
-        } catch (FailedToLoadPageException | FailedToLoadTOCException ex) {
+        } catch (FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
             Logger.getLogger(DocumentationMerger.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
@@ -78,14 +79,14 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
                 files.add(new File(root, imageName));
             }
             
-        } catch (FailedToLoadPageException | FailedToLoadTOCException ex) {
+        } catch (FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
             Logger.getLogger(DocumentationMerger.class.getName()).log(Level.SEVERE, null, ex);            
         }        
         
         return files;
     }
 
-    private void ensureDocumentLoaded() throws FailedToLoadPageException, FailedToLoadTOCException {
+    private void ensureDocumentLoaded() throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
         if (doc == null) {
             doc = new Documentation(prefs);
             doc.initFromExisting(innerDocumentationRoot);

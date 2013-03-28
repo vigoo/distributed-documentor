@@ -4,6 +4,7 @@ import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.chm.CHMExporter;
 import hu.distributeddocumentor.exporters.html.HTMLExporter;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadMetadataException;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
 import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
@@ -48,7 +49,7 @@ public class CommandLineExporter {
             
             System.out.println("Export finished");
         }
-        catch (FailedToLoadPageException | FailedToLoadTOCException | IOException ex) {
+        catch (FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException | IOException ex) {
             System.err.println("Export failed. Reason: " + ex.getMessage());
         }
     }

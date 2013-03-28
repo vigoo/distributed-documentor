@@ -10,6 +10,7 @@ import hu.distributeddocumentor.controller.sync.MercurialSync;
 import hu.distributeddocumentor.controller.sync.SyncController;
 import hu.distributeddocumentor.model.CouldNotSaveDocumentationException;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadMetadataException;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
 import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import hu.distributeddocumentor.model.Page;
@@ -281,6 +282,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         undoMenuItem = new javax.swing.JMenuItem();
         redoMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        docPreferencesMenuItem = new javax.swing.JMenuItem();
         spellCheckingMenuItem = new javax.swing.JCheckBoxMenuItem();
         synchronizeMenu = new javax.swing.JMenu();
         pullMenuItem = new javax.swing.JMenuItem();
@@ -386,6 +388,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         });
         editMenu.add(redoMenuItem);
         editMenu.add(jSeparator2);
+
+        docPreferencesMenuItem.setText("Documentation preferences");
+        docPreferencesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                docPreferencesMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(docPreferencesMenuItem);
 
         spellCheckingMenuItem.setSelected(true);
         spellCheckingMenuItem.setText("Spell checking");
@@ -525,7 +535,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             SyncController controller = createSyncConrtoller();
             controller.pull();
         }
-        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException ex) {
+        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
             ErrorDialog.show(this, "Failed to download changes", ex);
         }
         finally {
@@ -545,7 +555,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             SyncController controller = createSyncConrtoller();
             controller.push();        
         }
-        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException ex) {
+        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
             ErrorDialog.show(this, "Failed to upload changes", ex);
         }
         finally {
@@ -643,6 +653,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         spellCheckingMenuItem.setSelected(prefs.isSpellCheckingEnabled());
         
     }//GEN-LAST:event_spellCheckingMenuItemActionPerformed
+
+    private void docPreferencesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_docPreferencesMenuItemActionPerformed
+        
+        DocumentationPreferencesDialog dlg = new DocumentationPreferencesDialog(this, doc);
+        dlg.setVisible(true);        
+    }//GEN-LAST:event_docPreferencesMenuItemActionPerformed
 
     private void showPreferencesIfNecessary() {
         
@@ -743,6 +759,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCommit;
     private javax.swing.JButton btRevert;
+    private javax.swing.JMenuItem docPreferencesMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu exportMenu;

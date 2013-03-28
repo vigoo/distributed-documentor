@@ -2,6 +2,7 @@ package hu.distributeddocumentor.controller.sync;
 
 import hu.distributeddocumentor.gui.PageEditorHost;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.FailedToLoadMetadataException;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
 import hu.distributeddocumentor.model.FailedToLoadTOCException;
 import java.io.IOException;
@@ -25,15 +26,15 @@ public class SyncController {
         this.host = host;
     }
 
-    public boolean push() throws IOException, FailedToLoadPageException, FailedToLoadTOCException {
+    public boolean push() throws IOException, FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
         return run(true);
     }
 
-    public boolean pull() throws IOException, FailedToLoadPageException, FailedToLoadTOCException {
+    public boolean pull() throws IOException, FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
         return run(false);
     }
 
-    private boolean run(boolean pushing) throws IOException, FailedToLoadPageException, FailedToLoadTOCException {
+    private boolean run(boolean pushing) throws IOException, FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
 
         boolean cancelled = false;
         while (query.hasUncommittedChanges() && !cancelled) {

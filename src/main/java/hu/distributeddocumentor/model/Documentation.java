@@ -4,6 +4,8 @@ import com.aragost.javahg.Changeset;
 import com.aragost.javahg.Repository;
 import com.aragost.javahg.RepositoryConfiguration;
 import com.aragost.javahg.commands.*;
+import com.google.common.base.Joiner;
+import com.google.common.io.Files;
 import hu.distributeddocumentor.model.toc.DefaultTOCNodeFactory;
 import hu.distributeddocumentor.model.toc.TOC;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
@@ -13,8 +15,13 @@ import hu.distributeddocumentor.utils.ResourceUtils;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
 import java.util.*;
 import javax.xml.parsers.ParserConfigurationException;
@@ -45,6 +52,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     private final Map<String, Page> pages;    
     private final Map<String, Snippet> snippets;
     private Images images;
+    private String title = "Documentation";
+    private boolean titleHasChanged;
     
     private String relativeRoot;
     private Repository repository;
@@ -80,6 +89,27 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     public Collection<Snippet> getSnippets() {
         return snippets.values();
     }
+
+    /**
+     * Gets the documentation title
+     * @return title of the documentation
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Sets the documentation title
+     * @param title title of the documentation
+     */
+    public void setTitle(String title) {
+        
+        if (!title.equals(this.title)) {
+            this.title = title;
+            titleHasChanged = true;
+        }
+    }
+        
     
     /**
      * Constructs an uninitialized documentation object
@@ -153,7 +183,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      * @throws FailedToLoadPageException
      * @throws FailedToLoadTOCException
      */
-    public void initFromExisting(File repositoryRoot) throws FailedToLoadPageException, FailedToLoadTOCException {
+    public void initFromExisting(File repositoryRoot) throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
         
         File realRepositoryRoot = findRealRepositoryRoot(repositoryRoot);
         relativeRoot = ResourceUtils.getRelativePath(repositoryRoot.getAbsolutePath(), realRepositoryRoot.getAbsolutePath());
@@ -179,7 +209,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      * @throws FailedToLoadPageException
      * @throws FailedToLoadTOCException
      */
-    public void cloneFromRemote(File localRepositoryRoot, String remoteRepo, String userName, String password) throws FailedToLoadPageException, FailedToLoadTOCException {
+    public void cloneFromRemote(File localRepositoryRoot, String remoteRepo, String userName, String password) throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
                 
         relativeRoot = "";
         repository = Repository.clone(createRepositoryConfiguration(), localRepositoryRoot, RepositoryUriGenerator.addCredentials(remoteRepo, userName, password));
@@ -206,7 +236,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         return new File(getDocumentationDirectory(), "snippets");
     }
     
-    private void loadRepository() throws FailedToLoadPageException, FailedToLoadTOCException {
+    private void loadRepository() throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
 
         File snippetsDir = getSnippetsDirectory();
         if (!snippetsDir.exists()) {
@@ -265,7 +295,15 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             if (!toc.isReferenced(page)) { 
                 toc.addUnorganized(toc.getFactory().createNode(page));
             }
-        }                                
+        }     
+        
+        // Loading documentation propeties
+        try {
+            loadProperties();
+        }
+        catch (IOException ex) {
+            throw new FailedToLoadMetadataException(ex);
+        }
     }
     
     /**
@@ -277,7 +315,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      * @throws FailedToLoadPageException
      * @throws FailedToLoadTOCException
      */
-    public void reload() throws FailedToLoadPageException, FailedToLoadTOCException {    
+    public void reload() throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {    
         
         toc.clear();
         pages.clear();
@@ -383,12 +421,67 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             }
         
             toc.saveIfModified(root);
+            
+            if (titleHasChanged) {
+                saveProperties();
+            }
         }
         catch (IOException | TransformerException ex) {
             log.error(null, ex);
             
             throw new CouldNotSaveDocumentationException(ex);        
         }    
+    }
+    
+    private File getDocumentationMetadataFile() {
+        return new File(getDocumentationDirectory(), "documentation.properties");
+    }
+    
+    private void saveProperties() throws IOException {
+                
+        File metadataFile = getDocumentationMetadataFile();
+                       
+        boolean alreadyExisted = metadataFile.exists();
+        
+        Properties metadata = new Properties();
+        metadata.put("title", title);
+        
+        try (OutputStream out = new FileOutputStream(metadataFile)) {                
+             metadata.store(out, "Global documentation properties");            
+        }
+        
+        if (!alreadyExisted) {
+            AddCommand cmd = new AddCommand(repository);        
+            cmd.execute(metadataFile);
+        }
+                        
+        // Removing comments to avoid merging conflicts                     
+        // TODO: merge with PageMetadata's similar code
+        final List<String> lines = Files.readLines(metadataFile, Charset.defaultCharset());            
+        lines.remove(0);                     
+        lines.remove(0);            
+        Files.write(Joiner.on('\n').join(lines), metadataFile, Charset.defaultCharset());
+         
+        titleHasChanged = false;
+    }
+    
+    private void loadProperties() throws IOException {
+        
+        File metadataFile = getDocumentationMetadataFile();
+        Properties metadata = new Properties();
+        if (metadataFile.exists()) {
+          
+           try (InputStream in = new FileInputStream(metadataFile)) {
+                metadata.load(in);
+           }
+           catch (IOException ex) {                
+                log.error("Failed to load documentation metadata", ex);
+                metadata.clear();
+           }
+        }
+        
+        if (metadata.containsKey("title"))            
+            title = metadata.getProperty("title");
     }
     
     /**
@@ -472,7 +565,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      * @throws FailedToLoadPageException
      * @throws FailedToLoadTOCException
      */
-    public void revertChanges(List<String> files) throws FailedToLoadPageException, FailedToLoadTOCException {        
+    public void revertChanges(List<String> files) throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {        
         
         RevertCommand revert = new RevertCommand(repository);
 
@@ -809,7 +902,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      * @param page Page to be changed
      * @param newId New identifier of the page
      */
-    public void renamePage(Page page, String newId) throws CouldNotSaveDocumentationException, FailedToLoadPageException, FailedToLoadTOCException {                
+    public void renamePage(Page page, String newId) throws CouldNotSaveDocumentationException, FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {                
         
         try {
             if (!page.getId().equals(newId)) {

@@ -74,7 +74,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         createHHC(new File(targetDir, "toc.hhc"), toc);
 
         // Creating HHP file
-        createHHP(targetDir);
+        createHHP(doc, targetDir);
         
         // Executing HTML help compiler
         if (prefs.hasValidCHMCompilerPath()) {        
@@ -94,7 +94,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         return target;
     }
 
-    private void createHHP(File targetDir) throws FileNotFoundException {
+    private void createHHP(Documentation doc, File targetDir) throws FileNotFoundException {
         
         File hhp = new File(targetDir, "project.hhp");
         
@@ -112,7 +112,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             out.println("Default topic=start.html");
             //out.println("Default Font=");
             out.println("Language=0x409 English (US)"); // TODO
-            out.println("Title=Distributed Documentor generated CHM"); // TODO
+            out.println("Title="+doc.getTitle()); // TODO
             //out.println("CreateCHIFile=No");
             //out.println("Compatibility=1.1");
             out.println("Error log file=compiler.log");
