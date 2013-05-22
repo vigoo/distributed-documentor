@@ -291,6 +291,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         tocItem = new javax.swing.JCheckBoxMenuItem();
         imageManagerItem = new javax.swing.JCheckBoxMenuItem();
         snippetManagerItem = new javax.swing.JCheckBoxMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        refreshViewsItem = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         resetLayoutItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
@@ -456,6 +458,15 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             }
         });
         viewMenu.add(snippetManagerItem);
+        viewMenu.add(jSeparator3);
+
+        refreshViewsItem.setText("Refresh all");
+        refreshViewsItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshViewsItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(refreshViewsItem);
         viewMenu.add(jSeparator1);
 
         resetLayoutItem.setText("Reset layout");
@@ -660,6 +671,15 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         dlg.setVisible(true);        
     }//GEN-LAST:event_docPreferencesMenuItemActionPerformed
 
+    private void refreshViewsItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshViewsItemActionPerformed
+
+        for (Content content : toolWindowManager.getContentManager().getContents()) {
+            if (content.getComponent() instanceof SplittedPageView) {
+                ((SplittedPageView)content.getComponent()).refreshPreview();
+            }
+        }        
+    }//GEN-LAST:event_refreshViewsItemActionPerformed
+
     private void showPreferencesIfNecessary() {
         
         if (!prefs.hasValidMercurialPath()) {
@@ -770,6 +790,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JLabel labelRoot;
     private javax.swing.JLabel labelUncommitted;
     private javax.swing.JMenuBar menuBar;
@@ -777,6 +798,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JMenuItem pullMenuItem;
     private javax.swing.JMenuItem pushMenuItem;
     private javax.swing.JMenuItem redoMenuItem;
+    private javax.swing.JMenuItem refreshViewsItem;
     private javax.swing.JMenuItem resetLayoutItem;
     private javax.swing.JCheckBoxMenuItem snippetManagerItem;
     private javax.swing.JCheckBoxMenuItem spellCheckingMenuItem;

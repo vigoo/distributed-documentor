@@ -55,6 +55,13 @@ public final class SplittedPageView extends javax.swing.JPanel implements Observ
     public void updateFont() {
         editor.updateFont();
     }
+ 
+    /**
+     * Refreshes the preview
+     */
+    public void refreshPreview() {
+        preview.refresh();
+    }
     
     @Override
     public void scrollToId(String id) {

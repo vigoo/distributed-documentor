@@ -30,6 +30,7 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
     private final File root;
     private final FSScrollPane scrollPane;
     private final XHTMLPanel htmlPanel;
+    private final NaiveUserAgent uac;
     private Page page;    
     
     /**
@@ -46,15 +47,20 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
         scrollPane = new FSScrollPane(htmlPanel);
                 
         add(scrollPane, BorderLayout.CENTER);
+
+        final String rootUri = root.toURI().toString();        
         
-        NaiveUserAgent uac = new NaiveUserAgent();
-        
-        final String rootUri = root.toURI().toString();
-        uac.setBaseURL(rootUri);
-        
-        htmlPanel.getSharedContext().setUserAgentCallback(uac);
-        //htmlPanel.getSharedContext().setReplacedElementFactory(new SwingReplacedElementFactory());
-        
+        NaiveUserAgent existingUac = (NaiveUserAgent) htmlPanel.getSharedContext().getUserAgentCallback();
+        if (existingUac == null) {
+            uac = new NaiveUserAgent();
+
+            uac.setBaseURL(rootUri);
+
+            htmlPanel.getSharedContext().setUserAgentCallback(uac);        
+        } else {
+            uac = existingUac;
+        }
+                       
         for (Object listener : htmlPanel.getMouseTrackingListeners()) {
             if (listener instanceof LinkListener) {
                 htmlPanel.removeMouseTrackingListener((FSMouseListener)listener);
@@ -95,6 +101,15 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
                 });
         
         switchPage(page);
+    }
+
+    /**
+     * Refresh the current preview
+     */
+    public void refresh() {
+            
+        uac.clearImageCache();
+        renderPage();
     }
     
     public void switchPage(Page newPage) {
@@ -233,4 +248,6 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
         
         return null;
     }
+
+   
 }
