@@ -231,12 +231,16 @@
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>mylyn.wikitext.core</artifactId>
-            <version>1.8.0.i20120920-2001</version>
+            <version>1.8.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/org.eclipse.mylyn.wikitext.core_1.8.0.I20130522-1811.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>mylyn.wikitext.mediawiki.core</artifactId>
-            <version>1.8.0.i20120920-2001</version>
+            <version>1.8.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/org.eclipse.mylyn.wikitext.mediawiki.core_1.8.0.I20130522-1811.jar</systemPath>
         </dependency>    
         <dependency>
             <groupId>org.netbeans.external</groupId>
