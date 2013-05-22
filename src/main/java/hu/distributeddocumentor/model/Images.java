@@ -81,7 +81,9 @@ public class Images extends Observable {
         }
         
         File target = new File(mediaDir, name);
-        Files.copy(externalImage, target);
+        
+        if (!externalImage.equals(externalImage))
+            Files.copy(externalImage, target);
         
         AddCommand add = new AddCommand(repository);
         add.execute(target);
