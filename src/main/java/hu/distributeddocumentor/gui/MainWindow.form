@@ -206,6 +206,9 @@
   <SubComponents>
     <Container class="javax.swing.JToolBar" name="toolBar">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="cc" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="rollover" type="boolean" value="true"/>
       </Properties>
       <Constraints>
@@ -243,6 +246,9 @@
         </Component>
         <Component class="javax.swing.JLabel" name="labelUncommitted">
           <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="cc" green="ff" red="ff" type="rgb"/>
+            </Property>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
               <FontInfo relative="true">
                 <Font bold="true" component="labelUncommitted" property="font" relativeSize="true" size="0"/>

@@ -306,6 +306,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             }
         });
 
+        toolBar.setBackground(new java.awt.Color(255, 255, 204));
         toolBar.setRollover(true);
 
         jLabel1.setText("Documentation root: ");
@@ -316,6 +317,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         toolBar.add(labelRoot);
         toolBar.add(filler1);
 
+        labelUncommitted.setBackground(new java.awt.Color(255, 255, 204));
         labelUncommitted.setFont(labelUncommitted.getFont().deriveFont(labelUncommitted.getFont().getStyle() | java.awt.Font.BOLD));
         labelUncommitted.setForeground(new java.awt.Color(255, 0, 0));
         labelUncommitted.setText("There are uncommitted changes!");
