@@ -144,13 +144,14 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                         return name.endsWith(".png") ||
                                name.endsWith(".jpg") ||
                                name.endsWith(".jpeg") ||
+                               name.endsWith(".svg") ||
                                file.isDirectory();
                         
                     }
 
                     @Override
                     public String getDescription() {
-                        return "Image files (*.png, *.jpg)";
+                        return "Image files (*.png, *.jpg, *.svg)";
                     }
                     
                 });
@@ -170,8 +171,10 @@ public class ImageManagerPanel extends javax.swing.JPanel {
     private void btRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRemoveActionPerformed
         
         int row = imagesList.getSelectedRow();
-        String name = (String)imagesList.getValueAt(row, 0);
-        images.removeImage(name);
+        if (row >= 0) {
+            String name = (String)imagesList.getValueAt(row, 0);
+            images.removeImage(name);
+        }
         
     }//GEN-LAST:event_btRemoveActionPerformed
 

@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import hu.distributeddocumentor.gui.htmlpreview.SVGSalamanderReplacedElementFactory;
 import hu.distributeddocumentor.model.Page;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
@@ -22,6 +23,7 @@ import org.xhtmlrenderer.swing.BasicPanel;
 import org.xhtmlrenderer.swing.FSMouseListener;
 import org.xhtmlrenderer.swing.LinkListener;
 import org.xhtmlrenderer.swing.NaiveUserAgent;
+import org.xhtmlrenderer.swing.SwingReplacedElementFactory;
 
 public final class HTMLPreview extends javax.swing.JPanel implements Observer, PreviewSync {
 
@@ -60,6 +62,10 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
         } else {
             uac = existingUac;
         }
+        
+        htmlPanel.getSharedContext().setReplacedElementFactory(
+                new SVGSalamanderReplacedElementFactory(
+                    new SwingReplacedElementFactory()));
                        
         for (Object listener : htmlPanel.getMouseTrackingListeners()) {
             if (listener instanceof LinkListener) {
