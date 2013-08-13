@@ -433,46 +433,61 @@ public class Page extends Observable {
             List<String> lines = Arrays.asList(markup.split("\n"));
             StringBuilder result = new StringBuilder();
             
+            boolean preContext = true;
             for (int i = 0; i < lines.size(); i++) {
                 
                 String line = lines.get(i);
-                
-                int ipoint;
-                int linkContext = 0;
-                int tagContext = 0;
-                boolean found = false;
-                for (ipoint = 0; ipoint < line.length(); ipoint++) {                    
-                    char ch = line.charAt(ipoint);
+                               
+                if (preContext && line.startsWith("</pre>")) {
+                    // End of <pre> block
+                    preContext = false;
+                }
+                else if (!preContext) {
                     
-                    if (ch == '[') {
-                        linkContext++;
+                    if (line.startsWith("<pre")) {
+                        // Start of <pre> block
+                        preContext = true;
+                    } else {
+                        // Not in <pre> block
+                        
+                        int ipoint;
+                        int linkContext = 0;
+                        int tagContext = 0;
+                        boolean found = false;
+                        for (ipoint = 0; ipoint < line.length(); ipoint++) {                    
+                            char ch = line.charAt(ipoint);
+
+                            if (ch == '[') {
+                                linkContext++;
+                            }
+                            else if (ch == '<') {
+                                tagContext++;
+                            }
+                            else if (ch == ']') {
+                                linkContext--;
+                            }
+                            else if (ch == '>') {
+                                tagContext--;
+                            }
+                            else if (linkContext == 0 && tagContext == 0 && Character.isLetterOrDigit(ch)) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (found) {
+                            result.append(line.substring(0, ipoint))
+                                  .append("<span id=\"line")
+                                  .append(Integer.toString(i))
+                                  .append("\"/>")
+                                  .append(line.substring(ipoint))
+                                  .append('\n');                
+                        }
+                        else {
+                            result.append(line).append('\n');
+                        }                        
                     }
-                    else if (ch == '<') {
-                        tagContext++;
-                    }
-                    else if (ch == ']') {
-                        linkContext--;
-                    }
-                    else if (ch == '>') {
-                        tagContext--;
-                    }
-                    else if (linkContext == 0 && tagContext == 0 && Character.isLetterOrDigit(ch)) {
-                        found = true;
-                        break;
-                    }
-                }
-                
-                if (found) {
-                    result.append(line.substring(0, ipoint))
-                          .append("<span id=\"line")
-                          .append(Integer.toString(i))
-                          .append("\"/>")
-                          .append(line.substring(ipoint))
-                          .append('\n');                
-                }
-                else {
-                    result.append(line).append('\n');
-                }
+                }                
             }
             
             return result.toString();
