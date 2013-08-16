@@ -433,7 +433,7 @@ public class Page extends Observable {
             List<String> lines = Arrays.asList(markup.split("\n"));
             StringBuilder result = new StringBuilder();
             
-            boolean preContext = true;
+            boolean preContext = false;
             for (int i = 0; i < lines.size(); i++) {
                 
                 String line = lines.get(i);
@@ -487,7 +487,10 @@ public class Page extends Observable {
                             result.append(line).append('\n');
                         }                        
                     }
-                }                
+                }      
+                else {                            
+                    result.append(line).append('\n');                       
+                }                        
             }
             
             return result.toString();
