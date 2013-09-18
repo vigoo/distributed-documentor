@@ -42,8 +42,44 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         }                   
         
         // Exporting the CSS file
-        extractResource("/documentation.css", "documentation.css", targetDir);
-        contentFiles.add("documentation.css");
+        extractResource("/documentation.css", "documentation.css", targetDir);        
+        
+        // Exporting the syntax highlighter         
+        File shDir = new File(targetDir, "syntaxhighlighter");
+        if (!shDir.exists()) {
+            if (!shDir.mkdir()) {
+                throw new RuntimeException("Failed to create syntaxhighlighter directory!");
+            }
+        }
+                
+        extractResource("/syntaxhighlighter/shCore.css", "shCore.css", shDir);
+        extractResource("/syntaxhighlighter/shThemeDefault.css", "shThemeDefault.css", shDir);
+        extractResource("/syntaxhighlighter/shCore.js", "shCore.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushAS3.js", "shBrushAS3.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushAppleScript.js", "shBrushAppleScript.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushBash.js", "shBrushBash.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushCSharp.js", "shBrushCSharp.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushColdFusion.js", "shBrushColdFusion.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushCpp.js", "shBrushCpp.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushCss.js", "shBrushCss.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushDelphi.js", "shBrushDelphi.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushDiff.js", "shBrushDiff.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushErlang.js", "shBrushErlang.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushGroovy.js", "shBrushGroovy.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushJScript.js", "shBrushJScript.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushJava.js", "shBrushJava.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushJavaFX.js", "shBrushJavaFX.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushPerl.js", "shBrushPerl.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushPhp.js", "shBrushPhp.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushPlain.js", "shBrushPlain.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushPowerShell.js", "shBrushPowerShell.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushPython.js", "shBrushPython.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushRuby.js", "shBrushRuby.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushSass.js", "shBrushSass.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushScala.js", "shBrushScala.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushSql.js", "shBrushSql.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushVb.js", "shBrushVb.js", shDir);
+        extractResource("/syntaxhighlighter/shBrushXml.js", "shBrushXml.js", shDir);
         
         // Exporting the pages
         final TOC toc = doc.getTOC();
@@ -84,7 +120,14 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             JOptionPane.showMessageDialog(null, "The CHM compiler's path is not specified. Use the preferences dialog to set it!", "Export failed", JOptionPane.WARNING_MESSAGE);
         }
     }
-    
+
+    @Override
+    protected void extractResource(String resourceName, String fileName, File targetDir) throws IOException {
+        super.extractResource(resourceName, fileName, targetDir);
+        
+        contentFiles.add(resourceName.substring(1).replace('/', '\\'));
+    }
+            
     @Override
     protected File exportPage(Page page, File targetDir) throws FileNotFoundException {
         File target = super.exportPage(page, targetDir);

@@ -69,7 +69,7 @@ public abstract class HTMLBasedExporter {
         return target;
     }
     
-    protected final void extractResource(final String resourceName,
+    protected void extractResource(final String resourceName,
                                          final String fileName,
                                          final File targetDir)
             throws IOException {
