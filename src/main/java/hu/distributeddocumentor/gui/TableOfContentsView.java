@@ -8,9 +8,9 @@ import hu.distributeddocumentor.controller.TOCTreeModel;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.PageAlreadyExistsException;
+import hu.distributeddocumentor.model.toc.DefaultVirtualTOCNode;
 import hu.distributeddocumentor.model.toc.TOC;
 import hu.distributeddocumentor.model.toc.TOCNode;
-import hu.distributeddocumentor.model.toc.DefaultVirtualTOCNode;
 import hu.distributeddocumentor.model.virtual.builders.docxml.DocXmlHierarchyBuilder;
 import hu.distributeddocumentor.model.virtual.builders.merge.DocumentationMerger;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
@@ -561,5 +561,13 @@ public class TableOfContentsView extends javax.swing.JPanel {
                 contextMenuTarget = node;
                 popupMenu.show(tree, evt.getX(), evt.getY());
             }
+    }
+
+    void selectPage(Page page) {
+        
+        TOCNode node = toc.findReferenceTo(page);
+        if (node != null) {            
+            tree.setSelectionPath(new TreePath(node.toPath()));
+        }
     }
 }

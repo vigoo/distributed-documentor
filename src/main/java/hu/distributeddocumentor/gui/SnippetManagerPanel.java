@@ -206,4 +206,16 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable snippetTable;
     // End of variables declaration//GEN-END:variables
+
+    void selectSnippet(Snippet snippet) {
+        
+        for (int i = 0; i < snippetModel.getRowCount(); i++) {
+            if (snippetModel.getValueAt(i, 0).equals(snippet.getId())) {
+                int viewIdx = snippetTable.getRowSorter().convertRowIndexToView(i);
+                snippetTable.getSelectionModel().setSelectionInterval(viewIdx, viewIdx);
+                snippetTable.scrollRectToVisible(snippetTable.getCellRect(viewIdx, 0, true));
+                break;
+            }
+        }
+    }
 }

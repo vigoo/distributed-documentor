@@ -27,7 +27,13 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.LinkedList;
 import java.util.Properties;
+import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -38,13 +44,13 @@ import org.noos.xing.mydoggy.*;
 import org.noos.xing.mydoggy.event.ContentManagerEvent;
 import org.noos.xing.mydoggy.plaf.MyDoggyToolWindowManager;
 import org.noos.xing.mydoggy.plaf.ui.content.MyDoggyTabbedContentManagerUI;
+import org.noos.xing.mydoggy.plaf.ui.util.SwingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class MainWindow extends javax.swing.JFrame implements PageEditorHost, ContentManagerListener {
 
     private static final Logger log = LoggerFactory.getLogger(MainWindow.class.getName());
-    
     private final DocumentorPreferences prefs;
     private final Documentation doc;
     private final MyDoggyToolWindowManager toolWindowManager;
@@ -52,103 +58,101 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private final Timer statusCheckTimer;
     private final Timer removeOrphanedPagesTimer;
     private final FloatingPreview floatingPreview;
-    
     private UndoManager currentUndoManager;
     private SpellChecker spellChecker;
-
     private ToolWindow twImages;
     private ToolWindow twSnippets;
-    private ToolWindow twTOC;    
+    private ToolWindow twTOC;
+    private final TableOfContentsView tocView;
+    private final SnippetManagerPanel snippetsView;
 
     @Override
     public SpellChecker getSpellChecker() {
-        
+
         if (prefs.isSpellCheckingEnabled()) {
             return spellChecker;
-        }
-        else {
+        } else {
             return null;
         }
-    }        
-    
+    }
+
     /**
      * Creates new form MainWindow
      */
     public MainWindow(final DocumentorPreferences prefs) {
-        this.prefs = prefs;        
+        this.prefs = prefs;
 
         initComponents();
-        
+
         setLocation(prefs.getMainWindowX(), prefs.getMainWindowY());
         setSize(prefs.getMainWindowWidth(), prefs.getMainWindowHeight());
-        
+
         addComponentListener(
                 new ComponentListener() {
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        prefs.setMainWindowWidth(getWidth());
+                        prefs.setMainWindowHeight(getHeight());
+                    }
 
-            @Override
-            public void componentResized(ComponentEvent e) {
-                prefs.setMainWindowWidth(getWidth());
-                prefs.setMainWindowHeight(getHeight());
-            }
+                    @Override
+                    public void componentMoved(ComponentEvent e) {
+                        prefs.setMainWindowX(getX());
+                        prefs.setMainWindowY(getY());
+                    }
 
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                prefs.setMainWindowX(getX());
-                prefs.setMainWindowY(getY());
-            }
+                    @Override
+                    public void componentShown(ComponentEvent e) {
+                    }
 
-            @Override
-            public void componentShown(ComponentEvent e) {                
-            }
+                    @Override
+                    public void componentHidden(ComponentEvent e) {
+                    }
+                });
 
-            @Override
-            public void componentHidden(ComponentEvent e) {                
-            }
-        });
-        
         try {
             SpellDictionary dictionary = new SpellDictionaryHashMap(
                     new BufferedReader(
-                       new InputStreamReader(WikiMarkupEditor.class.getResourceAsStream("/dict/en.txt"))));
-            spellChecker = new SpellChecker(dictionary);           
-        }
-        catch (Exception ex) {
+                    new InputStreamReader(WikiMarkupEditor.class.getResourceAsStream("/dict/en.txt"))));
+            spellChecker = new SpellChecker(dictionary);
+        } catch (Exception ex) {
             spellChecker = null;
-            ErrorDialog.show(this, "Failed to initialize spell checker", ex);            
+            ErrorDialog.show(this, "Failed to initialize spell checker", ex);
         }
-                
+
         spellCheckingMenuItem.setSelected(prefs.isSpellCheckingEnabled());
-        
+
         doc = new Documentation(prefs);
-        
+
         rebuildExportMenu();
-                
-        toolWindowManager = new MyDoggyToolWindowManager();        
-        
+
+        toolWindowManager = new MyDoggyToolWindowManager();
+
         ContentManager contentManager = toolWindowManager.getContentManager();
-        MyDoggyTabbedContentManagerUI contentManagerUI = new MyDoggyTabbedContentManagerUI();                        
-        contentManager.setContentManagerUI(contentManagerUI);       
-        
-        contentManagerUI.setShowAlwaysTab(true);        
+        MyDoggyTabbedContentManagerUI contentManagerUI = new MyDoggyTabbedContentManagerUI();
+        contentManager.setContentManagerUI(contentManagerUI);
+
+        contentManagerUI.setShowAlwaysTab(true);
         contentManager.addContentManagerListener(this);
-       
+
         add(toolWindowManager, BorderLayout.CENTER);
-                        
+
         showPreferencesIfNecessary();
-                    
+
         final StartupDialog startup = new StartupDialog(this, prefs);
-        
+
         if (prefs.getInitialRoot() == null) {
             startup.setVisible(true);
         }
-        
+
         boolean loaded = false;
-        if (startup.getFinalAction() != StartupDialog.Action.Cancel) {            
-            
+        if (startup.getFinalAction() != StartupDialog.Action.Cancel) {
+
             if (startup.initialize(doc)) {
+                tocView = new TableOfContentsView(doc, this, prefs);
                 twTOC = toolWindowManager.registerToolWindow(
-                        "TOC", "Table of contents", null, 
-                        new TableOfContentsView(doc, this, prefs), 
+                        "TOC", "Table of contents", null,
+                        tocView,
                         ToolWindowAnchor.LEFT);
 
                 twTOC.setType(ToolWindowType.DOCKED);
@@ -157,37 +161,36 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 twTOC.setAvailable(true);
                 twTOC.addPropertyChangeListener("visible",
                         new PropertyChangeListener() {
-
                             @Override
                             public void propertyChange(PropertyChangeEvent pce) {
-                                tocItem.setState((Boolean)pce.getNewValue());
-                    }
-                });
+                                tocItem.setState((Boolean) pce.getNewValue());
+                            }
+                        });
 
                 twImages = toolWindowManager.registerToolWindow(
-                        "IMG", 
-                        "Image manager", 
-                        null, 
-                        new ImageManagerPanel(doc.getImages()), 
+                        "IMG",
+                        "Image manager",
+                        null,
+                        new ImageManagerPanel(doc.getImages()),
                         ToolWindowAnchor.LEFT);
                 twImages.setType(ToolWindowType.DOCKED);
                 twImages.setAutoHide(false);
                 twImages.setVisible(true);
-                twImages.setAvailable(true);  
+                twImages.setAvailable(true);
                 twImages.addPropertyChangeListener("visible",
                         new PropertyChangeListener() {
-
                             @Override
                             public void propertyChange(PropertyChangeEvent pce) {
-                                imageManagerItem.setState((Boolean)pce.getNewValue());
-                    }
-                });
+                                imageManagerItem.setState((Boolean) pce.getNewValue());
+                            }
+                        });
 
+                snippetsView = new SnippetManagerPanel(this, doc);
                 twSnippets = toolWindowManager.registerToolWindow(
                         "SNIP",
                         "Snippets manager",
                         null,
-                        new SnippetManagerPanel(this, doc),
+                        snippetsView,
                         ToolWindowAnchor.RIGHT);
                 twSnippets.setType(ToolWindowType.DOCKED);
                 twSnippets.setAutoHide(false);
@@ -195,29 +198,27 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 twSnippets.setAvailable(true);
                 twSnippets.addPropertyChangeListener("visible",
                         new PropertyChangeListener() {
-
                             @Override
                             public void propertyChange(PropertyChangeEvent pce) {
-                                snippetManagerItem.setState((Boolean)pce.getNewValue());
-                    }
-                });
-                
+                                snippetManagerItem.setState((Boolean) pce.getNewValue());
+                            }
+                        });
+
                 labelRoot.setText(doc.getRepositoryRoot());
 
                 floatingPreview = new FloatingPreviewWindow(new File(doc.getRepositoryRoot()), this, prefs);
                 openOrFocusPage("start", "");
 
-                setVisible(true);        
+                setVisible(true);
                 loadLayout();
 
-                saveTimer = new Timer(1000, 
+                saveTimer = new Timer(1000,
                         new ActionListener() {
-
                             @Override
                             public void actionPerformed(ActionEvent ae) {
                                 onSaveTimerTick();
-                            }                    
-                        });  
+                            }
+                        });
                 saveTimer.setInitialDelay(5000);
                 saveTimer.start();
 
@@ -229,7 +230,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                             }
                         });
                 statusCheckTimer.setInitialDelay(0);
-                statusCheckTimer.start();       
+                statusCheckTimer.start();
 
                 removeOrphanedPagesTimer = new Timer(2000,
                         new ActionListener() {
@@ -240,19 +241,22 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                         });
                 removeOrphanedPagesTimer.setInitialDelay(0);
                 removeOrphanedPagesTimer.start();
-                
+
                 loaded = true;
-            } else{            
+            } else {
                 saveTimer = statusCheckTimer = removeOrphanedPagesTimer = null;
                 floatingPreview = null;
+                tocView = null;
+                snippetsView = null;
             }
-        } else {            
-                saveTimer = statusCheckTimer = removeOrphanedPagesTimer = null;
-                floatingPreview = null;
+        } else {
+            saveTimer = statusCheckTimer = removeOrphanedPagesTimer = null;
+            floatingPreview = null;
+            tocView = null;
+            snippetsView = null;
         }
-        
-        if (!loaded)
-        {            
+
+        if (!loaded) {
             System.exit(0);
         }
     }
@@ -499,7 +503,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }// </editor-fold>//GEN-END:initComponents
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
-        
+
         saveLayout();
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
@@ -511,84 +515,79 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private File getWorkspaceFile() {
         return new File(System.getProperty("user.home"), "documentor.workspace.xml");
     }
-    
+
     private void saveLayout() {
-        PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();        
+        PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();
         try (FileOutputStream output = new FileOutputStream(getWorkspaceFile())) {
-                delegate.save(output);
-         }        
-         catch (Exception e) {
+            delegate.save(output);
+        } catch (Exception e) {
             log.warn("Failed to save layout: " + e.getMessage());
-         }        
+        }
     }//GEN-LAST:event_formWindowClosing
 
     private void btCommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCommitActionPerformed
-        
+
         final CommitDialog dlg = new CommitDialog(this, doc);
         dlg.setVisible(true);
     }//GEN-LAST:event_btCommitActionPerformed
 
     private void btRevertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRevertActionPerformed
-        
+
         final RevertDialog dlg = new RevertDialog(this, doc, this);
-        dlg.setVisible(true);                
+        dlg.setVisible(true);
     }//GEN-LAST:event_btRevertActionPerformed
 
     private void preferencesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMenuItemActionPerformed
-        showPreferences();        
+        showPreferences();
     }//GEN-LAST:event_preferencesMenuItemActionPerformed
 
     private void pullMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullMenuItemActionPerformed
-        
+
         saveTimer.stop();
         statusCheckTimer.stop();
         removeOrphanedPagesTimer.stop();
-        
+
         try {
             SyncController controller = createSyncConrtoller();
             controller.pull();
-        }
-        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
+        } catch (IOException | FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
             ErrorDialog.show(this, "Failed to download changes", ex);
-        }
-        finally {
+        } finally {
             saveTimer.start();
             statusCheckTimer.start();
-            removeOrphanedPagesTimer.start();    
+            removeOrphanedPagesTimer.start();
         }
     }//GEN-LAST:event_pullMenuItemActionPerformed
 
     private void pushMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pushMenuItemActionPerformed
-        
+
         saveTimer.stop();
         statusCheckTimer.stop();
         removeOrphanedPagesTimer.stop();
-        
+
         try {
             SyncController controller = createSyncConrtoller();
-            controller.push();        
-        }
-        catch (IOException | FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
+            controller.push();
+        } catch (IOException | FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
             ErrorDialog.show(this, "Failed to upload changes", ex);
-        }
-        finally {
+        } finally {
             saveTimer.start();
             statusCheckTimer.start();
-            removeOrphanedPagesTimer.start();    
+            removeOrphanedPagesTimer.start();
         }
     }//GEN-LAST:event_pushMenuItemActionPerformed
 
     private void userManualItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userManualItemActionPerformed
-       
+
         try {
             Desktop.getDesktop().browse(new URI("http://freezingmoon.dyndns.org/"));
         } catch (URISyntaxException | IOException ex) {
             log.error(null, ex);
-        }                    
+        }
     }//GEN-LAST:event_userManualItemActionPerformed
 
     private void undoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoMenuItemActionPerformed
-        
+
         if (currentUndoManager != null) {
             currentUndoManager.undo();
             updateUndoRedoItems();
@@ -596,7 +595,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }//GEN-LAST:event_undoMenuItemActionPerformed
 
     private void redoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redoMenuItemActionPerformed
-        
+
         if (currentUndoManager != null) {
             currentUndoManager.redo();
             updateUndoRedoItems();
@@ -604,55 +603,52 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }//GEN-LAST:event_redoMenuItemActionPerformed
 
     private void tocItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tocItemActionPerformed
-        
+
         if (tocItem.getState()) {
             twTOC.setAvailable(true);
             twTOC.setVisible(true);
             twTOC.setActive(true);
-        }
-        else {
+        } else {
             twTOC.setVisible(false);
         }
     }//GEN-LAST:event_tocItemActionPerformed
 
     private void imageManagerItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageManagerItemActionPerformed
-        
+
         if (imageManagerItem.getState()) {
             twImages.setAvailable(true);
             twImages.setVisible(true);
             twImages.setActive(true);
-        }
-        else {
+        } else {
             twImages.setVisible(false);
         }
     }//GEN-LAST:event_imageManagerItemActionPerformed
 
     private void snippetManagerItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_snippetManagerItemActionPerformed
-        
+
         if (snippetManagerItem.getState()) {
             twSnippets.setAvailable(true);
             twSnippets.setVisible(true);
-            twSnippets.setActive(true);        
-        }
-        else {
+            twSnippets.setActive(true);
+        } else {
             twSnippets.setVisible(false);
         }
     }//GEN-LAST:event_snippetManagerItemActionPerformed
 
     private void resetLayoutItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetLayoutItemActionPerformed
-        
+
         twTOC.setAvailable(true);
         twTOC.setVisible(true);
         twTOC.setVisible(true);
         twTOC.setAnchor(ToolWindowAnchor.LEFT);
         twTOC.setType(ToolWindowType.DOCKED);
-        
+
         twImages.setAvailable(true);
         twImages.setVisible(true);
         twImages.setVisible(true);
         twImages.setAnchor(ToolWindowAnchor.LEFT);
         twImages.setType(ToolWindowType.DOCKED);
-        
+
         twSnippets.setAvailable(true);
         twSnippets.setVisible(true);
         twSnippets.setVisible(true);
@@ -661,113 +657,109 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }//GEN-LAST:event_resetLayoutItemActionPerformed
 
     private void spellCheckingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spellCheckingMenuItemActionPerformed
-        
+
         prefs.toggleSpellChecking();
         spellCheckingMenuItem.setSelected(prefs.isSpellCheckingEnabled());
-        
+
     }//GEN-LAST:event_spellCheckingMenuItemActionPerformed
 
     private void docPreferencesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_docPreferencesMenuItemActionPerformed
-        
+
         DocumentationPreferencesDialog dlg = new DocumentationPreferencesDialog(this, doc);
-        dlg.setVisible(true);        
+        dlg.setVisible(true);
     }//GEN-LAST:event_docPreferencesMenuItemActionPerformed
 
     private void refreshViewsItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshViewsItemActionPerformed
 
         for (Content content : toolWindowManager.getContentManager().getContents()) {
             if (content.getComponent() instanceof SplittedPageView) {
-                ((SplittedPageView)content.getComponent()).refreshPreview();
+                ((SplittedPageView) content.getComponent()).refreshPreview();
             }
-        }        
+        }
     }//GEN-LAST:event_refreshViewsItemActionPerformed
 
     private void showPreferencesIfNecessary() {
-        
+
         if (!prefs.hasValidMercurialPath()) {
             showPreferences();
         }
     }
-    
+
     private void showPreferences() {
         SettingsDialog dlg = new SettingsDialog(this, true, prefs);
-        dlg.setVisible(true);        
-        
+        dlg.setVisible(true);
+
         for (Content content : toolWindowManager.getContentManager().getContents()) {
             if (content.getComponent() instanceof SplittedPageView) {
-                ((SplittedPageView)content.getComponent()).updateFont();
+                ((SplittedPageView) content.getComponent()).updateFont();
             }
         }
-        
+
         rebuildExportMenu();
     }
-    
+
     private void rebuildExportMenu() {
         exportMenu.removeAll();
-        
+
         ExportMenu exportMenuHandler = prefs.getInjector().getInstance(ExportMenu.class);
         exportMenuHandler.buildMenu(this, exportMenu, doc);
     }
-    
+
     private void loadLayout() {
-        
+
         File workspaceFile = new File(System.getProperty("user.home"), "documentor.workspace.xml");
-        
-        if (workspaceFile.exists()) {        
-            PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();            
-            
+
+        if (workspaceFile.exists()) {
+            PersistenceDelegate delegate = toolWindowManager.getPersistenceDelegate();
+
             try (FileInputStream input = new FileInputStream(workspaceFile)) {
-                   
-                    delegate.merge(input, PersistenceDelegate.MergePolicy.RESET);
-                
+
+                delegate.merge(input, PersistenceDelegate.MergePolicy.RESET);
+
                 tocItem.setState(twTOC.isVisible());
                 imageManagerItem.setState(twImages.isVisible());
                 snippetManagerItem.setState(twSnippets.isVisible());
-            }                                                   
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.warn("Failed to load layout: " + e.getMessage());
-            }  
+            }
         }
     }
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        
+
         try {
             Properties props = new Properties();
             props.load(new FileInputStream("log4j.properties"));
             PropertyConfigurator.configure(props);
-        } 
-        catch (IOException ex) {
+        } catch (IOException ex) {
             System.err.println(ex.toString());
         }
-        
-        System.setProperty("apple.laf.useScreenMenuBar", "true");        
+
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Distributed Documentor");
-                
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             log.error(null, ex);
         }
 
-        LookAndFeelFactory.installJideExtension( LookAndFeelFactory.VSNET_STYLE_WITHOUT_MENU);  
-        
+        LookAndFeelFactory.installJideExtension(LookAndFeelFactory.VSNET_STYLE_WITHOUT_MENU);
+
         final DocumentorPreferences prefs = new DocumentorPreferences(args);
-        
+
         if (prefs.exportToCHM() || prefs.exportToHTML()) {
-            
+
             CommandLineExporter exporter = new CommandLineExporter(prefs);
             exporter.run();
-        }
-        else {                    
+        } else {
             /*
-            * Create and display the form
-            */
+             * Create and display the form
+             */
             SwingUtilities.invokeLater(new Runnable() {
-
                 @Override
                 public void run() {
                     java.awt.EventQueue queue = Toolkit.getDefaultToolkit().getSystemEventQueue();
@@ -775,7 +767,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
                     new MainWindow(prefs).setVisible(true);
                 }
-            });        
+            });
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -812,98 +804,100 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 
-
     @Override
     public void openOrFocusPage(final String id, final String anchor) {
-                
+
         ContentManager contentManager = toolWindowManager.getContentManager();
-                
+
         Content content = contentManager.getContent(id);
         Page page = doc.getPage(id);
-        if (content == null) {            
+        if (content == null) {
             content = contentManager.addContent(
-                id,
-                "Page: " + id,
-                null,
-                new SplittedPageView(page, new File(doc.getRepositoryRoot()), this, prefs));   
+                    id,
+                    "Page: " + id,
+                    null,
+                    new SplittedPageView(page, new File(doc.getRepositoryRoot()), this, prefs));
         }
-         
-        content.setSelected(true);        
+
+        content.setSelected(true);
         floatingPreview.switchPage(page);
-        
+
+        addSyncTOCItem(content, page);
+
         if (!anchor.isEmpty()) {
-            
-            final SplittedPageView pageView = ((SplittedPageView)content.getComponent());
-            
+
+            final SplittedPageView pageView = ((SplittedPageView) content.getComponent());
+
             EventQueue.invokeLater(
                     new Runnable() {
-
                         @Override
-                        public void run() {                            
+                        public void run() {
                             pageView.scrollToId(anchor);
-                        }                        
-                    });            
+                        }
+                    });
         }
-    }    
+    }
 
     @Override
     public void openOrFocusSnippet(String id) {
-        
+
         ContentManager contentManager = toolWindowManager.getContentManager();
-        String contentId = "Snippet:"+id;
+        String contentId = "Snippet:" + id;
         Snippet snippet = doc.getSnippet(id);
-        
+
         Content content = contentManager.getContent(contentId);
-        if (content == null) {            
+        if (content == null) {
             content = contentManager.addContent(
-                contentId,
-                "Snippet: " + id,
-                null,
-                new SplittedPageView(snippet, new File(doc.getRepositoryRoot()), this, prefs));   
+                    contentId,
+                    "Snippet: " + id,
+                    null,
+                    new SplittedPageView(snippet, new File(doc.getRepositoryRoot()), this, prefs));
         }
-         
-        content.setSelected(true); 
+
+        content.setSelected(true);
+
+        addSyncTOCItem(content, snippet);
+
         floatingPreview.switchPage(snippet);
-    }    
-    
+    }
+
     private void onSaveTimerTick() {
         try {
             doc.saveAll();
-        }
-        catch (CouldNotSaveDocumentationException ex) {
-            log.error("Failed to save documentation: ", ex);            
+        } catch (CouldNotSaveDocumentationException ex) {
+            log.error("Failed to save documentation: ", ex);
         }
     }
-    
+
     private void onStatusCheckTimerTick() {
-        
+
         boolean hasChanges = doc.hasChanges();
-        
+
         labelUncommitted.setVisible(hasChanges);
         btCommit.setVisible(hasChanges);
         btRevert.setVisible(hasChanges);
-        
+
     }
-    
+
     private void onRemoveOrphanedPagesTimerTick() {
         doc.processOrphanedPages();
     }
 
     @Override
     public void documentationReloaded() {
-        
+
         // If this method is called, it means that the documentation model has
         // been completely reloaded. Page and TOCNode objects are no longer alive
         // so we have to close every opened page and regenerate the TOC and image
         // lists.
-        
+
         // 1. Closing the pages
         ContentManager contentManager = toolWindowManager.getContentManager();
         contentManager.removeAllContents();
-                
+
         // 2. Image panel is updated automatically through the observable pattern
         // 3. TOC tree is updated automatically through the tree model listeners
-        
+
     }
 
     @Override
@@ -917,32 +911,32 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
     @Override
     public void contentRemoved(ContentManagerEvent cme) {
-        
-        SplittedPageView view = (SplittedPageView)cme.getContent().getComponent();
+
+        SplittedPageView view = (SplittedPageView) cme.getContent().getComponent();
         view.dispose();
     }
 
     @Override
     public void contentSelected(ContentManagerEvent cme) {
-        
+
         Component comp = cme.getContent().getComponent();
         if (comp instanceof SplittedPageView) {
-            SplittedPageView view = (SplittedPageView)comp;
-            
-            currentUndoManager = view.getEditorUndoManager();            
+            SplittedPageView view = (SplittedPageView) comp;
+
+            currentUndoManager = view.getEditorUndoManager();
         } else {
             currentUndoManager = null;
-        }        
-        
+        }
+
         updateUndoRedoItems();
     }
-    
+
     @Override
     public void updateUndoRedoItems() {
-        
+
         boolean canUndo = currentUndoManager != null && currentUndoManager.canUndo();
         boolean canRedo = currentUndoManager != null && currentUndoManager.canRedo();
-        
+
         undoMenuItem.setEnabled(canUndo);
         redoMenuItem.setEnabled(canRedo);
     }
@@ -957,5 +951,66 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     @Override
     public FloatingPreview getFloatingPreview() {
         return floatingPreview;
+    }
+
+    private void addSyncTOCItem(final Content content, final Page page) {
+        JPopupMenu popup = new JPopupMenu();
+
+        if (content.getContentUI().isCloseable()) {
+            popup.add(new JMenuItem(new AbstractAction(SwingUtil.getString("@@tabbed.page.close")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    toolWindowManager.getContentManager().removeContent(content);
+                }
+            }));
+        }
+
+        popup.add(new JMenuItem(new AbstractAction(SwingUtil.getString("@@tabbed.page.closeAll")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toolWindowManager.getContentManager().removeAllContents();
+            }
+        }));
+
+        popup.add(new JMenuItem(new AbstractAction(SwingUtil.getString("@@tabbed.page.closeAllButThis")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                List<Content> toRemove = new LinkedList<>();
+                for (Content otherContent : toolWindowManager.getContentManager().getContents()) {
+                    if (content != otherContent && otherContent.getContentUI().isCloseable()) {
+                        toRemove.add(otherContent);
+                    }
+                }
+
+                for (Content c : toRemove) {
+                    toolWindowManager.getContentManager().removeContent(c);
+                }
+            }
+        }));
+
+        String targetName;
+        if (page instanceof Snippet) {
+            targetName = "snippet list";
+        } else {
+            targetName = "TOC";
+        }
+        
+        JMenuItem item = new JMenuItem("Sync in " + targetName);
+        popup.add(new JSeparator());
+        popup.add(item);
+
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (page instanceof Snippet) {
+                    snippetsView.selectSnippet((Snippet)page);
+                }  else {
+                    tocView.selectPage(page);
+                }                 
+            }
+        });
+
+        content.setPopupMenu(popup);
     }
 }
