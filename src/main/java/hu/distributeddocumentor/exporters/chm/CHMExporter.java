@@ -14,18 +14,23 @@ import hu.distributeddocumentor.model.toc.TOC;
 import hu.distributeddocumentor.model.toc.TOCNode;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.ResourceUtils;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.LoggerFactory;
 
 public class CHMExporter extends HTMLBasedExporter implements Exporter {
+    
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(CHMExporter.class);
+    
     private final Set<String> contentFiles = new HashSet<>();
     private File targetDir;
 
@@ -157,10 +162,24 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         // Executing HTML help compiler
         if (prefs.hasValidCHMCompilerPath()) {        
             String[] args = {prefs.getCHMCompilerPath(), "project.hhp"};
-            Process compiler = Runtime.getRuntime().exec(args, null, targetDir);
-            compiler.waitFor();
+            runCompiler(args, targetDir);                       
         } else {        
             JOptionPane.showMessageDialog(null, "The CHM compiler's path is not specified. Use the preferences dialog to set it!", "Export failed", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void runCompiler(String[] args, File targetDir) throws IOException {
+        Process compiler = new ProcessBuilder(args)
+                .directory(targetDir)
+                .redirectErrorStream(true)
+                .start();
+        
+        InputStream stdout = compiler.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+        
+        String line;
+        while ((line = reader.readLine()) != null) {
+            log.debug(line.trim());
         }
     }
 
