@@ -25,6 +25,7 @@ public class ImageManagerPanel extends javax.swing.JPanel {
     
     /**
      * Creates new form ImageManagerPanel
+     * @param images Image collection model
      */
     public ImageManagerPanel(Images images) {
         
@@ -159,7 +160,14 @@ public class ImageManagerPanel extends javax.swing.JPanel {
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             
             try {
-                images.addImage(chooser.getSelectedFile());
+                images.addImage(chooser.getSelectedFile());       
+                
+                int idx = findIndexOf(chooser.getSelectedFile().getName());       
+                if (idx != -1) {
+                    imagesList.getSelectionModel().setSelectionInterval(idx, idx);
+                    imagesList.scrollRectToVisible(imagesList.getCellRect(idx, 0, true));
+                }
+                
             } catch (ImageAlreadyExistsException | IOException ex) {
                 LoggerFactory.getLogger(ImageManagerPanel.class.getName()).error(null, ex);
             }
@@ -183,4 +191,13 @@ public class ImageManagerPanel extends javax.swing.JPanel {
     private javax.swing.JButton btRemove;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
+    private int findIndexOf(String name) {
+        for (int rowIdx = 0; rowIdx < imagesList.getRowCount(); rowIdx++) {
+            if (imagesList.getValueAt(rowIdx, 0).equals(name))
+                return rowIdx;
+        }
+        
+        return -1;
+    }
 }
