@@ -58,8 +58,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private final Timer statusCheckTimer;
     private final Timer removeOrphanedPagesTimer;
     private final FloatingPreview floatingPreview;
-    private UndoManager currentUndoManager;
     private SpellChecker spellChecker;
+
+    private UndoManager currentUndoManager;
     private ToolWindow twImages;
     private ToolWindow twSnippets;
     private ToolWindow twTOC;
@@ -78,9 +79,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
     /**
      * Creates new form MainWindow
+     *
+     * @param prefs Application preferences
      */
     public MainWindow(final DocumentorPreferences prefs) {
         this.prefs = prefs;
+        LongOperation.setFrame(this);
 
         initComponents();
 
@@ -113,7 +117,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         try {
             SpellDictionary dictionary = new SpellDictionaryHashMap(
                     new BufferedReader(
-                    new InputStreamReader(WikiMarkupEditor.class.getResourceAsStream("/dict/en.txt"))));
+                            new InputStreamReader(WikiMarkupEditor.class.getResourceAsStream("/dict/en.txt"))));
             spellChecker = new SpellChecker(dictionary);
         } catch (Exception ex) {
             spellChecker = null;
@@ -521,7 +525,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        
         saveLayout();
+        LongOperation.shutdown();
     }
 
     private File getWorkspaceFile() {
@@ -691,13 +697,13 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }//GEN-LAST:event_refreshViewsItemActionPerformed
 
     private void openPagemenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openPagemenuItemActionPerformed
-        
+
         OpenPageDialog dlg = new OpenPageDialog(this, doc);
         dlg.setVisible(true);
         if (dlg.getReturnStatus() == OpenPageDialog.RET_OK) {
             openOrFocusPage(dlg.getSelectedPageID(), "");
         }
-        
+
     }//GEN-LAST:event_openPagemenuItemActionPerformed
 
     private void showPreferencesIfNecessary() {
@@ -914,14 +920,12 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         // been completely reloaded. Page and TOCNode objects are no longer alive
         // so we have to close every opened page and regenerate the TOC and image
         // lists.
-
         // 1. Closing the pages
         ContentManager contentManager = toolWindowManager.getContentManager();
         contentManager.removeAllContents();
 
         // 2. Image panel is updated automatically through the observable pattern
         // 3. TOC tree is updated automatically through the tree model listeners
-
     }
 
     @Override
@@ -966,7 +970,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }
 
     private SyncController createSyncConrtoller() {
-        MercurialSync hg = new MercurialSync(doc, prefs);
+        MercurialSync hg = new MercurialSync(doc, prefs, LongOperation.get());
         DialogBasedSyncInteraction dlgui = new DialogBasedSyncInteraction(this, doc);
         SyncController controller = new SyncController(hg, hg, hg, dlgui, doc, this);
         return controller;
@@ -1019,7 +1023,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         } else {
             targetName = "TOC";
         }
-        
+
         JMenuItem item = new JMenuItem("Sync in " + targetName);
         popup.add(new JSeparator());
         popup.add(item);
@@ -1028,10 +1032,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (page instanceof Snippet) {
-                    snippetsView.selectSnippet((Snippet)page);
-                }  else {
+                    snippetsView.selectSnippet((Snippet) page);
+                } else {
                     tocView.selectPage(page);
-                }                 
+                }
             }
         });
 

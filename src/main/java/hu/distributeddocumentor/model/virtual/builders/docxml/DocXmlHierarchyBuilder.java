@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.model.virtual.builders.docxml;
 
 import com.google.common.base.Function;
+import hu.distributeddocumentor.gui.LongOperationRunner;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.toc.TOCNode;
 import hu.distributeddocumentor.model.toc.TOCNodeFactory;

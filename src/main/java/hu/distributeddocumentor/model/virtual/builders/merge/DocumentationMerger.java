@@ -1,5 +1,7 @@
 package hu.distributeddocumentor.model.virtual.builders.merge;
 
+import hu.distributeddocumentor.gui.LongOperationRunner;
+import hu.distributeddocumentor.gui.SimpleLongOperationRunner;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadMetadataException;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
@@ -27,11 +29,13 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
     private final TOCNodeFactory factory;
     private DocumentorPreferences prefs;
     private Documentation doc;
-    
+    private final LongOperationRunner longOp;
+   
     public DocumentationMerger(File innerDocumentationRoot, String title, String markupLanguage, TOCNodeFactory factory) {
         this.innerDocumentationRoot = innerDocumentationRoot;
         this.title = title;
         this.factory = factory;
+        this.longOp = new SimpleLongOperationRunner();
         
     }
     
@@ -89,7 +93,7 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
     private void ensureDocumentLoaded() throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
         if (doc == null) {
             doc = new Documentation(prefs);
-            doc.initFromExisting(innerDocumentationRoot);
+            doc.initFromExisting(innerDocumentationRoot, longOp);
         }
     }
     

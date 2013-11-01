@@ -3,6 +3,8 @@ package hu.distributeddocumentor.controller;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.chm.CHMExporter;
 import hu.distributeddocumentor.exporters.html.HTMLExporter;
+import hu.distributeddocumentor.gui.LongOperationRunner;
+import hu.distributeddocumentor.gui.SimpleLongOperationRunner;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadMetadataException;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
@@ -28,7 +30,9 @@ public class CommandLineExporter {
         
         Documentation doc = new Documentation(prefs);
         try {
-            doc.initFromExisting(root);
+            LongOperationRunner longOp = new SimpleLongOperationRunner();
+            
+            doc.initFromExisting(root, longOp);
             
             File target = prefs.getExportTarget();
             System.out.println("Export target directory: " + target.getAbsolutePath());
@@ -45,7 +49,7 @@ public class CommandLineExporter {
                 exporter = prefs.getInjector().getInstance(CHMExporter.class);
             }
             
-            exporter.export(doc, target);
+            exporter.export(doc, target, longOp);
             
             System.out.println("Export finished");
         }

@@ -7,6 +7,9 @@ import com.aragost.javahg.commands.*;
 import com.aragost.javahg.merge.MergeContext;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import hu.distributeddocumentor.gui.LongOperationRunner;
+import hu.distributeddocumentor.gui.ProgressUI;
+import hu.distributeddocumentor.gui.RunnableWithProgress;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
@@ -18,158 +21,240 @@ import org.ini4j.Ini;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class MercurialSync implements RepositoryQuery, RepositoryMerger, RepositorySynchronizer {
 
     private static final Logger log = LoggerFactory.getLogger(MercurialSync.class.getName());
+
     private final Documentation doc;
     private final DocumentorPreferences prefs;
-    
-    private Bundle incomingBundle;    
+    private final LongOperationRunner longOp;
+
+    private Bundle incomingBundle;
     private List<Changeset> outgoingChangesets;
 
-    public MercurialSync(Documentation doc, DocumentorPreferences prefs) {
+    /**
+     *
+     * @param doc Documentation to synchronize
+     * @param prefs Application preferences
+     * @param longOp Long operation runner interface
+     */
+    public MercurialSync(Documentation doc, DocumentorPreferences prefs, LongOperationRunner longOp) {
         this.doc = doc;
         this.prefs = prefs;
+        this.longOp = longOp;
     }
-        
-    
+
     @Override
     public boolean hasUncommittedChanges() {
-        
-        // TODO: refactor so Documentation has no version control specific code
+        // TODO: refactor so Documentation has no version control specific code                
         return doc.hasChanges();
     }
 
     @Override
-    public boolean hasIncomingChangesets(URI uri) {
-        
-        Repository repo = doc.getRepository();
-        IncomingCommand incoming = new IncomingCommand(repo).insecure();
-        
-        log.debug("Getting incoming change sets...");
-        
-        incomingBundle = incoming.execute(uri.toASCIIString());
-        
-        if (incomingBundle != null) {
-            List<Changeset> changesets = incomingBundle.getChangesets();
+    public boolean hasIncomingChangesets(final URI uri) {
 
-            log.debug("Got " + changesets.size() + " change sets:");
-            for (Changeset cs : changesets) {
-                log.debug(" - " + cs.toString());
+        return longOp.run(new Function<ProgressUI, Boolean>() {
+
+            @Override
+            public Boolean apply(ProgressUI progress) {
+
+                progress.setIndeterminate();
+                progress.setStatus("Checking for incoming change sets...");
+
+                Repository repo = doc.getRepository();
+                IncomingCommand incoming = new IncomingCommand(repo).insecure();
+
+                log.debug("Getting incoming change sets...");
+
+                incomingBundle = incoming.execute(uri.toASCIIString());
+
+                if (incomingBundle != null) {
+                    List<Changeset> changesets = incomingBundle.getChangesets();
+
+                    log.debug("Got " + changesets.size() + " change sets:");
+                    for (Changeset cs : changesets) {
+                        log.debug(" - " + cs.toString());
+                    }
+
+                    return !changesets.isEmpty();
+                } else {
+                    log.debug("No change sets found");
+                    return false;
+                }
             }
-
-            return !changesets.isEmpty();
-        }
-        else {
-            log.debug("No change sets found");
-            return false;
-        }
+        });
     }
 
     @Override
     public boolean requiresMerge() {
-        
+
         Repository repo = doc.getRepository();
         HeadsCommand heads = new HeadsCommand(repo);
-        
+
         List<Changeset> result = heads.execute();
-        return result.size() > 1;        
+        return result.size() > 1;
     }
 
     @Override
-    public void mergeAndCommit() throws IOException {
-        
-        Repository repo = doc.getRepository();
-        MergeCommand merge = new MergeCommand(repo);
-        MergeContext context = merge.execute();
-        if (context.getMergeConflicts().size() > 0) {
-            try {
-                Process proc = Runtime.getRuntime().exec(
-                        new String[] { prefs.getMercurialPath(), "resolve", "--all" },
-                        null, 
-                        new File(doc.getRepositoryRoot()));
-                proc.waitFor();
-            } catch (InterruptedException ex) {                
-                log.error(null, ex);
-            }
-        }        
-        
-        CommitCommand commit = 
-                new CommitCommand(repo)
-                .message("Merged changes")
-                .user(System.getProperty("user.name"));
-        commit.execute();
-    }	
+    public void mergeAndCommit() {
 
-    @Override
-    public List<RepoChangeSet> incomingChangesets(URI uri) {
-        
-        if (incomingBundle == null) {
-            if (!hasIncomingChangesets(uri)) {
-                return new LinkedList<>();
-            }
-        }
-        
-        return Lists.transform(incomingBundle.getChangesets(), 
-                new Function<Changeset, RepoChangeSet>() {
-                    @Override
-                    public RepoChangeSet apply(Changeset input) {
-                        return new MercurialChangeSet(input);
+        longOp.run(new RunnableWithProgress() {
+
+            @Override
+            public void run(ProgressUI progress) {
+                try {
+                    progress.setIndeterminate();
+                    progress.setStatus("Merging changes...");
+
+                    Repository repo = doc.getRepository();
+                    MergeCommand merge = new MergeCommand(repo);
+                    MergeContext context = merge.execute();
+                    if (context.getMergeConflicts().size() > 0) {
+                        try {
+                            Process proc = Runtime.getRuntime().exec(
+                                    new String[]{prefs.getMercurialPath(), "resolve", "--all"},
+                                    null,
+                                    new File(doc.getRepositoryRoot()));
+                            proc.waitFor();
+                        } catch (InterruptedException ex) {
+                            log.error(null, ex);
+                        }
                     }
-        });        
-    }
 
-    @Override
-    public boolean hasOutgoingChangesets(URI uri) {
-        
-        Repository repo = doc.getRepository();
-        OutgoingCommand outgoing = new OutgoingCommand(repo).insecure();
-        
-        outgoingChangesets = outgoing.execute(uri.toASCIIString());
-        return !outgoingChangesets.isEmpty();
-        
-    }
-
-    @Override
-    public List<RepoChangeSet> outgoingChangesets(URI uri) {
-        if (outgoingChangesets == null) {
-            if (!hasOutgoingChangesets(uri)) {
-                return new LinkedList<>();
+                    CommitCommand commit
+                            = new CommitCommand(repo)
+                            .message("Merged changes")
+                            .user(System.getProperty("user.name"));
+                    commit.execute();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
-        }
-        
-        return Lists.transform(outgoingChangesets, 
-            new Function<Changeset, RepoChangeSet>() {
-                    @Override
-                    public RepoChangeSet apply(Changeset input) {
-                        return new MercurialChangeSet(input);
+        });
+    }
+
+    @Override
+    public List<RepoChangeSet> incomingChangesets(final URI uri) {
+
+        return longOp.run(new Function<ProgressUI, List<RepoChangeSet>>() {
+
+            @Override
+            public List<RepoChangeSet> apply(ProgressUI progress) {
+                progress.setIndeterminate();
+                progress.setStatus("Getting incoming changesets...");
+
+                if (incomingBundle == null) {
+                    if (!hasIncomingChangesets(uri)) {
+                        return new LinkedList<>();
                     }
-            });
+                }
+
+                return Lists.transform(incomingBundle.getChangesets(),
+                        new Function<Changeset, RepoChangeSet>() {
+                            @Override
+                            public RepoChangeSet apply(Changeset input) {
+                                return new MercurialChangeSet(input);
+                            }
+                        });
+            }
+        });
     }
 
     @Override
-    public void pull(URI uri) throws IOException {
-        
-        doc.pull(uri.toASCIIString());
+
+    public boolean hasOutgoingChangesets(final URI uri) {
+
+        return longOp.run(new Function<ProgressUI, Boolean>() {
+
+            @Override
+            public Boolean apply(ProgressUI progress) {
+                progress.setIndeterminate();
+                progress.setStatus("Checking for outgoing changes...");
+                
+                Repository repo = doc.getRepository();
+                OutgoingCommand outgoing = new OutgoingCommand(repo).insecure();
+
+                outgoingChangesets = outgoing.execute(uri.toASCIIString());
+                return !outgoingChangesets.isEmpty();
+            }
+        });
     }
 
     @Override
-    public void push(URI uri) throws IOException {
-        
-        doc.push(uri.toASCIIString());
+
+    public List<RepoChangeSet> outgoingChangesets(final URI uri) {
+
+        return longOp.run(new Function<ProgressUI, List<RepoChangeSet>>() {
+
+            @Override
+            public List<RepoChangeSet> apply(ProgressUI progress) {
+                
+                progress.setIndeterminate();
+                progress.setStatus("Getting outgoing changesets...");
+
+                if (outgoingChangesets == null) {
+                    if (!hasOutgoingChangesets(uri)) {
+                        return new LinkedList<>();
+                    }
+                }
+
+                return Lists.transform(outgoingChangesets,
+                        new Function<Changeset, RepoChangeSet>() {
+                            @Override
+                            public RepoChangeSet apply(Changeset input) {
+                                return new MercurialChangeSet(input);
+                            }
+                        });
+            }
+        });
+    }
+
+    @Override
+    public void pull(final URI uri) throws IOException {
+
+        longOp.run(new RunnableWithProgress() {
+
+            @Override
+            public void run(ProgressUI progress) {
+                progress.setIndeterminate();
+                progress.setStatus("Pulling changes...");
+                
+                try {
+                    doc.pull(uri.toASCIIString());
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void push(final URI uri) throws IOException {
+        longOp.run(new RunnableWithProgress() {
+
+            @Override
+            public void run(ProgressUI progress) {
+                progress.setIndeterminate();
+                progress.setStatus("Pushing changes...");
+                
+                try {
+                    doc.push(uri.toASCIIString());
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
     }
 
     @Override
     public URI getDefaultURI() {
-        File hgrc = new File(doc.getRepository().getDirectory(), ".hg/hgrc");        
+        File hgrc = new File(doc.getRepository().getDirectory(), ".hg/hgrc");
         try {
             Ini ini = new Ini(hgrc);
             String defaultUri = ini.get("paths", "default");
-            
+
             return URI.create(defaultUri);
-        }
-        catch (Exception ex) {
+        } catch (IOException ex) {
             log.error(null, ex);
             return null;
         }
@@ -177,8 +262,22 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
 
     @Override
     public void update() throws IOException {
-        UpdateCommand update = new UpdateCommand(doc.getRepository());
-        update.execute();
+        longOp.run(new RunnableWithProgress() {
+
+            @Override
+            public void run(ProgressUI progress) {
+                progress.setIndeterminate();
+                progress.setStatus("Updating files...");
+                
+                try {                                        
+                    UpdateCommand update = new UpdateCommand(doc.getRepository());
+                    update.execute();
+
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
     }
 
 }

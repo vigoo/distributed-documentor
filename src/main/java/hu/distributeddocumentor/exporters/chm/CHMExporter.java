@@ -4,6 +4,9 @@ import com.google.common.io.Files;
 import com.google.inject.Inject;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.HTMLBasedExporter;
+import hu.distributeddocumentor.gui.LongOperationRunner;
+import hu.distributeddocumentor.gui.ProgressUI;
+import hu.distributeddocumentor.gui.RunnableWithProgress;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.Page;
@@ -17,6 +20,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,9 +35,36 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
     }
 
     @Override
-    public void export(Documentation doc, File targetDir) throws FileNotFoundException, IOException {
+    public void export(final Documentation doc, final File targetDir, LongOperationRunner longOp) throws FileNotFoundException, IOException {
         
+           try {
+            longOp.run(new RunnableWithProgress() {
+
+                @Override
+                public void run(ProgressUI progress) {                        
+                    try {
+                        export(doc, targetDir, progress);
+                    } catch (IOException|InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            });     
+        }
+        catch (RuntimeException ex) {
+            if (ex.getCause() instanceof FileNotFoundException)
+                throw (FileNotFoundException)ex.getCause();
+            else if (ex.getCause() instanceof IOException)
+                throw (IOException)ex.getCause();
+            else
+                throw ex;
+        }
+    }
+     
+    private void export(Documentation doc, File targetDir, ProgressUI progress) throws FileNotFoundException, IOException, InterruptedException {
+           
         this.targetDir = targetDir;
+        
+        progress.setStatus("Exporting files...");
         
         // Creating the target directory if necessary
         if (!targetDir.exists()) {
@@ -81,6 +113,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         extractResource("/syntaxhighlighter/shBrushVb.js", "shBrushVb.js", shDir);
         extractResource("/syntaxhighlighter/shBrushXml.js", "shBrushXml.js", shDir);
         
+        progress.setStatus("Exporting pages...");
+        
         // Exporting the pages
         final TOC toc = doc.getTOC();
         final File repoRoot = new File(doc.getRepositoryRoot());
@@ -91,6 +125,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             }
         }
         
+        progress.setStatus("Exporting images...");
+        
         // Exporting the images
         File mediaDir = new File(targetDir, "media");
         if (!mediaDir.exists()) {
@@ -99,12 +135,18 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             }
         }
         
+        int imageCount = doc.getImages().getImages().size();
+        int i = 0;
         for (String image : doc.getImages().getImages()) {
             Files.copy(new File(doc.getImages().getMediaRoot(), image), 
                         new File(mediaDir, image));
 
             contentFiles.add(new File("media", image).getPath());
+            progress.setProgress((double)(i++)/(double)imageCount);
         }
+        
+        progress.setStatus("Compiling CHM...");
+        progress.setIndeterminate();
         
         // Creating the contents (HHC) file
         createHHC(new File(targetDir, "toc.hhc"), toc);
@@ -115,7 +157,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         // Executing HTML help compiler
         if (prefs.hasValidCHMCompilerPath()) {        
             String[] args = {prefs.getCHMCompilerPath(), "project.hhp"};
-            Runtime.getRuntime().exec(args, null, targetDir);
+            Process compiler = Runtime.getRuntime().exec(args, null, targetDir);
+            compiler.waitFor();
         } else {        
             JOptionPane.showMessageDialog(null, "The CHM compiler's path is not specified. Use the preferences dialog to set it!", "Export failed", JOptionPane.WARNING_MESSAGE);
         }

@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.exporters;
 
+import hu.distributeddocumentor.gui.LongOperationRunner;
 import hu.distributeddocumentor.model.Documentation;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,10 +17,11 @@ public interface Exporter {
      * Exports a documentation to the format implemented by this exporter
      * @param doc The documentation to be exported
      * @param targetDir Target directory where the exported documentation will be put
+     * @param longOp Interface to run long operations
      * @throws FileNotFoundException
      * @throws IOException 
      */
-    public void export(Documentation doc, File targetDir) throws FileNotFoundException, IOException ;
+    public void export(Documentation doc, File targetDir, LongOperationRunner longOp) throws FileNotFoundException, IOException ;
 
     /**
      * Gets the exporter's target name (such as HTML, PDF, etc.). Used for building UI controls and messages.     

@@ -4,6 +4,9 @@ import com.google.common.io.Files;
 import com.google.inject.Inject;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.HTMLBasedExporter;
+import hu.distributeddocumentor.gui.LongOperationRunner;
+import hu.distributeddocumentor.gui.ProgressUI;
+import hu.distributeddocumentor.gui.RunnableWithProgress;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.toc.TOC;
@@ -26,16 +29,43 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
     
     
     @Override
-    public void export(Documentation doc, File targetDir) throws FileNotFoundException, IOException {
+    public void export(final Documentation doc, final File targetDir, LongOperationRunner longOp) throws FileNotFoundException, IOException {
         
+        try {
+            longOp.run(new RunnableWithProgress() {
+
+                @Override
+                public void run(ProgressUI progress) {
+                    try {
+                        export(doc, targetDir, progress);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            });     
+        }
+        catch (RuntimeException ex) {
+            if (ex.getCause() instanceof FileNotFoundException)
+                throw (FileNotFoundException)ex.getCause();
+            else if (ex.getCause() instanceof IOException)
+                throw (IOException)ex.getCause();
+            else
+                throw ex;
+        }
+    }
+    
+    private void export(Documentation doc, File targetDir, ProgressUI progress) throws IOException {
+                        
         this.targetDir = targetDir;
         File repositoryRoot = new File(doc.getRepositoryRoot());
+        
+        progress.setStatus("Exporting pages...");
         
         if (!targetDir.exists()) {
             if (!targetDir.mkdirs()) {
                 throw new RuntimeException("Failed to create target directory!");
             }
-        }
+        }               
         
         // Exporting the pages
         final TOC toc = doc.getTOC();
@@ -46,7 +76,9 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
             }
         }
 
-        // Exporting the images
+        // Exporting the images         
+        progress.setStatus("Exporting images...");
+        
         File mediaDir = new File(targetDir, "media");
         if (!mediaDir.exists()) {
             if (!mediaDir.mkdir()) {
@@ -54,10 +86,15 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
             }
         }
         
+        int imageCount = doc.getImages().getImages().size();
+        int i = 0;
         for (String image : doc.getImages().getImages()) {
-            Files.copy(new File(doc.getImages().getMediaRoot(), image), 
-                        new File(mediaDir, image));
+            Files.copy(new File(doc.getImages().getMediaRoot(), image), new File(mediaDir, image));
+            progress.setProgress((double)(i++)/(double)imageCount);
         }
+        
+        progress.setStatus("Exporting others...");
+        progress.setIndeterminate();
         
         // Creating the TOC frame
         createTreeItemsJS(new File(targetDir, "tree_items.js"), toc);
@@ -126,9 +163,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         extractResource("/syntaxhighlighter/shBrushScala.js", "shBrushScala.js", shDir);
         extractResource("/syntaxhighlighter/shBrushSql.js", "shBrushSql.js", shDir);
         extractResource("/syntaxhighlighter/shBrushVb.js", "shBrushVb.js", shDir);
-        extractResource("/syntaxhighlighter/shBrushXml.js", "shBrushXml.js", shDir);
-
-        
+        extractResource("/syntaxhighlighter/shBrushXml.js", "shBrushXml.js", shDir);       
     }
 
     private void createTreeItemsJS(File file, TOC toc) throws FileNotFoundException {

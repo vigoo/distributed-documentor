@@ -217,11 +217,11 @@ public class StartupDialog extends javax.swing.JDialog {
                     
                     break;
                 case OpenLocal:
-                    doc.initFromExisting(repositoryRoot);    
+                    doc.initFromExisting(repositoryRoot, LongOperation.get());    
                     
                     break;
                 case OpenRemote:
-                    doc.cloneFromRemote(repositoryRoot, remoteRepo, userName, password);
+                    doc.cloneFromRemote(repositoryRoot, remoteRepo, userName, password, LongOperation.get());
                     
                     break;                    
             }
