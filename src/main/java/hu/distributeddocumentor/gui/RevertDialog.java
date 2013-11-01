@@ -64,6 +64,7 @@ public class RevertDialog extends javax.swing.JDialog {
         revertableItemList = new com.jidesoft.swing.CheckBoxList();
         jLabel1 = new javax.swing.JLabel();
 
+        setTitle("Revert changes");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
