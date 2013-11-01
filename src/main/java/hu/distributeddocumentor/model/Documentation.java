@@ -374,6 +374,14 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     }
     
     /**
+     * Gets all the pages in the documentation
+     * @return the collection of pages
+     */
+    public Collection<Page> getPages() {
+        return pages.values();
+    }
+    
+    /**
      * Gets a page by its identifier
      * 
      * @param id the page identifier

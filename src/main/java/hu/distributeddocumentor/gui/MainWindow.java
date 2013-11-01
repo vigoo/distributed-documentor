@@ -279,7 +279,9 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         btRevert = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        openPagemenuItem = new javax.swing.JMenuItem();
         exportMenu = new javax.swing.JMenu();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
         preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
@@ -354,8 +356,18 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
 
+        openPagemenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        openPagemenuItem.setText("Open page...");
+        openPagemenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openPagemenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(openPagemenuItem);
+
         exportMenu.setText("Export");
         fileMenu.add(exportMenu);
+        fileMenu.add(jSeparator4);
 
         preferencesMenuItem.setText("Preferences...");
         preferencesMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -678,6 +690,16 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
     }//GEN-LAST:event_refreshViewsItemActionPerformed
 
+    private void openPagemenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openPagemenuItemActionPerformed
+        
+        OpenPageDialog dlg = new OpenPageDialog(this, doc);
+        dlg.setVisible(true);
+        if (dlg.getReturnStatus() == OpenPageDialog.RET_OK) {
+            openOrFocusPage(dlg.getSelectedPageID(), "");
+        }
+        
+    }//GEN-LAST:event_openPagemenuItemActionPerformed
+
     private void showPreferencesIfNecessary() {
 
         if (!prefs.hasValidMercurialPath()) {
@@ -785,9 +807,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JLabel labelRoot;
     private javax.swing.JLabel labelUncommitted;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem openPagemenuItem;
     private javax.swing.JMenuItem preferencesMenuItem;
     private javax.swing.JMenuItem pullMenuItem;
     private javax.swing.JMenuItem pushMenuItem;
