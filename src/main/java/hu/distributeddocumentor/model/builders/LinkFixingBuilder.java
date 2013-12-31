@@ -54,8 +54,11 @@ public class LinkFixingBuilder extends HtmlDocumentBuilder {
             if (hrefOrHashName.contains("#")) {            
                 
                 String[] parts = hrefOrHashName.split("#");
-                super.link(attributes, parts[0]+".html#"+parts[1], text);
-                
+                if (parts.length == 2) {
+                    super.link(attributes, parts[0]+".html#"+parts[1], text);
+                } else {
+                    super.link(attributes, parts[0]+".html", text);
+                }
             } else {
                 super.link(attributes, hrefOrHashName+".html", text);
             }
