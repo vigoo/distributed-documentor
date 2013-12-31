@@ -156,20 +156,23 @@ public class ImageManagerPanel extends javax.swing.JPanel {
                     }
                     
                 });
+        chooser.setMultiSelectionEnabled(true);
         
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             
-            try {
-                images.addImage(chooser.getSelectedFile());       
-                
-                int idx = findIndexOf(chooser.getSelectedFile().getName());       
-                if (idx != -1) {
-                    imagesList.getSelectionModel().setSelectionInterval(idx, idx);
-                    imagesList.scrollRectToVisible(imagesList.getCellRect(idx, 0, true));
+            for (File selectedFile : chooser.getSelectedFiles()) {
+                try {
+                    images.addImage(selectedFile);       
+
+                    int idx = findIndexOf(selectedFile.getName());       
+                    if (idx != -1) {
+                        imagesList.getSelectionModel().setSelectionInterval(idx, idx);
+                        imagesList.scrollRectToVisible(imagesList.getCellRect(idx, 0, true));
+                    }
+
+                } catch (ImageAlreadyExistsException | IOException ex) {
+                    LoggerFactory.getLogger(ImageManagerPanel.class.getName()).error(null, ex);
                 }
-                
-            } catch (ImageAlreadyExistsException | IOException ex) {
-                LoggerFactory.getLogger(ImageManagerPanel.class.getName()).error(null, ex);
             }
             
             lastImageFolder = chooser.getCurrentDirectory();
