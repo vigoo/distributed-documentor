@@ -12,6 +12,8 @@ import hu.distributeddocumentor.gui.ProgressUI;
 import hu.distributeddocumentor.gui.RunnableWithProgress;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
+import hu.distributeddocumentor.vcs.VersionControl;
+import hu.distributeddocumentor.vcs.mercurial.MercurialVersionControl;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -47,7 +49,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     @Override
     public boolean hasUncommittedChanges() {
         // TODO: refactor so Documentation has no version control specific code                
-        return doc.hasChanges();
+        return doc.getVersionControl().hasChanges();
     }
 
     @Override
@@ -61,7 +63,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
                 progress.setIndeterminate();
                 progress.setStatus("Checking for incoming change sets...");
 
-                Repository repo = doc.getRepository();
+                Repository repo = getRepository();
                 IncomingCommand incoming = new IncomingCommand(repo).insecure();
 
                 log.debug("Getting incoming change sets...");
@@ -88,7 +90,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
     @Override
     public boolean requiresMerge() {
 
-        Repository repo = doc.getRepository();
+        Repository repo = getRepository();
         HeadsCommand heads = new HeadsCommand(repo);
 
         List<Changeset> result = heads.execute();
@@ -106,7 +108,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
                     progress.setIndeterminate();
                     progress.setStatus("Merging changes...");
 
-                    Repository repo = doc.getRepository();
+                    Repository repo = getRepository();
                     MergeCommand merge = new MergeCommand(repo);
                     MergeContext context = merge.execute();
                     if (context.getMergeConflicts().size() > 0) {
@@ -171,7 +173,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
                 progress.setIndeterminate();
                 progress.setStatus("Checking for outgoing changes...");
                 
-                Repository repo = doc.getRepository();
+                Repository repo = getRepository();
                 OutgoingCommand outgoing = new OutgoingCommand(repo).insecure();
 
                 outgoingChangesets = outgoing.execute(uri.toASCIIString());
@@ -220,7 +222,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
                 progress.setStatus("Pulling changes...");
                 
                 try {
-                    doc.pull(uri.toASCIIString());
+                    pull(uri.toASCIIString());
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -238,7 +240,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
                 progress.setStatus("Pushing changes...");
                 
                 try {
-                    doc.push(uri.toASCIIString());
+                    push(uri.toASCIIString());
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -248,7 +250,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
 
     @Override
     public URI getDefaultURI() {
-        File hgrc = new File(doc.getRepository().getDirectory(), ".hg/hgrc");
+        File hgrc = new File(getRepository().getDirectory(), ".hg/hgrc");
         try {
             Ini ini = new Ini(hgrc);
             String defaultUri = ini.get("paths", "default");
@@ -270,7 +272,7 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
                 progress.setStatus("Updating files...");
                 
                 try {                                        
-                    UpdateCommand update = new UpdateCommand(doc.getRepository());
+                    UpdateCommand update = new UpdateCommand(getRepository());
                     update.execute();
 
                 } catch (IOException ex) {
@@ -279,5 +281,39 @@ public class MercurialSync implements RepositoryQuery, RepositoryMerger, Reposit
             }
         });
     }
+    
+      /**
+     * Pulls changesets from a remote repository
+     *
+     * @param source URL or path to the remote repository
+     * @return returns the list of changesets pulled from the remote location
+     * @throws IOException
+     */    
+    private List<Changeset> pull(String source) throws IOException {
+        PullCommand cmd = new PullCommand(getRepository()).insecure();
+        return cmd.execute(source);
+    }
 
+    /**
+     * Pushes the local changesets to a remote repository
+     *
+     * @param destination URL or path to the remote repository
+     * @return returns the list of changesets pushed to the remote location
+     * @throws IOException
+     */    
+    private List<Changeset> push(String destination) throws IOException {
+        PushCommand cmd = new PushCommand(getRepository()).insecure();
+        return cmd.execute(destination);
+    }
+
+
+    private Repository getRepository() {
+        VersionControl versionControl = doc.getVersionControl();
+        if (versionControl instanceof MercurialVersionControl) {
+            return ((MercurialVersionControl)versionControl).getRepository();                
+        }
+        else {
+            throw new IllegalStateException("MercurialSync can only be used with MercurialVersionControl");
+        }
+    }
 }

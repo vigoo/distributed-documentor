@@ -92,7 +92,7 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
 
     private void ensureDocumentLoaded() throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
         if (doc == null) {
-            doc = new Documentation(prefs);
+            doc = prefs.getInjector().getInstance(Documentation.class);
             doc.initFromExisting(innerDocumentationRoot, longOp);
         }
     }

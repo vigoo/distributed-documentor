@@ -1,11 +1,8 @@
 package hu.distributeddocumentor.model;
 
-import com.aragost.javahg.Changeset;
-import com.aragost.javahg.Repository;
-import com.aragost.javahg.RepositoryConfiguration;
-import com.aragost.javahg.commands.*;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
+import com.google.inject.Inject;
 import hu.distributeddocumentor.gui.LongOperationRunner;
 import hu.distributeddocumentor.gui.ProgressUI;
 import hu.distributeddocumentor.gui.RunnableWithProgress;
@@ -15,6 +12,7 @@ import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.CaseInsensitiveMap;
 import hu.distributeddocumentor.utils.RepositoryUriGenerator;
 import hu.distributeddocumentor.utils.ResourceUtils;
+import hu.distributeddocumentor.vcs.VersionControl;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileFilter;
@@ -25,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.CodingErrorAction;
 import java.util.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -47,10 +44,10 @@ import org.xml.sax.SAXException;
  */
 public class Documentation extends Observable implements Observer, SnippetCollection {
     // TODO: separate into smaller classes
-    // TODO: hide version control implementation behind an abstraction
 
     private static final Logger log = LoggerFactory.getLogger(Documentation.class.getName());
 
+    private final VersionControl versionControl;    
     private final TOC toc;
     private final Map<String, Page> pages;
     private final Map<String, Snippet> snippets;
@@ -59,7 +56,6 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     private boolean titleHasChanged;
 
     private String relativeRoot;
-    private Repository repository;
     private final DocumentorPreferences prefs;
     private int orphanedPageProcessingSuspended;
 
@@ -73,12 +69,12 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     }
 
     /**
-     * Gets the Mercurial repository storing this documentation
+     * Gets access to the version control storing this documentation
      *
-     * @return the Mercurial repository
+     * @return the version control interface
      */
-    public Repository getRepository() {
-        return repository;
+    public VersionControl getVersionControl() {
+        return versionControl;
     }
 
     /**
@@ -124,10 +120,14 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      * After creating the object, one of the following methods must be called
      * before doing anything else: initAsNew initFromExisting cloneFromRemote
      *
+     * @param versionControl the version control interface
      * @param prefs the application preferences to be used
      */
-    public Documentation(DocumentorPreferences prefs) {
+    @Inject
+    public Documentation(VersionControl versionControl, DocumentorPreferences prefs) {
 
+        this.versionControl = versionControl; 
+        
         toc = new TOC(this, new DefaultTOCNodeFactory());
         pages = new CaseInsensitiveMap<>();
         snippets = new CaseInsensitiveMap<>();
@@ -148,10 +148,10 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      */
     public void initAsNew(File repositoryRoot) throws IOException {
 
-        repository = Repository.create(createRepositoryConfiguration(), repositoryRoot);
+        versionControl.create(repositoryRoot);
         relativeRoot = "";
 
-        images = new Images(repository, relativeRoot);
+        images = new Images(versionControl, relativeRoot);
 
         Page first = new Page("start", this);
 
@@ -162,9 +162,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         }
 
         try {
-            toc.save(repositoryRoot);
-            AddCommand cmd = new AddCommand(repository);
-            cmd.execute(new File(repositoryRoot, "toc.xml"));
+            toc.save(repositoryRoot);            
+            versionControl.add(new File(repositoryRoot, "toc.xml"));            
         } catch (FileNotFoundException | TransformerException ex) {
             log.error(null, ex);
 
@@ -200,8 +199,9 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
             @Override
             public void run(ProgressUI progress) {
-                repository = Repository.open(createRepositoryConfiguration(), realRepositoryRoot);
-                images = new Images(repository, relativeRoot);
+                
+                versionControl.open(realRepositoryRoot);
+                images = new Images(versionControl, relativeRoot);
 
                 progress.setStatus("Fixing missing files...");
                 fixMissingFiles();
@@ -234,8 +234,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             @Override
             public void run(ProgressUI progress) {
                 progress.setStatus("Cloning remote repository...");
-                repository = Repository.clone(createRepositoryConfiguration(), localRepositoryRoot, RepositoryUriGenerator.addCredentials(remoteRepo, userName, password));
-                images = new Images(repository, relativeRoot);
+                versionControl.clone(localRepositoryRoot, RepositoryUriGenerator.addCredentials(remoteRepo, userName, password));                
+                images = new Images(versionControl, relativeRoot);
 
                 progress.setStatus("Fixing missing files...");
                 fixMissingFiles();
@@ -249,17 +249,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         });
     }
 
-    private RepositoryConfiguration createRepositoryConfiguration() {
-
-        RepositoryConfiguration conf = new RepositoryConfiguration();
-        conf.setHgBin(prefs.getMercurialPath());
-        conf.setCodingErrorAction(CodingErrorAction.REPLACE);
-
-        return conf;
-    }
-
     private File getDocumentationDirectory() {
-        return new File(repository.getDirectory(), relativeRoot);
+        return new File(versionControl.getRoot(), relativeRoot);
     }
 
     private File getSnippetsDirectory() {
@@ -286,7 +277,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 try {
                     Snippet snippet = new Snippet(child, this);
                     registerSnippet(snippet);
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     throw new FailedToLoadPageException(child, ex);
                 }
             }
@@ -305,7 +296,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             try {
                 Page page = new Page(child, this);
                 registerPage(page);
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 throw new FailedToLoadPageException(child, ex);
             }
         }
@@ -340,6 +331,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      *
      * @throws FailedToLoadPageException
      * @throws FailedToLoadTOCException
+     * @throws hu.distributeddocumentor.model.FailedToLoadMetadataException
      */
     public void reload() throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
 
@@ -382,8 +374,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             log.info("Adding new file to repository: " + pageFile.getName());
         }
 
-        AddCommand cmd = new AddCommand(repository);
-        cmd.execute(pageFiles);
+        versionControl.add(pageFiles);        
     }
 
     private void registerPage(Page page) {
@@ -484,8 +475,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         }
 
         if (!alreadyExisted) {
-            AddCommand cmd = new AddCommand(repository);
-            cmd.execute(metadataFile);
+            versionControl.add(metadataFile);            
         }
 
         // Removing comments to avoid merging conflicts                     
@@ -517,75 +507,6 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         }
     }
 
-    /**
-     * Checks if anything has changed in the documentation
-     *
-     * @return returns true if any file has been added, removed or modified in
-     * the documentation's repository
-     */
-    public boolean hasChanges() {
-
-        StatusCommand status = new StatusCommand(repository);
-        StatusResult result = status.execute();
-
-        return result.getAdded().size() > 0
-                || result.getCopied().size() > 0
-                || result.getModified().size() > 0
-                || result.getRemoved().size() > 0;
-    }
-
-    /**
-     * Gets the current changes applied on the documentation
-     *
-     * @return returns a map where each modified file's relative path is mapped
-     * to the change type
-     * @see Change
-     */
-    public Map<String, Change> getChanges() {
-
-        StatusCommand status = new StatusCommand(repository);
-        StatusResult result = status.execute();
-
-        Map<String, Change> changes = new HashMap<>();
-
-        for (String change : result.getAdded()) {
-            changes.put(change, Change.Added);
-        }
-
-        for (String change : result.getCopied().values()) {
-            changes.put(change, Change.Copied);
-        }
-
-        for (String change : result.getModified()) {
-            changes.put(change, Change.Modified);
-        }
-
-        for (String change : result.getRemoved()) {
-            changes.put(change, Change.Removed);
-        }
-
-        return changes;
-    }
-
-    /**
-     * Commit the changes as a new changeset
-     *
-     * <p>
-     * Use the getChanges method to get the list of modified files before
-     * calling this method!
-     *
-     * @param message the commit message
-     * @param files list of files to be committed
-     */
-    public void commitChanges(String message, List<String> files) {
-
-        CommitCommand commit = new CommitCommand(repository);
-        commit.message(message);
-        commit.user(System.getProperty("user.name"));
-
-        String[] items = Arrays.copyOf(files.toArray(), files.size(), String[].class);
-        commit.execute(items);
-    }
 
     /**
      * Revert a set of changes
@@ -597,13 +518,13 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      * @param files the relative path of files to be reverted
      * @throws FailedToLoadPageException
      * @throws FailedToLoadTOCException
+     * @throws hu.distributeddocumentor.model.FailedToLoadMetadataException
      */
     public void revertChanges(List<String> files) throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
 
-        RevertCommand revert = new RevertCommand(repository);
-
-        String[] items = Arrays.copyOf(files.toArray(), files.size(), String[].class);
-        revert.execute(items);
+        String[] items = Arrays.copyOf(files.toArray(), files.size(), String[].class);                
+        
+        versionControl.revert(items);
 
         reload();
     }
@@ -738,30 +659,6 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         }
     }
 
-    /**
-     * Pulls changesets from a remote repository
-     *
-     * @param source URL or path to the remote repository
-     * @return returns the list of changesets pulled from the remote location
-     * @throws IOException
-     */
-    public List<Changeset> pull(String source) throws IOException {
-        PullCommand cmd = new PullCommand(repository).insecure();
-        return cmd.execute(source);
-    }
-
-    /**
-     * Pushes the local changesets to a remote repository
-     *
-     * @param destination URL or path to the remote repository
-     * @return returns the list of changesets pushed to the remote location
-     * @throws IOException
-     */
-    public List<Changeset> push(String destination) throws IOException {
-        PushCommand cmd = new PushCommand(repository).insecure();
-        return cmd.execute(destination);
-    }
-
     private File findRealRepositoryRoot(File repositoryRoot) {
         boolean found = false;
 
@@ -822,8 +719,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             log.info("Adding new snippet to repository: " + snippetFile.getName());
         }
 
-        AddCommand cmd = new AddCommand(repository);
-        cmd.execute(snippetFiles);
+        versionControl.add(snippetFiles);        
 
         setChanged();
         notifyObservers();
@@ -841,11 +737,9 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
         Snippet snippet = snippets.get(id);
         snippets.remove(id);
-
-        RemoveCommand remove = new RemoveCommand(repository).force();
-
+        
         File[] files = snippet.getFiles(getSnippetsDirectory());
-        remove.execute(files);
+        versionControl.remove(files, true, false);
 
         for (File f : files) {
             if (!f.delete()) {
@@ -859,11 +753,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
     private void fixMissingFiles() {
 
-        StatusCommand status = new StatusCommand(repository);
-        StatusResult result = status.execute();
-
         List<String> toRemove = new LinkedList<>();
-        for (String missing : result.getMissing()) {
+        for (String missing : versionControl.getMissingFiles()) {
 
             File root = new File(getRepositoryRoot());
             File missingFile = new File(root, missing);
@@ -877,9 +768,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         }
 
         if (!toRemove.isEmpty()) {
-            RemoveCommand remove = new RemoveCommand(repository).after().force();
-
-            remove.execute(toRemove.toArray(new String[0]));
+            versionControl.remove(toRemove.toArray(new String[0]), true, true);            
         }
     }
 
@@ -891,15 +780,11 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
                 log.debug("Checking status of " + f.getName());
 
-                StatusCommand status = new StatusCommand(repository);
-                StatusResult result = status.execute(f);
-
-                if (result.getUnknown().size() > 0) {
+                if (!versionControl.isAdded(f)) {
 
                     log.debug(" -> status is unknown, adding to repository...");
 
-                    AddCommand add = new AddCommand(repository);
-                    add.execute(f);
+                    versionControl.add(f);                    
                 }
             }
         }
@@ -938,6 +823,10 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      *
      * @param page Page to be changed
      * @param newId New identifier of the page
+     * @throws hu.distributeddocumentor.model.CouldNotSaveDocumentationException
+     * @throws hu.distributeddocumentor.model.FailedToLoadPageException
+     * @throws hu.distributeddocumentor.model.FailedToLoadTOCException
+     * @throws hu.distributeddocumentor.model.FailedToLoadMetadataException
      */
     public void renamePage(Page page, String newId) throws CouldNotSaveDocumentationException, FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
 
@@ -955,11 +844,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
                 // Rename the page            
                 for (File pageFile : page.getFiles(getDocumentationDirectory())) {
-                    RenameCommand rename = new RenameCommand(repository);
-                    rename.force();
-                    rename.execute(pageFile, new File(pageFile.toString().replace(page.getId(), newId)));
-
-                    log.debug("Rename return code " + rename.getReturnCode() + ", error message: " + rename.getErrorString());
+                                        
+                    versionControl.rename(pageFile, new File(pageFile.toString().replace(page.getId(), newId)), true);                   
                 }
 
                 page.reload(getDocumentationDirectory(), newId);
@@ -985,11 +871,10 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     public void deletePage(Page page) {
         toc.remove(page);
         pages.remove(page.getId());
-
-        RemoveCommand remove = new RemoveCommand(repository).force();
-
+        
         File[] files = page.getFiles(getDocumentationDirectory());
-        remove.execute(files);
+        
+        versionControl.remove(files, true, false);
 
         for (File f : files) {
             boolean deleteSucceeded = f.delete();

@@ -14,7 +14,7 @@ public class CommittableItemsModel implements ListModel {
     
     public CommittableItemsModel(Documentation doc) {                        
         
-        changes = doc.getChanges();
+        changes = doc.getVersionControl().getChanges();
         
         Object[] keys = changes.keySet().toArray();
         ordered = Arrays.copyOf(keys, keys.length, String[].class);

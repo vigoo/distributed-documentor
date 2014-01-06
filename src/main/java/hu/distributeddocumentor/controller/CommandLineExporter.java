@@ -28,7 +28,7 @@ public class CommandLineExporter {
         
         System.out.println("Loading documentation from " + root.getAbsolutePath());
         
-        Documentation doc = new Documentation(prefs);
+        Documentation doc = prefs.getInjector().getInstance(Documentation.class);
         try {
             LongOperationRunner longOp = new SimpleLongOperationRunner();
             

@@ -6,6 +6,8 @@ import com.google.inject.Injector;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.chm.CHMExporterModule;
 import hu.distributeddocumentor.exporters.html.HTMLExporterModule;
+import hu.distributeddocumentor.vcs.VersionControl;
+import hu.distributeddocumentor.vcs.mercurial.MercurialVersionControl;
 import java.awt.Font;
 import java.io.File;
 import java.util.Collections;
@@ -76,6 +78,7 @@ public class DocumentorPreferences extends Observable {
                     @Override
                     protected void configure() {
                         bind(DocumentorPreferences.class).toInstance(DocumentorPreferences.this);
+                        bind(VersionControl.class).to(MercurialVersionControl.class);
                     }                    
                 });        
     }

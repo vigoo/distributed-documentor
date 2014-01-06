@@ -126,7 +126,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
         spellCheckingMenuItem.setSelected(prefs.isSpellCheckingEnabled());
 
-        doc = new Documentation(prefs);
+        doc = prefs.getInjector().getInstance(Documentation.class);
 
         rebuildExportMenu();
 
@@ -901,7 +901,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
     private void onStatusCheckTimerTick() {
 
-        boolean hasChanges = doc.hasChanges();
+        boolean hasChanges = doc.getVersionControl().hasChanges();
 
         labelUncommitted.setVisible(hasChanges);
         btCommit.setVisible(hasChanges);
@@ -970,6 +970,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }
 
     private SyncController createSyncConrtoller() {
+        // TODO: get sync controller from the DI container
         MercurialSync hg = new MercurialSync(doc, prefs, LongOperation.get());
         DialogBasedSyncInteraction dlgui = new DialogBasedSyncInteraction(this, doc);
         SyncController controller = new SyncController(hg, hg, hg, dlgui, doc, this);

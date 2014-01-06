@@ -164,7 +164,7 @@ public class CommitDialog extends javax.swing.JDialog {
 
     private void btOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btOkActionPerformed
         
-        List<String> selectedItems = new LinkedList<String>();
+        List<String> selectedItems = new LinkedList<>();
         
         for (Object obj : committableItemList.getCheckBoxListSelectedValues()) {
             
@@ -172,7 +172,7 @@ public class CommitDialog extends javax.swing.JDialog {
             selectedItems.add(item.getPath());
         }
         
-        doc.commitChanges(message.getText(), selectedItems);
+        doc.getVersionControl().commitChanges(message.getText(), selectedItems);
         
         returnStatus = RET_OK;
         setVisible(false);

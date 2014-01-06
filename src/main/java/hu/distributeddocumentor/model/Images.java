@@ -1,9 +1,7 @@
 package hu.distributeddocumentor.model;
 
-import com.aragost.javahg.Repository;
-import com.aragost.javahg.commands.AddCommand;
-import com.aragost.javahg.commands.RemoveCommand;
 import com.google.common.io.Files;
+import hu.distributeddocumentor.vcs.VersionControl;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -22,20 +20,20 @@ import java.util.Set;
  */
 public class Images extends Observable {
     
-    private final Repository repository;
+    private final VersionControl versionControl;
     private final File mediaDir;
     private final Set<String> images;
 
     /**
      * Initializes the image collection
      * 
-     * @param repository the version control repository used by the documentation
+     * @param versionControl the version control repository used by the documentation
      * @param relativeRoot the relative path to the documentation's root inside the repository
      */
-    public Images(Repository repository, String relativeRoot) {
-        this.repository = repository;
+    public Images(VersionControl versionControl, String relativeRoot) {
+        this.versionControl = versionControl;
         
-        File root = new File(repository.getDirectory(), relativeRoot);
+        File root = new File(versionControl.getRoot(), relativeRoot);
         mediaDir = new File(root, "media");
         
         images = new HashSet<>();
@@ -86,8 +84,7 @@ public class Images extends Observable {
             Files.copy(externalImage, target);
         }
         
-        AddCommand add = new AddCommand(repository);
-        add.execute(target);
+        versionControl.add(target);
         
         images.add(name);
         
@@ -104,8 +101,7 @@ public class Images extends Observable {
         
         File image = new File(mediaDir, name);
         
-        RemoveCommand remove = new RemoveCommand(repository);
-        remove.execute(image);
+        versionControl.remove(image, false);
                
         images.remove(name);
         
