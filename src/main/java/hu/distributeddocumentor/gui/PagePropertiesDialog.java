@@ -271,7 +271,7 @@ public class PagePropertiesDialog extends javax.swing.JDialog {
         // Changing the TOC node title
         TOCNode node = doc.getTOC().findReferenceTo(page);
         if (node != null) {
-            node.setTitle(tbTitle.getText());
+            doc.getTOC().changeNodeTitle(node, tbTitle.getText());            
         }
         
         doClose(RET_OK);
