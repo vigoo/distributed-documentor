@@ -10,7 +10,7 @@ Desktop application providing a collaborated way of creating software documentat
 * Pages are written in MediaWiki format, with live preview
 * Documentation can be exported to static HTML or CHM
  
-![sample screenshot](https://github.com/vigoo/distributed-documentor/blob/master/doc/media/DistributedDocumentor.png "Sample screenshot")
+![sample screenshot](https://raw.github.com/vigoo/distributed-documentor/master/doc/media/DistributedDocumentor.png "Sample screenshot")
 
 Building
 --------
