@@ -1,7 +1,8 @@
 distributed-documentor
 ======================
 
-== Overview ==
+Overview
+--------
 
 Desktop application providing a collaborated way of creating software documentation with wiki syntax.
 
@@ -9,7 +10,8 @@ Desktop application providing a collaborated way of creating software documentat
 * Pages are written in MediaWiki format, with live preview
 * Documentation can be exported to static HTML or CHM
 
-== Building ==
+Building
+--------
 First install the wikitext libraries to your local repository using `lib/install-local.sh` or `lib/install-local.bat`.
 
 Then to build the WebStart application use:
