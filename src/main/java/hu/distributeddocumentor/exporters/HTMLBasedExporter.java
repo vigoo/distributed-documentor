@@ -9,6 +9,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 
 public abstract class HTMLBasedExporter {
@@ -105,4 +106,17 @@ public abstract class HTMLBasedExporter {
      * @param targetDir current target directory where the pages are being exported
      */
     protected abstract void exportExtraImages(Set<File> extraImages, File targetDir) throws IOException;
+    
+    protected Throwable findInnerException(Throwable ex) {
+        
+        if (ex instanceof RuntimeException ||
+            ex instanceof ExecutionException) {
+            
+            Throwable cause = ex.getCause();
+            if (cause != null) 
+                return findInnerException(cause);
+        }
+        
+        return ex;
+    }
 }

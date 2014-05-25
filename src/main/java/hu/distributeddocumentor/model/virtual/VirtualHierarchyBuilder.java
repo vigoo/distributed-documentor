@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.model.virtual;
 
 import hu.distributeddocumentor.model.toc.TOCNode;
+import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import java.io.File;
 import java.util.Collection;
 
@@ -25,7 +26,7 @@ public interface VirtualHierarchyBuilder {
      * 
      * @return the root node of the generated subtree
      */
-    TOCNode build();
+    TOCNode build() throws VirtualNodeException;
 
     /**
      * Returns the scope name to be used during export.
@@ -41,5 +42,5 @@ public interface VirtualHierarchyBuilder {
      * Returns the extra images to be included in the documentation
      * @return a collection of image files
      */
-    public Collection<File> getExtraImages();
+    public Collection<File> getExtraImages() throws VirtualNodeException;
 }

@@ -2,6 +2,7 @@ package hu.distributeddocumentor.exporters;
 
 import hu.distributeddocumentor.gui.LongOperationRunner;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public interface Exporter {
      * @throws FileNotFoundException
      * @throws IOException 
      */
-    public void export(Documentation doc, File targetDir, LongOperationRunner longOp) throws FileNotFoundException, IOException ;
+    public void export(Documentation doc, File targetDir, LongOperationRunner longOp) throws FileNotFoundException, IOException, VirtualNodeException;
 
     /**
      * Gets the exporter's target name (such as HTML, PDF, etc.). Used for building UI controls and messages.     

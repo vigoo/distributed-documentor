@@ -10,8 +10,10 @@ import hu.distributeddocumentor.model.builders.UsesPreferences;
 import hu.distributeddocumentor.model.toc.TOCNode;
 import hu.distributeddocumentor.model.toc.TOCNodeFactory;
 import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
+import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -40,25 +42,20 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
     }
     
     @Override
-    public TOCNode build() {
-        try {
-            ensureDocumentLoaded();            
-            
-            final TOCNode root = doc.getTOC().getRoot();
-            final TOCNode result = factory.createNode(title);
-            
-            for (final TOCNode child : root.getChildren()) {
-                if ((child != doc.getTOC().getRecycleBin()) &&
-                    ((child != doc.getTOC().getUnorganized()) || (doc.getTOC().getUnorganized().getChildren().size() > 0))) {
-                    factory.getOperations(result).addToEnd(child);
-                }
+    public TOCNode build() throws VirtualNodeException {
+        ensureDocumentLoaded();
+
+        final TOCNode root = doc.getTOC().getRoot();
+        final TOCNode result = factory.createNode(title);
+
+        for (final TOCNode child : root.getChildren()) {
+            if ((child != doc.getTOC().getRecycleBin())
+                    && ((child != doc.getTOC().getUnorganized()) || (doc.getTOC().getUnorganized().getChildren().size() > 0))) {
+                factory.getOperations(result).addToEnd(child);
             }
-            
-            return result;
-        } catch (FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
-            Logger.getLogger(DocumentationMerger.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
         }
+
+        return result;
     }
 
     @Override
@@ -72,28 +69,34 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
     }
 
     @Override
-    public Collection<File> getExtraImages() {
+    public Collection<File> getExtraImages() throws VirtualNodeException {
         
         HashSet<File> files = new HashSet<>();
-        try {
-            ensureDocumentLoaded();
+
+        ensureDocumentLoaded();
             
-            File root = doc.getImages().getMediaRoot();
-            for (String imageName : doc.getImages().getImages()) {
-                files.add(new File(root, imageName));
-            }
-            
-        } catch (FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException ex) {
-            Logger.getLogger(DocumentationMerger.class.getName()).log(Level.SEVERE, null, ex);            
-        }        
+        File root = doc.getImages().getMediaRoot();
+        for (String imageName : doc.getImages().getImages()) {
+            files.add(new File(root, imageName));
+        }
         
         return files;
     }
 
-    private void ensureDocumentLoaded() throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
+    private void ensureDocumentLoaded() throws MergedDocumentationIsMissingException {
         if (doc == null) {
-            doc = prefs.getInjector().getInstance(Documentation.class);
-            doc.initFromExisting(innerDocumentationRoot, longOp);
+            try {
+                doc = prefs.getInjector().getInstance(Documentation.class);
+                doc.initFromExisting(innerDocumentationRoot, longOp);
+            }
+            catch (Exception ex) {
+                Logger.getLogger(DocumentationMerger.class.getName()).log(Level.SEVERE, null, ex);
+                try {
+                    throw new MergedDocumentationIsMissingException(innerDocumentationRoot.getCanonicalPath(), ex);
+                } catch (IOException ex1) {
+                    throw new MergedDocumentationIsMissingException(innerDocumentationRoot.getAbsolutePath(), ex);
+                }
+            }
         }
     }
     

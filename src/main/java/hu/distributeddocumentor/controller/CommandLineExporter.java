@@ -53,7 +53,7 @@ public class CommandLineExporter {
             
             System.out.println("Export finished");
         }
-        catch (FailedToLoadPageException | FailedToLoadTOCException | FailedToLoadMetadataException | IOException ex) {
+        catch (Exception ex) {
             System.err.println("Export failed. Reason: " + ex.getMessage());
         }
     }

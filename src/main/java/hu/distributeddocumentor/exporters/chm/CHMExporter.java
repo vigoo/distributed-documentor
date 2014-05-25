@@ -12,6 +12,7 @@ import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.toc.TOC;
 import hu.distributeddocumentor.model.toc.TOCNode;
+import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.ResourceUtils;
 import java.io.BufferedReader;
@@ -40,7 +41,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
     }
 
     @Override
-    public void export(final Documentation doc, final File targetDir, LongOperationRunner longOp) throws FileNotFoundException, IOException {
+    public void export(final Documentation doc, final File targetDir, LongOperationRunner longOp) throws FileNotFoundException, IOException, VirtualNodeException {
         
            try {
             longOp.run(new RunnableWithProgress() {
@@ -56,10 +57,13 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             });     
         }
         catch (RuntimeException ex) {
-            if (ex.getCause() instanceof FileNotFoundException)
-                throw (FileNotFoundException)ex.getCause();
-            else if (ex.getCause() instanceof IOException)
-                throw (IOException)ex.getCause();
+            Throwable inner = findInnerException(ex);
+            if (inner instanceof FileNotFoundException)
+                throw (FileNotFoundException)inner;
+            else if (inner instanceof IOException)
+                throw (IOException)inner;
+            else if (inner instanceof VirtualNodeException)
+                throw (VirtualNodeException)inner;
             else
                 throw ex;
         }
