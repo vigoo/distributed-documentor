@@ -2,6 +2,7 @@ package hu.distributeddocumentor.gui;
 
 import com.jidesoft.swing.SearchableUtils;
 import hu.distributeddocumentor.controller.SnippetListModel;
+import hu.distributeddocumentor.model.Conditions;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.PageAlreadyExistsException;
 import hu.distributeddocumentor.model.Snippet;
@@ -23,14 +24,16 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
     private final PageEditorHost host;
     private final Documentation doc;
     private final SnippetListModel snippetModel;
+    private final Conditions conditions;
 
     /**
      * Creates new form SnippetManagerPanel
      */
-    public SnippetManagerPanel(PageEditorHost host, final Documentation doc) {
+    public SnippetManagerPanel(PageEditorHost host, final Documentation doc, Conditions conditions) {
         
         this.host = host;
         this.doc = doc;
+        this.conditions = conditions;
         
         initComponents();      
         SearchableUtils.installSearchable(snippetTable);
@@ -180,7 +183,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
        if (dlg.getReturnStatus() == CreateNewPageDialog.RET_OK) {
            
            try {
-            Snippet snippet = new Snippet(dlg.getID(), doc);
+            Snippet snippet = new Snippet(dlg.getID(), doc, conditions);
             doc.addSnippet(snippet);
            }
            catch (IOException | PageAlreadyExistsException ex) {

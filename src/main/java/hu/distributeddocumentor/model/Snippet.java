@@ -19,11 +19,12 @@ public class Snippet extends Page {
      * 
      * @param source snippet file to load
      * @param snippets the snippet collection to be used when resolving snippet references in the markup
+     * @param conditions enabled conditions
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public Snippet(File source, SnippetCollection snippets) throws FileNotFoundException, IOException {
-        super(source, snippets);
+    public Snippet(File source, SnippetCollection snippets, Conditions conditions) throws FileNotFoundException, IOException {
+        super(source, snippets, conditions);
     }
 
     /**
@@ -31,8 +32,9 @@ public class Snippet extends Page {
      * 
      * @param id the snippet's unique identifier
      * @param snippets the snippet collection to be used when resolving snippet references in the markup
+     * @param conditions enabled conditions
      */
-    public Snippet(String id, SnippetCollection snippets) {
-        super(id, snippets);
+    public Snippet(String id, SnippetCollection snippets, Conditions conditions) {
+        super(id, snippets, conditions);
     }   
 }

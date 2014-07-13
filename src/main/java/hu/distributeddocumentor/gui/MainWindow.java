@@ -189,7 +189,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                             }
                         });
 
-                snippetsView = new SnippetManagerPanel(this, doc);
+                snippetsView = new SnippetManagerPanel(this, doc, prefs.getConditions());
                 twSnippets = toolWindowManager.registerToolWindow(
                         "SNIP",
                         "Snippets manager",

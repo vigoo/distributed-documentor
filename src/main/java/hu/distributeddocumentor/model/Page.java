@@ -32,13 +32,15 @@ public class Page extends Observable {
     
     private final static String TEMPLATE = "= Title =\n\nBody\n";
     private static final Pattern SNIPPET_PATTERN = Pattern.compile("\\[Snippet\\:(\\w+)\\]");
+    private static final Pattern CONDITIONAL_START_PATTERN = Pattern.compile("\\[When\\:(\\w+)\\]");
+    private static final Pattern CONDITIONAL_END_PATTERN = Pattern.compile("\\[End\\]");
     
     private String id;
     private String markupLanguage;
     private String markup;
     
     private List<String> refs;
-    private Set<String> snippetRefs = new HashSet<>();
+    private final Set<String> snippetRefs = new HashSet<>();
     
     private boolean isParserInitialized;
     private MarkupParser parser;
@@ -46,6 +48,8 @@ public class Page extends Observable {
     private MarkupLanguage language;
     
     private final SnippetCollection snippets;    
+    private final Conditions conditions;
+    
     private PageMetadata metadata;
     
     private boolean hasChanged;
@@ -55,8 +59,9 @@ public class Page extends Observable {
      * 
      * @param id the page's unique identifier
      * @param snippets snippet collection to be used when resolving snippet references
+     * @param conditions enabled conditions
      */
-    public Page(String id, SnippetCollection snippets) {
+    public Page(String id, SnippetCollection snippets, Conditions conditions) {
         this.id = id;
         this.snippets = snippets;
         
@@ -69,6 +74,7 @@ public class Page extends Observable {
         
         initializeParser();
         refs = refExtractor.getReferencedPages(markup);
+        this.conditions = conditions;
     }
     
     /**
@@ -76,12 +82,14 @@ public class Page extends Observable {
      * 
      * @param source the file storing the page's markup
      * @param snippets the snippet collection to be used to resolve snippet references
+     * @param conditions enabled conditions
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public Page(File source, SnippetCollection snippets) throws FileNotFoundException, IOException {
+    public Page(File source, SnippetCollection snippets, Conditions conditions) throws FileNotFoundException, IOException {
         
-        this.snippets = snippets;                            
+        this.snippets = snippets;          
+        this.conditions = conditions;
                 
         load(source);
     }
@@ -389,41 +397,69 @@ public class Page extends Observable {
         
     }
     
-    private String preprocessMarkup(String markup) {
-        
+    private String preprocessSnippets(String markup) {
         boolean mayHaveSnippetRefs = true;
         snippetRefs.clear();
-        
+
         while (mayHaveSnippetRefs) {
-            
             mayHaveSnippetRefs = false;
-                        
             List<String> lines = Arrays.asList(markup.split("\n"));
             List<String> resultLines = new LinkedList<>();
 
             for (String line : lines) {
+                Matcher snippetMatcher = SNIPPET_PATTERN.matcher(line);
+                if (snippetMatcher.matches()) {
 
-                Matcher matcher = SNIPPET_PATTERN.matcher(line);
-
-                if (matcher.matches()) {
-
-                    String snippetId = matcher.group(1);
+                    String snippetId = snippetMatcher.group(1);
                     snippetRefs.add(snippetId);
 
                     Snippet snippet = snippets.getSnippet(snippetId);
-                    if (snippet != null) {                    
+                    if (snippet != null) {
                         resultLines.add(snippet.getMarkup());
-                        mayHaveSnippetRefs =true;
+                        mayHaveSnippetRefs = true;
                     }
                 } else {
                     resultLines.add(line);
                 }
-            }                 
+            }
 
             markup = StringUtils.join(resultLines, '\n');
         }
-        
+
         return markup;
+    }
+
+    private String preprocessConditionals(String markup) {
+        Stack<String> conditionalStack = new Stack<>();
+        List<String> lines = Arrays.asList(markup.split("\n"));
+        List<String> resultLines = new LinkedList<>();
+
+        for (String line : lines) {
+            Matcher conditionalStartMatcher = CONDITIONAL_START_PATTERN.matcher(line);
+            Matcher conditionalEndMatcher = CONDITIONAL_END_PATTERN.matcher(line);
+
+            if (conditionalStartMatcher.matches()) {
+                String condition = conditionalStartMatcher.group(1);
+                conditionalStack.push(condition);
+            } else if (conditionalEndMatcher.matches()) {
+                if (!conditionalStack.empty()) {
+                    conditionalStack.pop();
+                }
+            } else {
+                if (conditions.allEnabled(conditionalStack)) {
+                    resultLines.add(line);
+                }
+            }
+        }
+        markup = StringUtils.join(resultLines, '\n');
+
+        return markup;
+
+    }
+
+    private String preprocessMarkup(String markup) {
+        return preprocessConditionals(
+                preprocessSnippets(markup));
     }
 
     private String annotateMarkup(boolean annotated, String markup) {

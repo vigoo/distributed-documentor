@@ -3,6 +3,7 @@ package hu.distributeddocumentor.exporters;
 import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.toc.TOCNode;
+import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.ResourceUtils;
 import java.io.*;
@@ -22,7 +23,7 @@ public abstract class HTMLBasedExporter {
         realNodes = new HashMap<>();
     }        
 
-    protected void exportReferencedPages(File repositoryRoot, File targetDir, TOCNode node) throws FileNotFoundException, IOException {
+    protected void exportReferencedPages(File repositoryRoot, File targetDir, TOCNode node) throws FileNotFoundException, IOException, VirtualNodeException {
         
         final ExportableNode exportable = node.getRealNode(repositoryRoot, prefs);        
         final TOCNode realNode = exportable.getNode();

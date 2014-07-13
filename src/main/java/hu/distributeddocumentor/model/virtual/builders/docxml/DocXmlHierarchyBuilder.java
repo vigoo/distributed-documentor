@@ -1,7 +1,7 @@
 package hu.distributeddocumentor.model.virtual.builders.docxml;
 
 import com.google.common.base.Function;
-import hu.distributeddocumentor.gui.LongOperationRunner;
+import hu.distributeddocumentor.model.Conditions;
 import hu.distributeddocumentor.model.Page;
 import hu.distributeddocumentor.model.toc.TOCNode;
 import hu.distributeddocumentor.model.toc.TOCNodeFactory;
@@ -53,8 +53,8 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     private final Pattern propertyPattern;
     private final Pattern methodPattern;
 
-    public DocXmlHierarchyBuilder(File xmlFile, String title, String markupLanguage, TOCNodeFactory factory) {
-        super(markupLanguage, factory);
+    public DocXmlHierarchyBuilder(File xmlFile, String title, String markupLanguage, TOCNodeFactory factory, Conditions conditions) {
+        super(markupLanguage, factory, conditions);
         
         this.xmlFile = xmlFile;
         this.title = title;

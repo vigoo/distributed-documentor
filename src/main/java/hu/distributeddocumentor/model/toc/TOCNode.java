@@ -2,6 +2,7 @@ package hu.distributeddocumentor.model.toc;
 
 import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.Page;
+import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.util.Collection;
@@ -81,7 +82,7 @@ public interface TOCNode {
      * @param prefs the application's preferences, the builder may need it
      * @return returns the node to be used when generating the documentation
      */
-    ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs);    
+    ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs) throws VirtualNodeException;    
     
     /**
      * Gets the set of page identifiers which are referenced by this node or any

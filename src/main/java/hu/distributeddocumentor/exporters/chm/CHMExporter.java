@@ -69,7 +69,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         }
     }
      
-    private void export(Documentation doc, File targetDir, ProgressUI progress) throws FileNotFoundException, IOException, InterruptedException {
+    private void export(Documentation doc, File targetDir, ProgressUI progress) throws FileNotFoundException, IOException, InterruptedException, VirtualNodeException {
            
         this.targetDir = targetDir;
         

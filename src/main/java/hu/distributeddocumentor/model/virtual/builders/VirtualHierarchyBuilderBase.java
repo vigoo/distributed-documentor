@@ -29,13 +29,16 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
     private final String markupLanguage;
     private final SnippetCollection emptySnippets;
     protected final TOCNodeFactory factory;
+    private final Conditions conditions;
     
     /**
      * Initializes the builder
      * 
      * @param markupLanguage the markup language to be used for all the generated pages
+     * @param factory Factory for TOCNodes
+     * @param conditions enabled conditions
      */
-    protected VirtualHierarchyBuilderBase(String markupLanguage, TOCNodeFactory factory) {
+    protected VirtualHierarchyBuilderBase(String markupLanguage, TOCNodeFactory factory, Conditions conditions) {
         this.markupLanguage = markupLanguage;
         this.factory = factory;
         
@@ -59,6 +62,7 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
             public void removeSnippet(String id) {
             }
         };       
+        this.conditions = conditions;
     }
 
     @Override
@@ -101,7 +105,7 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
         renderer.apply(wikiWriter);
         stringWriter.flush();
         
-        Page result = new Page(id, emptySnippets);
+        Page result = new Page(id, emptySnippets, conditions);
         result.setMarkupLanguage(markupLanguage);
         result.setMarkup(stringWriter.toString());
         

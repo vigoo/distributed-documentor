@@ -4,6 +4,7 @@ import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.builders.UsesPreferences;
 import hu.distributeddocumentor.model.virtual.VirtualHierarchyBuilder;
+import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -93,7 +94,7 @@ public class DefaultVirtualTOCNode extends DefaultTOCNode implements VirtualTOCN
     }
 
     @Override
-    public ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs) {
+    public ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs) throws VirtualNodeException {
         if (virtualHierarchyBuilder == null) {
             return new ExportableNode(this, null, noExtraImages);
         } else {

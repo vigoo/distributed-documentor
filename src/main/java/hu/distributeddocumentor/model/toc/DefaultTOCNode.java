@@ -3,6 +3,7 @@ package hu.distributeddocumentor.model.toc;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.Page;
+import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.util.*;
@@ -475,7 +476,7 @@ public class DefaultTOCNode implements TOCNode, TOCNodeOperations, TOCNodeSerial
      * @return returns the node to be used when generating the documentation
      */
     @Override
-    public ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs) {
+    public ExportableNode getRealNode(File repositoryRoot, DocumentorPreferences prefs) throws VirtualNodeException {
 
         return new ExportableNode(this, null, noExtraImages);        
     }

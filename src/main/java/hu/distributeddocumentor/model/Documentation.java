@@ -153,7 +153,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
         images = new Images(versionControl, relativeRoot);
 
-        Page first = new Page("start", this);
+        Page first = new Page("start", this, prefs.getConditions());
 
         try {
             addNewPage(first);
@@ -275,7 +275,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                         }
                     })) {
                 try {
-                    Snippet snippet = new Snippet(child, this);
+                    Snippet snippet = new Snippet(child, this, prefs.getConditions());
                     registerSnippet(snippet);
                 } catch (IOException ex) {
                     throw new FailedToLoadPageException(child, ex);
@@ -294,7 +294,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 })) {
 
             try {
-                Page page = new Page(child, this);
+                Page page = new Page(child, this, prefs.getConditions());
                 registerPage(page);
             } catch (IOException ex) {
                 throw new FailedToLoadPageException(child, ex);
@@ -564,7 +564,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
                 if (!pages.containsKey(pageId)) {
 
-                    Page newPage = new Page(pageId, this);
+                    Page newPage = new Page(pageId, this, prefs.getConditions());
 
                     try {
                         addNewPage(newPage);

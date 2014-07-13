@@ -59,7 +59,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         }
     }
     
-    private void export(Documentation doc, File targetDir, ProgressUI progress) throws IOException {
+    private void export(Documentation doc, File targetDir, ProgressUI progress) throws IOException, FileNotFoundException {
                         
         this.targetDir = targetDir;
         File repositoryRoot = new File(doc.getRepositoryRoot());

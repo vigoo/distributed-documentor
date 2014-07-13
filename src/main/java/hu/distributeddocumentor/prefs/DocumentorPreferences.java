@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.exporters.chm.CHMExporterModule;
 import hu.distributeddocumentor.exporters.html.HTMLExporterModule;
+import hu.distributeddocumentor.model.Conditions;
 import hu.distributeddocumentor.vcs.VersionControl;
 import hu.distributeddocumentor.vcs.mercurial.MercurialVersionControl;
 import java.awt.Font;
@@ -32,7 +33,9 @@ public class DocumentorPreferences extends Observable {
     private final Option exportTargetOption;
     private final Option exportHTMLOption;
     private final Option exportCHMOption;
+    private final Option enabledConditionsOption;
     private final CommandLine cmdLine;
+    private final Conditions conditions;
     
     private final Injector injector;
     
@@ -53,11 +56,17 @@ public class DocumentorPreferences extends Observable {
         exportHTMLOption = new Option("html", "export to static HTML pages");
         exportCHMOption = new Option("chm", "export to CHM");
         
+        enabledConditionsOption = OptionBuilder.withArgName("condition")
+                                               .hasArg()
+                                               .withDescription("enable condition")
+                                               .create("D");
+        
         cmdOptions = new Options();
         cmdOptions.addOption(docRootOption);
         cmdOptions.addOption(exportTargetOption);
         cmdOptions.addOption(exportHTMLOption);
         cmdOptions.addOption(exportCHMOption);
+        cmdOptions.addOption(enabledConditionsOption);
         
         CommandLineParser parser = new GnuParser();
         CommandLine line = null;
@@ -69,6 +78,15 @@ public class DocumentorPreferences extends Observable {
         }
         
         cmdLine = line;
+        
+        conditions = new Conditions();
+        
+        String[] condValues = cmdLine.getOptionValues("D");
+        if (condValues != null) {
+            for (String condition : condValues) {
+                conditions.enable(condition.trim());
+            }
+        }
         
         injector = Guice.createInjector(
                 new HTMLExporterModule(),
@@ -86,6 +104,10 @@ public class DocumentorPreferences extends Observable {
     public Injector getInjector() {
         return injector;
     }    
+    
+    public Conditions getConditions() {
+        return conditions;
+    }
     
     public String getMercurialPath() {        
         return prefs.get("hgpath", null);
