@@ -72,6 +72,7 @@ public class DocumentationPreferencesDialog extends javax.swing.JDialog {
         lbTitle = new javax.swing.JLabel();
         tbTitle = new javax.swing.JTextField();
 
+        setTitle("Documentation preferences");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
