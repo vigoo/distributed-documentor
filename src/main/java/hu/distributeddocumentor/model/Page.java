@@ -371,6 +371,22 @@ public class Page extends Observable {
                   .replaceAll("(?i)\\[\\["+oldId+"\\|([a-zA-Z0-9,!\\?\\. ]+)\\]\\]", "[["+newId+"|$1]]")
                   .replaceAll("(?i)\\["+oldId+" ([a-zA-Z0-9,!\\?\\. ]+)\\]", "["+newId+" $1]"));
     }
+    
+    public Set<String> findUsedConditionals() {
+        Set<String> result = new HashSet<>();
+
+        List<String> lines = Arrays.asList(markup.split("\n"));
+
+        for (String line : lines) {
+            Matcher conditionalStartMatcher = CONDITIONAL_START_PATTERN.matcher(line);
+            if (conditionalStartMatcher.matches()) {
+                String condition = conditionalStartMatcher.group(1);
+                result.add(condition);
+            }
+        }
+        
+        return result;
+    }
 
     private void initializeParser() {
         ServiceLocator serviceLocator = ServiceLocator.getInstance();              

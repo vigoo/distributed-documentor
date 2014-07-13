@@ -750,6 +750,19 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         setChanged();
         notifyObservers();
     }
+    
+    public Set<String> findAllUsedConditionals() {
+        Set<String> result = new HashSet<>();
+        
+        for (Page page : pages.values()) {
+            result.addAll(page.findUsedConditionals());
+        }
+        for (Snippet snippet : snippets.values()) {
+            result.addAll(snippet.findUsedConditionals());
+        }
+        
+        return result;
+    }
 
     private void fixMissingFiles() {
 

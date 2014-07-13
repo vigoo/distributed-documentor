@@ -22,6 +22,14 @@ public class Conditions {
     public int getEnabledConditionsCount() {
         return conditions.size();
     }
+
+    public Iterable<String> getEnabledConditions() {
+        return conditions;
+    }
+
+    public void reset() {
+        conditions.clear();
+    }
     
     
 }

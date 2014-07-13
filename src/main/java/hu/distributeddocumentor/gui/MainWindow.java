@@ -304,6 +304,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         refreshViewsItem = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        enabledConditionsItem = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
         resetLayoutItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         userManualItem = new javax.swing.JMenuItem();
@@ -490,6 +492,15 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         });
         viewMenu.add(refreshViewsItem);
         viewMenu.add(jSeparator1);
+
+        enabledConditionsItem.setText("Enabled conditions...");
+        enabledConditionsItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enabledConditionsItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(enabledConditionsItem);
+        viewMenu.add(jSeparator5);
 
         resetLayoutItem.setText("Reset layout");
         resetLayoutItem.addActionListener(new java.awt.event.ActionListener() {
@@ -688,13 +699,16 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }//GEN-LAST:event_docPreferencesMenuItemActionPerformed
 
     private void refreshViewsItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshViewsItemActionPerformed
+        refreshAll();
+    }//GEN-LAST:event_refreshViewsItemActionPerformed
 
+    private void refreshAll() {
         for (Content content : toolWindowManager.getContentManager().getContents()) {
             if (content.getComponent() instanceof SplittedPageView) {
                 ((SplittedPageView) content.getComponent()).refreshPreview();
             }
         }
-    }//GEN-LAST:event_refreshViewsItemActionPerformed
+    }
 
     private void openPagemenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openPagemenuItemActionPerformed
 
@@ -705,6 +719,13 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         }
 
     }//GEN-LAST:event_openPagemenuItemActionPerformed
+
+    private void enabledConditionsItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enabledConditionsItemActionPerformed
+    
+        EnabledConditionsDialog dlg = new EnabledConditionsDialog(this, doc, prefs);
+        dlg.setVisible(true);
+        refreshAll();
+    }//GEN-LAST:event_enabledConditionsItemActionPerformed
 
     private void showPreferencesIfNecessary() {
 
@@ -803,6 +824,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JButton btRevert;
     private javax.swing.JMenuItem docPreferencesMenuItem;
     private javax.swing.JMenu editMenu;
+    private javax.swing.JMenuItem enabledConditionsItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu exportMenu;
     private javax.swing.JMenu fileMenu;
@@ -814,6 +836,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JLabel labelRoot;
     private javax.swing.JLabel labelUncommitted;
     private javax.swing.JMenuBar menuBar;
