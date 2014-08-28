@@ -40,7 +40,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
                 public void run(ProgressUI progress) {
                     try {
                         export(doc, targetDir, progress);
-                    } catch (IOException||VirtualNodeException ex) {
+                    } catch (IOException|VirtualNodeException ex) {
                         throw new RuntimeException(ex);
                     }
                 }
