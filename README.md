@@ -26,3 +26,5 @@ To create a single JAR:
 ```
 mvn assembly:assembly
 ```
+
+[![Build Status](https://travis-ci.org/vigoo/distributed-documentor.svg?branch=master)](https://travis-ci.org/vigoo/distributed-documentor)
