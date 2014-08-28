@@ -1,0 +1,6 @@
+language: java
+jdk:
+  - oraclejdk7
+
+before_install:
+  - sh lib/install-local.sh
