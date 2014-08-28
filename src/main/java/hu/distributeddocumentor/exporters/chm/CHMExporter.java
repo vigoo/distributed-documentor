@@ -50,7 +50,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
                 public void run(ProgressUI progress) {                        
                     try {
                         export(doc, targetDir, progress);
-                    } catch (IOException|InterruptedException ex) {
+                    } catch (IOException|InterruptedException|VirtualNodeException ex) {
                         throw new RuntimeException(ex);
                     }
                 }

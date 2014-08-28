@@ -40,7 +40,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
                 public void run(ProgressUI progress) {
                     try {
                         export(doc, targetDir, progress);
-                    } catch (IOException ex) {
+                    } catch (IOException||VirtualNodeException ex) {
                         throw new RuntimeException(ex);
                     }
                 }
@@ -59,7 +59,7 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         }
     }
     
-    private void export(Documentation doc, File targetDir, ProgressUI progress) throws IOException, FileNotFoundException {
+    private void export(Documentation doc, File targetDir, ProgressUI progress) throws IOException, FileNotFoundException, VirtualNodeException {
                         
         this.targetDir = targetDir;
         File repositoryRoot = new File(doc.getRepositoryRoot());
