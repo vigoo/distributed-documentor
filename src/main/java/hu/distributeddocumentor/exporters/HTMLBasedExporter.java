@@ -7,6 +7,7 @@ import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import hu.distributeddocumentor.utils.ResourceUtils;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 
 public abstract class HTMLBasedExporter {
     
+    protected final static String CHARSET = "UTF-8";
     protected final Map<TOCNode, ExportableNode> realNodes;                    
     protected final DocumentorPreferences prefs;
 
@@ -64,7 +66,8 @@ public abstract class HTMLBasedExporter {
         File target = new File(targetDir, page.getId()+".html");
         String html = page.asHTML(ResourceUtils.getRelativePath(getTargetRootDir().getAbsolutePath(), targetDir.getAbsolutePath())+"/");
         
-        try (PrintWriter out = new PrintWriter(target)) {
+        try (PrintWriter out = new PrintWriter(
+                new OutputStreamWriter(new FileOutputStream(target), Charset.forName(CHARSET)))) {
             out.print(html);
         }                
         

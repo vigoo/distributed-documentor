@@ -18,10 +18,13 @@ import hu.distributeddocumentor.utils.ResourceUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JOptionPane;
@@ -209,7 +212,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         
         // http://chmspec.nongnu.org/latest/INI.html#HHP
         
-        try (PrintWriter out = new PrintWriter(hhp)) {
+        try (PrintWriter out = new PrintWriter(
+                new OutputStreamWriter(new FileOutputStream(hhp), Charset.forName(CHARSET)))){
             out.println("[OPTIONS]");
             //out.println("Binary TOC=No");
             //out.println("Binary Index=No");
@@ -247,7 +251,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         
         // http://www.nongnu.org/chmspec/latest/Sitemap.html
         
-        try (PrintWriter out = new PrintWriter(file)) {
+        try (PrintWriter out = new PrintWriter(
+                new OutputStreamWriter(new FileOutputStream(file), Charset.forName(CHARSET)))) {
             out.println("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">");
             out.println("<HTML>");
             out.println("<OBJECT type=\"text/site properties\">");

@@ -3,6 +3,7 @@ package hu.distributeddocumentor.model;
 import hu.distributeddocumentor.model.builders.ExtendedHtmlDocumentBuilder;
 import hu.distributeddocumentor.model.builders.PageRefExtractor;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +35,7 @@ public class Page extends Observable {
     private static final Pattern SNIPPET_PATTERN = Pattern.compile("\\[Snippet\\:(\\w+)\\]");
     private static final Pattern CONDITIONAL_START_PATTERN = Pattern.compile("\\[When\\:(\\w+)\\]");
     private static final Pattern CONDITIONAL_END_PATTERN = Pattern.compile("\\[End\\]");
+    public static final String CHARSET = "UTF-8";
     
     private String id;
     private String markupLanguage;
@@ -129,7 +131,9 @@ public class Page extends Observable {
         
         File[] targets = getFiles(targetDirectory);
         
-        try (PrintWriter fwriter = new PrintWriter(new FileWriter(targets[0]))) {
+        try (PrintWriter fwriter = new PrintWriter(
+                new OutputStreamWriter(
+                    new FileOutputStream(targets[0]), Charset.forName(CHARSET)))) {
             
             fwriter.print(markup);            
             hasChanged = false;
@@ -581,7 +585,7 @@ public class Page extends Observable {
         metadata.load(source.getParentFile());
         
         final FileInputStream stream = new FileInputStream(source);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {     
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(CHARSET)))) {     
             
             String line;
             StringBuilder builder = new StringBuilder();

@@ -4,6 +4,7 @@ import hu.distributeddocumentor.gui.htmlpreview.SVGSalamanderReplacedElementFact
 import hu.distributeddocumentor.model.Page;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
+import java.awt.Font;
 import java.awt.Point;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.Observable;
 import java.util.Observer;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.w3c.dom.Element;
+import org.xhtmlrenderer.extend.NamespaceHandler;
 import org.xhtmlrenderer.render.Box;
 import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
@@ -72,7 +74,7 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
                 htmlPanel.removeMouseTrackingListener((FSMouseListener)listener);
             }
         }
-        
+                
         htmlPanel.addMouseTrackingListener(
                 new LinkListener() {
 
@@ -191,7 +193,7 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
     private void renderPage() {
         // Getting the HTML representation of the page
         String html = page.asAnnotatedHTMLembeddingCSS();
-        byte[] htmlBytes = html.getBytes(Charset.forName("utf-8"));
+        byte[] htmlBytes = html.getBytes(Charset.forName(Page.CHARSET));
         
         try {
             log.debug("Setting HTML renderer's document");
@@ -201,7 +203,7 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
             log.error(null, ex);            
             
             String simpleHtml = page.asHTMLembeddingCSS();
-            htmlBytes = simpleHtml.getBytes(Charset.forName("utf-8"));
+            htmlBytes = simpleHtml.getBytes(Charset.forName(Page.CHARSET));
         
             try {
                 htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            
@@ -212,7 +214,7 @@ public final class HTMLPreview extends javax.swing.JPanel implements Observer, P
                                 StringEscapeUtils.escapeXml(iex.toString())+
                                 "</pre></body></html>";
             
-                htmlBytes = errorHtml.getBytes(Charset.forName("utf-8"));
+                htmlBytes = errorHtml.getBytes(Charset.forName(Page.CHARSET));
         
                 try {
                     htmlPanel.setDocument(new ByteArrayInputStream(htmlBytes), root.toURI().toString());            

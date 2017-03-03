@@ -12,12 +12,14 @@ import hu.distributeddocumentor.model.ExportableNode;
 import hu.distributeddocumentor.model.toc.TOC;
 import hu.distributeddocumentor.model.toc.TOCNode;
 import hu.distributeddocumentor.model.virtual.builders.VirtualNodeException;
-import hu.distributeddocumentor.model.virtual.builders.merge.MergedDocumentationIsMissingException;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
@@ -173,7 +175,8 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
 
     private void createTreeItemsJS(File file, TOC toc) throws FileNotFoundException {
         
-        try (PrintWriter out = new PrintWriter(file)) {
+        try (PrintWriter out = new PrintWriter(
+                new OutputStreamWriter(new FileOutputStream(file), Charset.forName(CHARSET)))) {
             out.println("var TREE_ITEMS = [");
                         
             for (TOCNode node : toc.getRoot().getChildren()) {
