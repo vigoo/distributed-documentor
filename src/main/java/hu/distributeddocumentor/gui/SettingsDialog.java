@@ -175,7 +175,7 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jLabel3.setText("If Mercurial is not installed, download and install it from:");
 
-        lbMercurialURL.setText("<html><a href=\"http://mercurial.selenic.com/downloads/\">http://mercurial.selenic.com/downloads/</a></html>");
+        lbMercurialURL.setText("<html><a href=\"https://www.mercurial-scm.org/wiki/Download\">https://www.mercurial-scm.org/wiki/Download</a></html>");
         lbMercurialURL.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         lbMercurialURL.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
