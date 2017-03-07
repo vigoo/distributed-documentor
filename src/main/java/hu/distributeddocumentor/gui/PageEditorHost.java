@@ -6,6 +6,7 @@ import java.awt.Frame;
 public interface PageEditorHost {
     void openOrFocusPage(String id, String anchor);
     void openOrFocusSnippet(String id);
+    void openOrFocusStylesheet();
     
     void documentationReloaded();
     void updateUndoRedoItems();

@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.model;
 
+import java.io.File;
 import org.junit.*;
 import static org.junit.Assert.assertEquals;
 
@@ -8,7 +9,7 @@ public class PageTest {
     @Test
     public void testModifyPageReferences() {
         
-        Page p = new Page("test", null, new Conditions());
+        Page p = new Page("test", null, new Conditions(), new File("custom.css"));
         p.setMarkupLanguage("MediaWiki");
         p.setMarkup("[[FirstLink]]\n[[SecondLink|the second link]]\n[[ThirdLink]]\n[[ThirdLink|third link again]]\n[[FourthLink]]");
 
@@ -21,7 +22,7 @@ public class PageTest {
     @Test
     public void simpleConditionals() {
         Conditions conditions = new Conditions();
-        Page p = new Page("test", null, conditions);
+        Page p = new Page("test", null, conditions, new File("custom.css"));
         
         p.setMarkup("First line\n\n[When:TEST]\nConditional line\n\n[End]\nLast line");
         String html = p.asHTML("/");
@@ -36,7 +37,7 @@ public class PageTest {
     @Test
     public void nestedConditionals() {
         Conditions conditions = new Conditions();
-        Page p = new Page("test", null, conditions);
+        Page p = new Page("test", null, conditions, new File("custom.css"));
         
         p.setMarkup("First line\n\n[When:OUTER]\nOuter conditional line\n\n[When:INNER]\nInner conditional line\n\n[End]\n\n[End]\nLast line");
         String html = p.asHTML("/");

@@ -1,5 +1,6 @@
 package hu.distributeddocumentor.gui;
 
+import com.google.common.io.Files;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.swabunga.spell.engine.SpellDictionary;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
@@ -294,6 +295,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         docPreferencesMenuItem = new javax.swing.JMenuItem();
         spellCheckingMenuItem = new javax.swing.JCheckBoxMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        customizeStylesheetMenuItem = new javax.swing.JMenuItem();
         synchronizeMenu = new javax.swing.JMenu();
         pullMenuItem = new javax.swing.JMenuItem();
         pushMenuItem = new javax.swing.JMenuItem();
@@ -431,6 +434,15 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
             }
         });
         editMenu.add(spellCheckingMenuItem);
+        editMenu.add(jSeparator6);
+
+        customizeStylesheetMenuItem.setText("Customize stylesheet");
+        customizeStylesheetMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customizeStylesheetMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(customizeStylesheetMenuItem);
 
         menuBar.add(editMenu);
 
@@ -727,6 +739,20 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         refreshAll();
     }//GEN-LAST:event_enabledConditionsItemActionPerformed
 
+    private void customizeStylesheetMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customizeStylesheetMenuItemActionPerformed
+        
+        File customStylesheet = doc.getCustomStylesheet();
+        if (!customStylesheet.exists()) {
+            try {
+                Files.write("/* Customized CSS */\r\n\r\n".getBytes("UTF-8"), customStylesheet);
+            } catch (IOException ex) {
+                ErrorDialog.show(this, "Failed to create the customized CSS", ex);
+            }
+        }
+        
+        openOrFocusStylesheet();        
+    }//GEN-LAST:event_customizeStylesheetMenuItemActionPerformed
+
     private void showPreferencesIfNecessary() {
 
         if (!prefs.hasValidMercurialPath()) {
@@ -822,6 +848,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCommit;
     private javax.swing.JButton btRevert;
+    private javax.swing.JMenuItem customizeStylesheetMenuItem;
     private javax.swing.JMenuItem docPreferencesMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem enabledConditionsItem;
@@ -837,6 +864,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JLabel labelRoot;
     private javax.swing.JLabel labelUncommitted;
     private javax.swing.JMenuBar menuBar;
@@ -963,8 +991,10 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     @Override
     public void contentRemoved(ContentManagerEvent cme) {
 
-        SplittedPageView view = (SplittedPageView) cme.getContent().getComponent();
-        view.dispose();
+        if (cme.getContent().getComponent() instanceof SplittedPageView) {
+            SplittedPageView view = (SplittedPageView) cme.getContent().getComponent();
+            view.dispose();
+        }
     }
 
     @Override
@@ -1064,5 +1094,22 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
         });
 
         content.setPopupMenu(popup);
+    }
+
+    @Override
+    public void openOrFocusStylesheet() {
+        ContentManager contentManager = toolWindowManager.getContentManager();
+        String contentId = "custom.css";
+
+        Content content = contentManager.getContent(contentId);
+        if (content == null) {
+            content = contentManager.addContent(
+                    contentId,
+                    "Custom stylesheet",
+                    null,
+                    new CSSView(doc, prefs));
+        }
+
+        content.setSelected(true);
     }
 }

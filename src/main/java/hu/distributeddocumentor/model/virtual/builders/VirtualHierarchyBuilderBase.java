@@ -30,6 +30,7 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
     private final SnippetCollection emptySnippets;
     protected final TOCNodeFactory factory;
     private final Conditions conditions;
+    private final File customStylesheet;
     
     /**
      * Initializes the builder
@@ -37,10 +38,12 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
      * @param markupLanguage the markup language to be used for all the generated pages
      * @param factory Factory for TOCNodes
      * @param conditions enabled conditions
+     * @param customStylesheet the customized CSS for the documentation
      */
-    protected VirtualHierarchyBuilderBase(String markupLanguage, TOCNodeFactory factory, Conditions conditions) {
+    protected VirtualHierarchyBuilderBase(String markupLanguage, TOCNodeFactory factory, Conditions conditions, File customStylesheet) {
         this.markupLanguage = markupLanguage;
         this.factory = factory;
+        this.customStylesheet = customStylesheet;
         
         emptySnippets = new SnippetCollection() {
 
@@ -105,7 +108,7 @@ public abstract class VirtualHierarchyBuilderBase implements VirtualHierarchyBui
         renderer.apply(wikiWriter);
         stringWriter.flush();
         
-        Page result = new Page(id, emptySnippets, conditions);
+        Page result = new Page(id, emptySnippets, conditions, customStylesheet);
         result.setMarkupLanguage(markupLanguage);
         result.setMarkup(stringWriter.toString());
         

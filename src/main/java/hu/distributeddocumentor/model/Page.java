@@ -51,6 +51,7 @@ public class Page extends Observable {
     
     private final SnippetCollection snippets;    
     private final Conditions conditions;
+    private final File customStylesheet;
     
     private PageMetadata metadata;
     
@@ -62,10 +63,12 @@ public class Page extends Observable {
      * @param id the page's unique identifier
      * @param snippets snippet collection to be used when resolving snippet references
      * @param conditions enabled conditions
+     * @param customStylesheet The documentation-specific custom stylesheet
      */
-    public Page(String id, SnippetCollection snippets, Conditions conditions) {
+    public Page(String id, SnippetCollection snippets, Conditions conditions, File customStylesheet) {
         this.id = id;
         this.snippets = snippets;
+        this.customStylesheet = customStylesheet;
         
         metadata = new PageMetadata(id);
         
@@ -85,13 +88,15 @@ public class Page extends Observable {
      * @param source the file storing the page's markup
      * @param snippets the snippet collection to be used to resolve snippet references
      * @param conditions enabled conditions
+     * @param customStylesheet The documentation-specific custom stylesheet
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public Page(File source, SnippetCollection snippets, Conditions conditions) throws FileNotFoundException, IOException {
+    public Page(File source, SnippetCollection snippets, Conditions conditions, File customStylesheet) throws FileNotFoundException, IOException {
         
         this.snippets = snippets;          
         this.conditions = conditions;
+        this.customStylesheet = customStylesheet;
                 
         load(source);
     }
@@ -288,6 +293,37 @@ public class Page extends Observable {
         return asHTML(true, root, false, "");
     }
     
+    private void addStylesheets(ExtendedHtmlDocumentBuilder builder, boolean embedCSS, String pathToRoot) {
+       HtmlDocumentBuilder.Stylesheet stylesheet, custom;
+       if (embedCSS) {
+           stylesheet = new HtmlDocumentBuilder.Stylesheet(
+                   new InputStreamReader(
+                    getClass().getResourceAsStream("/documentation.css")));
+           
+           if (customStylesheet.exists()) {
+               try {
+                custom = new HtmlDocumentBuilder.Stylesheet(
+                        new InputStreamReader(new FileInputStream(customStylesheet)));
+               } catch (FileNotFoundException ex) {
+                   custom = null;
+               }
+           } else {
+               custom = null;
+           }
+       } else {
+           stylesheet = new HtmlDocumentBuilder.Stylesheet(pathToRoot+"documentation.css");
+           if (customStylesheet.exists()) {
+               custom = new HtmlDocumentBuilder.Stylesheet(pathToRoot+"custom.css");
+           } else {
+               custom = null;
+           }
+       }
+       builder.addCssStylesheet(stylesheet);
+       if (custom != null) {
+           builder.addCssStylesheet(custom);
+       }
+    }
+        
     private String asHTML(boolean embedCSS, File root, boolean annotated, String pathToRoot) {
        if (!isParserInitialized) {
             initializeParser();
@@ -295,17 +331,8 @@ public class Page extends Observable {
        
        StringWriter writer = new StringWriter();
        
-       ExtendedHtmlDocumentBuilder builder = new ExtendedHtmlDocumentBuilder(writer, root, pathToRoot);
-       
-       HtmlDocumentBuilder.Stylesheet stylesheet;
-       if (embedCSS) {
-           stylesheet = new HtmlDocumentBuilder.Stylesheet(
-                   new InputStreamReader(
-                    getClass().getResourceAsStream("/documentation.css")));
-       } else {
-           stylesheet = new HtmlDocumentBuilder.Stylesheet(pathToRoot+"documentation.css");
-       }
-       builder.addCssStylesheet(stylesheet);
+       ExtendedHtmlDocumentBuilder builder = new ExtendedHtmlDocumentBuilder(writer, root, pathToRoot);       
+       addStylesheets(builder, embedCSS, pathToRoot);
        
        parser = new MarkupParser(language, builder);             
 

@@ -20,9 +20,11 @@ public class DefaultVirtualTOCNode extends DefaultTOCNode implements VirtualTOCN
         
     private Class virtualHierarchyBuilder;
     private String sourcePath;
+    private final File customStylesheet;
 
-    public DefaultVirtualTOCNode(TOCNodeFactory factory) {
+    public DefaultVirtualTOCNode(TOCNodeFactory factory, File customStylesheet) {
         super(factory);
+        this.customStylesheet = customStylesheet;
     }
        
     
@@ -99,7 +101,7 @@ public class DefaultVirtualTOCNode extends DefaultTOCNode implements VirtualTOCN
             return new ExportableNode(this, null, noExtraImages);
         } else {
             try {
-                VirtualHierarchyBuilder builder = (VirtualHierarchyBuilder) ConstructorUtils.invokeConstructor(virtualHierarchyBuilder, new File(repositoryRoot, sourcePath), getTitle(), "MediaWiki", factory);
+                VirtualHierarchyBuilder builder = (VirtualHierarchyBuilder) ConstructorUtils.invokeConstructor(virtualHierarchyBuilder, new File(repositoryRoot, sourcePath), getTitle(), "MediaWiki", factory, prefs.getConditions(), customStylesheet);
 
                 if (builder instanceof UsesPreferences) {
                     UsesPreferences up = (UsesPreferences) builder;

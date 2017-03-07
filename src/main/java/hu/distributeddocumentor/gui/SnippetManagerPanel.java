@@ -183,7 +183,7 @@ public class SnippetManagerPanel extends javax.swing.JPanel {
        if (dlg.getReturnStatus() == CreateNewPageDialog.RET_OK) {
            
            try {
-            Snippet snippet = new Snippet(dlg.getID(), doc, conditions);
+            Snippet snippet = new Snippet(dlg.getID(), doc, conditions, doc.getCustomStylesheet());
             doc.addSnippet(snippet);
            }
            catch (IOException | PageAlreadyExistsException ex) {

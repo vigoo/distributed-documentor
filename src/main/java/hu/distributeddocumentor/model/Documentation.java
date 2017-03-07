@@ -48,6 +48,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     private static final Logger log = LoggerFactory.getLogger(Documentation.class.getName());
 
     private final VersionControl versionControl;    
+    private File repositoryRoot;
     private final TOC toc;
     private final Map<String, Page> pages;
     private final Map<String, Snippet> snippets;
@@ -128,7 +129,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
         this.versionControl = versionControl; 
         
-        toc = new TOC(this, new DefaultTOCNodeFactory());
+        toc = new TOC(this, new DefaultTOCNodeFactory(getCustomStylesheet()));
         pages = new CaseInsensitiveMap<>();
         snippets = new CaseInsensitiveMap<>();
 
@@ -149,11 +150,12 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     public void initAsNew(File repositoryRoot) throws IOException {
 
         versionControl.create(repositoryRoot);
+        this.repositoryRoot = repositoryRoot;
         relativeRoot = "";
 
         images = new Images(versionControl, relativeRoot);
 
-        Page first = new Page("start", this, prefs.getConditions());
+        Page first = new Page("start", this, prefs.getConditions(), getCustomStylesheet());
 
         try {
             addNewPage(first);
@@ -189,6 +191,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     public void initFromExisting(File repositoryRoot, LongOperationRunner longOp) throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
 
         final File realRepositoryRoot = findRealRepositoryRoot(repositoryRoot);
+        this.repositoryRoot = realRepositoryRoot;
         relativeRoot = ResourceUtils.getRelativePath(repositoryRoot.getAbsolutePath(), realRepositoryRoot.getAbsolutePath());
 
         log.info("Specified root: " + repositoryRoot.toString());
@@ -227,7 +230,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
      * @throws FailedToLoadTOCException
      */
     public void cloneFromRemote(final File localRepositoryRoot, final String remoteRepo, final String userName, final String password, LongOperationRunner longOp) throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
-
+        this.repositoryRoot = localRepositoryRoot;
         relativeRoot = "";
         longOp.run(new RunnableWithProgress() {
 
@@ -275,7 +278,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                         }
                     })) {
                 try {
-                    Snippet snippet = new Snippet(child, this, prefs.getConditions());
+                    Snippet snippet = new Snippet(child, this, prefs.getConditions(), getCustomStylesheet());
                     registerSnippet(snippet);
                 } catch (IOException ex) {
                     throw new FailedToLoadPageException(child, ex);
@@ -294,7 +297,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
                 })) {
 
             try {
-                Page page = new Page(child, this, prefs.getConditions());
+                Page page = new Page(child, this, prefs.getConditions(), getCustomStylesheet());
                 registerPage(page);
             } catch (IOException ex) {
                 throw new FailedToLoadPageException(child, ex);
@@ -564,7 +567,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
                 if (!pages.containsKey(pageId)) {
 
-                    Page newPage = new Page(pageId, this, prefs.getConditions());
+                    Page newPage = new Page(pageId, this, prefs.getConditions(), getCustomStylesheet());
 
                     try {
                         addNewPage(newPage);
@@ -896,5 +899,18 @@ public class Documentation extends Observable implements Observer, SnippetCollec
             }
         }
     }
-
+    
+    public File getCustomStylesheet() {
+        if (repositoryRoot != null) {
+            return new File(repositoryRoot, "custom.css");        
+        } else {
+            return new File("custom.css");
+        }
+    }
+    
+    public void markCustomStylesheetDirty() throws FailedToLoadPageException, FailedToLoadTOCException, FailedToLoadMetadataException {
+        versionControl.add(getCustomStylesheet());
+        notifyObservers();
+        reload();
+    }
 }

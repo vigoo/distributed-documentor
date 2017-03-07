@@ -3,6 +3,7 @@ package hu.distributeddocumentor.model;
 import hu.distributeddocumentor.model.toc.DefaultTOCNode;
 import hu.distributeddocumentor.model.toc.DefaultTOCNodeFactory;
 import hu.distributeddocumentor.model.toc.TOC;
+import java.io.File;
 import org.junit.*;
 import static org.junit.Assert.assertEquals;
 
@@ -22,7 +23,7 @@ public class TOCTest {
     
     @Before
     public void setUp() {
-        factory = new DefaultTOCNodeFactory();
+        factory = new DefaultTOCNodeFactory(new File("custom.css"));
     }
     
     @After
@@ -72,7 +73,7 @@ public class TOCTest {
     @Test
     public void testAddBefore() {
         
-        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory(new File("custom.css")));
         
         DefaultTOCNode child1 = new DefaultTOCNode(factory);
         toc.addBefore(toc.getUnorganized(), child1);
@@ -107,7 +108,7 @@ public class TOCTest {
      */
     @Test
     public void testAddAfter() {
-        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory(new File("custom.css")));
         
         DefaultTOCNode child1 = new DefaultTOCNode(factory);
         toc.addAfter(toc.getUnorganized(), child1);
@@ -154,7 +155,7 @@ public class TOCTest {
     @Test
     public void testMoveUp() {
         
-        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory(new File("custom.css")));
         
         // Initial structure:
         // node1
@@ -332,7 +333,7 @@ public class TOCTest {
     @Test
     public void testMoveDown() {
             
-        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory(new File("custom.css")));
         
         // Initial structure:
         // node1
@@ -485,7 +486,7 @@ public class TOCTest {
     @Test
     public void testMoveLeft() {
         
-        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory(new File("custom.css")));
         
         // Initial structure:
         // node1
@@ -566,7 +567,7 @@ public class TOCTest {
     
     @Test
     public void testMoveRight() {
-        TOC toc = new TOC(null, new DefaultTOCNodeFactory());
+        TOC toc = new TOC(null, new DefaultTOCNodeFactory(new File("custom.css")));
         
         // Initial structure:
         // node1

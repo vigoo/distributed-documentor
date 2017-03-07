@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
  * <p>
  * This builder creates reference manual from one doc-xml file.
  * <p>
- * As the doc-xml does not contain reflection information like paramter types
+ * As the doc-xml does not contain reflection information like parameter types
  * etc., it first has to be <i>extended</i> with the <b>DocXmlExtender</b> 
  * command line tool.
  * <p>
@@ -53,8 +53,8 @@ public class DocXmlHierarchyBuilder extends VirtualHierarchyBuilderBase {
     private final Pattern propertyPattern;
     private final Pattern methodPattern;
 
-    public DocXmlHierarchyBuilder(File xmlFile, String title, String markupLanguage, TOCNodeFactory factory, Conditions conditions) {
-        super(markupLanguage, factory, conditions);
+    public DocXmlHierarchyBuilder(File xmlFile, String title, String markupLanguage, TOCNodeFactory factory, Conditions conditions, File customStylesheet) {
+        super(markupLanguage, factory, conditions, customStylesheet);
         
         this.xmlFile = xmlFile;
         this.title = title;

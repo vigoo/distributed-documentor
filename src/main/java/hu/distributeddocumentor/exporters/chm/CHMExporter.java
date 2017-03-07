@@ -88,6 +88,10 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         // Exporting the CSS file
         extractResource("/documentation.css", "documentation.css", targetDir);        
         
+        if (doc.getCustomStylesheet().exists()) {
+            Files.copy(doc.getCustomStylesheet(), new File(targetDir, "custom.css"));
+        }
+        
         // Exporting the syntax highlighter         
         File shDir = new File(targetDir, "syntaxhighlighter");
         if (!shDir.exists()) {

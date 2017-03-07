@@ -107,6 +107,10 @@ public class HTMLExporter extends HTMLBasedExporter implements Exporter {
         createTreeItemsJS(new File(targetDir, "tree_items.js"), toc);
         
         // Extracting static files (icons, scripts, etc)
+        if (doc.getCustomStylesheet().exists()) {
+            Files.copy(doc.getCustomStylesheet(), new File(targetDir, "custom.css"));
+        }
+        
         extractResource("/documentation.css", "documentation.css", targetDir);
         extractResource("/tree/tree.html", "tree.html", targetDir);
         extractResource("/tree/index.html", "index.html", targetDir);

@@ -1,11 +1,17 @@
 package hu.distributeddocumentor.model.toc;
 
 import hu.distributeddocumentor.model.Page;
+import java.io.File;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 
-public class DefaultTOCNodeFactory implements TOCNodeFactory {
+public class DefaultTOCNodeFactory implements TOCNodeFactory {   
+    private final File customStylesheet;
+    
+    public DefaultTOCNodeFactory(File customStylesheet) {
+        this.customStylesheet = customStylesheet;                
+    }
 
     @Override
     public TOCNode fromXML(Node node) {
@@ -20,7 +26,7 @@ public class DefaultTOCNodeFactory implements TOCNodeFactory {
             Element elem = (Element)sibling;
             
             if (elem.hasAttribute("virtual-hierarchy-builder")) {
-                return new DefaultVirtualTOCNode(this);
+                return new DefaultVirtualTOCNode(this, customStylesheet);
             }
         }
         
@@ -39,7 +45,7 @@ public class DefaultTOCNodeFactory implements TOCNodeFactory {
 
     @Override
     public VirtualTOCNode createVirtualNode() {
-        return new DefaultVirtualTOCNode(this);
+        return new DefaultVirtualTOCNode(this, customStylesheet);
     }
 
     @Override
