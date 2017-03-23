@@ -1,6 +1,7 @@
 package hu.distributeddocumentor.gui;
 
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.Language;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
@@ -37,6 +38,7 @@ public class DocumentationPreferencesDialog extends javax.swing.JDialog {
 
         this.doc = doc;
         tbTitle.setText(doc.getTitle());
+        cbLanguage.setSelectedIndex(doc.getLanguage().ordinal());
         
         // Close the dialog when Esc is pressed
         String cancelName = "cancel";
@@ -71,6 +73,8 @@ public class DocumentationPreferencesDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         lbTitle = new javax.swing.JLabel();
         tbTitle = new javax.swing.JTextField();
+        lbLanguage = new javax.swing.JLabel();
+        cbLanguage = new javax.swing.JComboBox<>();
 
         setTitle("Documentation preferences");
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -95,6 +99,10 @@ public class DocumentationPreferencesDialog extends javax.swing.JDialog {
 
         lbTitle.setText("Title:");
 
+        lbLanguage.setText("Language:");
+
+        cbLanguage.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "English", "Japanese" }));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -103,14 +111,17 @@ public class DocumentationPreferencesDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(0, 154, Short.MAX_VALUE)
                         .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelButton))
-                    .add(layout.createSequentialGroup()
-                        .add(lbTitle)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(tbTitle)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lbTitle)
+                            .add(lbLanguage))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(tbTitle)
+                            .add(cbLanguage, 0, 237, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -123,7 +134,11 @@ public class DocumentationPreferencesDialog extends javax.swing.JDialog {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lbTitle)
                     .add(tbTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lbLanguage)
+                    .add(cbLanguage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
                     .add(okButton))
@@ -138,6 +153,7 @@ public class DocumentationPreferencesDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         
         doc.setTitle(tbTitle.getText());
+        doc.setLanguage(Language.values()[cbLanguage.getSelectedIndex()]);
         
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
@@ -161,6 +177,8 @@ public class DocumentationPreferencesDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JComboBox<String> cbLanguage;
+    private javax.swing.JLabel lbLanguage;
     private javax.swing.JLabel lbTitle;
     private javax.swing.JButton okButton;
     private javax.swing.JTextField tbTitle;
