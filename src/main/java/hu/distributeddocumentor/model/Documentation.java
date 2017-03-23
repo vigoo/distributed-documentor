@@ -54,7 +54,8 @@ public class Documentation extends Observable implements Observer, SnippetCollec
     private final Map<String, Snippet> snippets;
     private Images images;
     private String title = "Documentation";
-    private boolean titleHasChanged;
+    private Language language = Language.ENGLISH;
+    private boolean globalMetadataChanged;
 
     private String relativeRoot;
     private final DocumentorPreferences prefs;
@@ -110,7 +111,28 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
         if (!title.equals(this.title)) {
             this.title = title;
-            titleHasChanged = true;
+            globalMetadataChanged = true;
+        }
+    }
+    
+    /**
+     * Gets the documentation's target language
+     * 
+     * @return language of the documentation
+     */
+    public Language getLanguage() {
+        return language;
+    }
+    
+    /**
+     * Sets the documentation's target language
+     * 
+     * @param language the new language
+     */
+    public void setLanguage(Language language) {
+        if (this.language != language) {
+            this.language = language;
+            globalMetadataChanged = true;
         }
     }
 
@@ -450,7 +472,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
             toc.saveIfModified(root);
 
-            if (titleHasChanged) {
+            if (globalMetadataChanged) {
                 saveProperties();
             }
         } catch (IOException | TransformerException ex) {
@@ -472,6 +494,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
         Properties metadata = new Properties();
         metadata.put("title", title);
+        metadata.put("language", language.name());
 
         try (OutputStream out = new FileOutputStream(metadataFile)) {
             metadata.store(out, "Global documentation properties");
@@ -488,7 +511,7 @@ public class Documentation extends Observable implements Observer, SnippetCollec
         lines.remove(0);
         Files.write(Joiner.on('\n').join(lines), metadataFile, Charset.defaultCharset());
 
-        titleHasChanged = false;
+        globalMetadataChanged = false;
     }
 
     private void loadProperties() throws IOException {
@@ -507,6 +530,9 @@ public class Documentation extends Observable implements Observer, SnippetCollec
 
         if (metadata.containsKey("title")) {
             title = metadata.getProperty("title");
+        }
+        if (metadata.containsKey("language")) {
+            language = Language.valueOf(metadata.getProperty("language"));
         }
     }
 

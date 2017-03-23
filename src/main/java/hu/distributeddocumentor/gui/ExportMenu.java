@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.jidesoft.swing.FolderChooser;
 import hu.distributeddocumentor.exporters.Exporter;
 import hu.distributeddocumentor.model.Documentation;
+import hu.distributeddocumentor.model.Language;
 import hu.distributeddocumentor.prefs.DocumentorPreferences;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
