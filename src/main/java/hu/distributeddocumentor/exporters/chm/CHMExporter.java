@@ -218,7 +218,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
         // http://chmspec.nongnu.org/latest/INI.html#HHP
         
         try (PrintWriter out = new PrintWriter(
-                new OutputStreamWriter(new FileOutputStream(hhp), Charset.forName(CHARSET)))){
+                new OutputStreamWriter(new FileOutputStream(hhp), Charset.forName(charsetForLanguage(doc.getLanguage()))))){
             out.println("[OPTIONS]");
             //out.println("Binary TOC=No");
             //out.println("Binary Index=No");
@@ -236,7 +236,7 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
                     out.println("Language=0x411 Japanese (Japan)");
             }
             
-            out.println("Title="+doc.getTitle()); // TODO
+            out.println("Title="+doc.getTitle());
             //out.println("CreateCHIFile=No");
             //out.println("Compatibility=1.1");
             out.println("Error log file=compiler.log");
@@ -257,11 +257,8 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
             }
         }
     }
-
-    private void createHHC(File file, TOC toc, Language language) throws FileNotFoundException {
-        
-        // http://www.nongnu.org/chmspec/latest/Sitemap.html
-        
+    
+    private String charsetForLanguage(Language language) {
         String charset = CHARSET;
         switch (language) {
             case ENGLISH: 
@@ -271,9 +268,15 @@ public class CHMExporter extends HTMLBasedExporter implements Exporter {
                 charset = "Shift-JIS";
                 break;
         }
+        return charset;
+    }
+
+    private void createHHC(File file, TOC toc, Language language) throws FileNotFoundException {
+        
+        // http://www.nongnu.org/chmspec/latest/Sitemap.html
         
         try (PrintWriter out = new PrintWriter(
-                new OutputStreamWriter(new FileOutputStream(file), Charset.forName(charset)))) {
+                new OutputStreamWriter(new FileOutputStream(file), Charset.forName(charsetForLanguage(language))))) {
             out.println("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">");
             out.println("<HTML>");
             out.println("<OBJECT type=\"text/site properties\">");
