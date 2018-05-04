@@ -101,8 +101,16 @@ public class DefaultVirtualTOCNode extends DefaultTOCNode implements VirtualTOCN
             return new ExportableNode(this, null, noExtraImages);
         } else {
             try {
-                VirtualHierarchyBuilder builder = (VirtualHierarchyBuilder) ConstructorUtils.invokeConstructor(virtualHierarchyBuilder, new File(repositoryRoot, sourcePath), getTitle(), "MediaWiki", factory, prefs.getConditions(), customStylesheet);
-
+                VirtualHierarchyBuilder builder = (VirtualHierarchyBuilder) ConstructorUtils.invokeConstructor(
+                        virtualHierarchyBuilder, 
+                        new File(repositoryRoot, sourcePath), 
+                        getTitle(), 
+                        "MediaWiki", 
+                        factory, 
+                        prefs.getConditions(), 
+                        customStylesheet);
+                
+// public DocumentationMerger(File innerDocumentationRoot, String title, String markupLanguage, TOCNodeFactory factory) {
                 if (builder instanceof UsesPreferences) {
                     UsesPreferences up = (UsesPreferences) builder;
                     up.setPreferences(prefs);

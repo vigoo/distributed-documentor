@@ -2,6 +2,7 @@ package hu.distributeddocumentor.model.virtual.builders.merge;
 
 import hu.distributeddocumentor.gui.LongOperationRunner;
 import hu.distributeddocumentor.gui.SimpleLongOperationRunner;
+import hu.distributeddocumentor.model.Conditions;
 import hu.distributeddocumentor.model.Documentation;
 import hu.distributeddocumentor.model.FailedToLoadMetadataException;
 import hu.distributeddocumentor.model.FailedToLoadPageException;
@@ -33,12 +34,11 @@ public class DocumentationMerger implements VirtualHierarchyBuilder, UsesPrefere
     private Documentation doc;
     private final LongOperationRunner longOp;
    
-    public DocumentationMerger(File innerDocumentationRoot, String title, String markupLanguage, TOCNodeFactory factory) {
+    public DocumentationMerger(File innerDocumentationRoot, String title, String markupLanguage, TOCNodeFactory factory, Conditions conditions, File customStylesheet) {
         this.innerDocumentationRoot = innerDocumentationRoot;
         this.title = title;
         this.factory = factory;
         this.longOp = new SimpleLongOperationRunner();
-        
     }
     
     @Override
