@@ -26,5 +26,5 @@ mvn webstart:jnlp
 To create a single JAR:
 
 ```
-mvn assembly:assembly
+mvn package
 ```

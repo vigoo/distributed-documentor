@@ -94,26 +94,26 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
         addComponentListener(
                 new ComponentListener() {
-                    @Override
-                    public void componentResized(ComponentEvent e) {
-                        prefs.setMainWindowWidth(getWidth());
-                        prefs.setMainWindowHeight(getHeight());
-                    }
+            @Override
+            public void componentResized(ComponentEvent e) {
+                prefs.setMainWindowWidth(getWidth());
+                prefs.setMainWindowHeight(getHeight());
+            }
 
-                    @Override
-                    public void componentMoved(ComponentEvent e) {
-                        prefs.setMainWindowX(getX());
-                        prefs.setMainWindowY(getY());
-                    }
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                prefs.setMainWindowX(getX());
+                prefs.setMainWindowY(getY());
+            }
 
-                    @Override
-                    public void componentShown(ComponentEvent e) {
-                    }
+            @Override
+            public void componentShown(ComponentEvent e) {
+            }
 
-                    @Override
-                    public void componentHidden(ComponentEvent e) {
-                    }
-                });
+            @Override
+            public void componentHidden(ComponentEvent e) {
+            }
+        });
 
         try {
             SpellDictionary dictionary = new SpellDictionaryHashMap(
@@ -166,11 +166,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 twTOC.setAvailable(true);
                 twTOC.addPropertyChangeListener("visible",
                         new PropertyChangeListener() {
-                            @Override
-                            public void propertyChange(PropertyChangeEvent pce) {
-                                tocItem.setState((Boolean) pce.getNewValue());
-                            }
-                        });
+                    @Override
+                    public void propertyChange(PropertyChangeEvent pce) {
+                        tocItem.setState((Boolean) pce.getNewValue());
+                    }
+                });
 
                 twImages = toolWindowManager.registerToolWindow(
                         "IMG",
@@ -184,11 +184,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 twImages.setAvailable(true);
                 twImages.addPropertyChangeListener("visible",
                         new PropertyChangeListener() {
-                            @Override
-                            public void propertyChange(PropertyChangeEvent pce) {
-                                imageManagerItem.setState((Boolean) pce.getNewValue());
-                            }
-                        });
+                    @Override
+                    public void propertyChange(PropertyChangeEvent pce) {
+                        imageManagerItem.setState((Boolean) pce.getNewValue());
+                    }
+                });
 
                 snippetsView = new SnippetManagerPanel(this, doc, prefs.getConditions());
                 twSnippets = toolWindowManager.registerToolWindow(
@@ -203,11 +203,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 twSnippets.setAvailable(true);
                 twSnippets.addPropertyChangeListener("visible",
                         new PropertyChangeListener() {
-                            @Override
-                            public void propertyChange(PropertyChangeEvent pce) {
-                                snippetManagerItem.setState((Boolean) pce.getNewValue());
-                            }
-                        });
+                    @Override
+                    public void propertyChange(PropertyChangeEvent pce) {
+                        snippetManagerItem.setState((Boolean) pce.getNewValue());
+                    }
+                });
 
                 labelRoot.setText(doc.getRepositoryRoot());
 
@@ -219,31 +219,31 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
                 saveTimer = new Timer(1000,
                         new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent ae) {
-                                onSaveTimerTick();
-                            }
-                        });
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        onSaveTimerTick();
+                    }
+                });
                 saveTimer.setInitialDelay(5000);
                 saveTimer.start();
 
                 statusCheckTimer = new Timer(3000,
                         new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent ae) {
-                                onStatusCheckTimerTick();
-                            }
-                        });
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        onStatusCheckTimerTick();
+                    }
+                });
                 statusCheckTimer.setInitialDelay(0);
                 statusCheckTimer.start();
 
                 removeOrphanedPagesTimer = new Timer(2000,
                         new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent ae) {
-                                onRemoveOrphanedPagesTimerTick();
-                            }
-                        });
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        onRemoveOrphanedPagesTimerTick();
+                    }
+                });
                 removeOrphanedPagesTimer.setInitialDelay(0);
                 removeOrphanedPagesTimer.start();
 
@@ -548,7 +548,7 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        
+
         saveLayout();
         LongOperation.shutdown();
     }
@@ -733,14 +733,14 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
     }//GEN-LAST:event_openPagemenuItemActionPerformed
 
     private void enabledConditionsItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enabledConditionsItemActionPerformed
-    
+
         EnabledConditionsDialog dlg = new EnabledConditionsDialog(this, doc, prefs);
         dlg.setVisible(true);
         refreshAll();
     }//GEN-LAST:event_enabledConditionsItemActionPerformed
 
     private void customizeStylesheetMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customizeStylesheetMenuItemActionPerformed
-        
+
         File customStylesheet = doc.getCustomStylesheet();
         if (!customStylesheet.exists()) {
             try {
@@ -749,8 +749,8 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
                 ErrorDialog.show(this, "Failed to create the customized CSS", ex);
             }
         }
-        
-        openOrFocusStylesheet();        
+
+        openOrFocusStylesheet();
     }//GEN-LAST:event_customizeStylesheetMenuItemActionPerformed
 
     private void showPreferencesIfNecessary() {
@@ -911,11 +911,11 @@ public final class MainWindow extends javax.swing.JFrame implements PageEditorHo
 
             EventQueue.invokeLater(
                     new Runnable() {
-                        @Override
-                        public void run() {
-                            pageView.scrollToId(anchor);
-                        }
-                    });
+                @Override
+                public void run() {
+                    pageView.scrollToId(anchor);
+                }
+            });
         }
     }
 
